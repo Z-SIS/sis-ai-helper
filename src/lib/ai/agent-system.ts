@@ -20,8 +20,8 @@ type AgentType = keyof typeof AgentInputSchemas;
 const TOKEN_CONFIG = {
   // Model configurations for different complexity levels
   models: {
-    fast: 'gemini-pro', // Store as string for lazy initialization
-    // Using only gemini-pro as it's the most stable and widely available
+    fast: 'gemini-1.5-flash', // Updated to use gemini-1.5-flash which is more stable
+    // Using gemini-1.5-flash as it's the most stable and widely available
   },
   
   // Token limits based on agent complexity
@@ -369,13 +369,39 @@ The AI functionality requires a valid API key to work.`;
     // Create Google AI provider and model dynamically
     let model;
     try {
-      const googleProvider = google({
+      console.log('Initializing Google AI provider...');
+      
+      // Create the provider with the API key
+      const provider = google({
         apiKey: apiKey,
       });
-      model = googleProvider(TOKEN_CONFIG.models.fast as string);
+      
+      console.log('Google AI provider created successfully');
+      
+      // Create the model
+      model = provider(TOKEN_CONFIG.models.fast);
+      
+      console.log('Google AI model created successfully:', TOKEN_CONFIG.models.fast);
+      
     } catch (providerError) {
       console.error('Google AI provider initialization error:', providerError);
-      throw new Error(`Failed to initialize Google AI provider: ${providerError instanceof Error ? providerError.message : 'Unknown error'}`);
+      
+      // Provide more helpful error message
+      const baseError = providerError instanceof Error ? providerError.message : 'Unknown error';
+      const enhancedError = `Failed to initialize Google AI provider: ${baseError}
+
+This could be due to:
+1. Missing or invalid API key
+2. Google AI SDK version compatibility issue
+3. Network connectivity problem
+4. API service outage
+5. Model availability issue
+
+Current model: ${TOKEN_CONFIG.models.fast}
+
+Please check your API key configuration and try again.`;
+      
+      throw new Error(enhancedError);
     }
     
     // Generate with error handling
