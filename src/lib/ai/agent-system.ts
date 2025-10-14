@@ -1,6 +1,8 @@
 // Import ZAI SDK for more reliable AI functionality
 import ZAI from 'z-ai-web-dev-sdk';
 import { z } from 'zod';
+
+// Version: 2.1.0 - ZAI SDK Integration
 import { 
   AgentInputSchemas, 
   AgentOutputSchemas,
