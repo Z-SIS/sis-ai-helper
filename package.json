@@ -72,6 +72,7 @@
     "tavily": "^1.0.2",
     "vaul": "^1.1.2",
     "vercel": "^48.2.9",
+    "z-ai-web-dev-sdk": "^0.0.10",
     "zod": "^3.23.8"
   },
   "devDependencies": {
