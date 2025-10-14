@@ -1,8 +1,22 @@
 // Import ZAI SDK for more reliable AI functionality
-import ZAI from 'z-ai-web-dev-sdk';
 import { z } from 'zod';
 
 // Version: 2.1.0 - ZAI SDK Integration
+
+// Dynamic import for ZAI SDK to handle ES module compatibility
+let ZAI: any = null;
+const loadZAI = async () => {
+  if (!ZAI) {
+    try {
+      const ZAIModule = await import('z-ai-web-dev-sdk');
+      ZAI = ZAIModule.default;
+    } catch (error) {
+      console.error('Failed to load ZAI SDK:', error);
+      throw new Error('ZAI SDK not available');
+    }
+  }
+  return ZAI;
+};
 import { 
   AgentInputSchemas, 
   AgentOutputSchemas,
@@ -453,7 +467,12 @@ class OptimizedAgentSystem {
     // Create ZAI client and generate response
     let result;
     try {
-      console.log('Initializing ZAI client...');
+      console.log('Loading ZAI SDK...');
+      
+      // Load ZAI SDK dynamically
+      const ZAI = await loadZAI();
+      
+      console.log('ZAI SDK loaded, initializing client...');
       
       // Try to create ZAI instance with environment variable
       let zai;
@@ -521,6 +540,16 @@ class OptimizedAgentSystem {
 This is a deployment configuration issue that needs to be fixed in the backend.
 
 The AI functionality will be available once the configuration is properly set up.
+
+Please try again later or contact support if this issue persists.`;
+        throw new Error(enhancedError);
+      }
+      
+      // Check for module loading error
+      if (baseError.includes('ZAI SDK not available') || baseError.includes('Failed to load ZAI SDK')) {
+        const enhancedError = `AI SDK is currently unavailable. 
+
+The AI functionality is temporarily unavailable due to a technical issue.
 
 Please try again later or contact support if this issue persists.`;
         throw new Error(enhancedError);
