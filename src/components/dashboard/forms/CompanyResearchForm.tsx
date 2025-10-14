@@ -42,11 +42,17 @@ export function CompanyResearchForm() {
         const error = await response.json();
         
         // Provide more helpful error messages
-        if (error.message?.includes('GOOGLE_GENERATIVE_AI_API_KEY')) {
-          throw new Error('Google AI API key is missing. Please configure your environment variables to enable AI functionality.');
+        if (error.message?.includes('GOOGLE_GENERATIVE_AI_API_KEY') || error.message?.includes('GOOGLE_GENAI_API_KEY')) {
+          throw new Error('Google AI API key is missing or invalid. Please configure your GOOGLE_GENAI_API_KEY environment variable.');
         }
         if (error.message?.includes('TAVILY_API_KEY')) {
-          throw new Error('Tavily search API key is missing. Please configure your environment variables to enable web search.');
+          throw new Error('Tavily search API key is missing. Please configure your TAVILY_API_KEY environment variable.');
+        }
+        if (error.message?.includes('not found') || error.message?.includes('not supported')) {
+          throw new Error('AI model not available. Please check your Google AI API configuration.');
+        }
+        if (error.message?.includes('API key issue')) {
+          throw new Error('Google AI API key is invalid or expired. Please check your API key configuration.');
         }
         
         throw new Error(error.message || 'Failed to research company');

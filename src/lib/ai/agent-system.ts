@@ -201,7 +201,13 @@ const optimizedWebSearchTool = {
   execute: async ({ query, maxResults = 3 }: { query: string; maxResults?: number }) => {
     try {
       // Check if Tavily API key is available
-      if (!process.env.TAVILY_API_KEY) {
+      const tavilyKey = process.env.TAVILY_API_KEY;
+      console.log('Tavily API Key Debug:', {
+        hasTavilyKey: !!tavilyKey,
+        keyLength: tavilyKey ? tavilyKey.length : 0
+      });
+      
+      if (!tavilyKey) {
         console.warn('TAVILY_API_KEY not found. Web search functionality is disabled.');
         return [];
       }
@@ -210,7 +216,7 @@ const optimizedWebSearchTool = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          api_key: process.env.TAVILY_API_KEY,
+          api_key: tavilyKey,
           query,
           max_results: maxResults,
           search_depth: 'basic', // Use basic depth for token optimization
@@ -309,7 +315,16 @@ class OptimizedAgentSystem {
     useCache: boolean = true
   ): Promise<T> {
     // Check if Google API key is available (support both variable names)
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
+    const generativeAIKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    const genAIKey = process.env.GOOGLE_GENAI_API_KEY;
+    const apiKey = generativeAIKey || genAIKey;
+    
+    console.log('API Key Debug:', {
+      hasGenerativeAIKey: !!generativeAIKey,
+      hasGenAIKey: !!genAIKey,
+      usingKey: generativeAIKey ? 'GOOGLE_GENERATIVE_AI_API_KEY' : (genAIKey ? 'GOOGLE_GENAI_API_KEY' : 'none')
+    });
+    
     if (!apiKey) {
       throw new Error('Google AI API key not found. Please configure either GOOGLE_GENERATIVE_AI_API_KEY or GOOGLE_GENAI_API_KEY in your environment variables.');
     }
