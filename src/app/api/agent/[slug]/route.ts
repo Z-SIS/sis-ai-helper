@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { 
   AgentInputSchemas, 
-  AgentType,
   AgentInput,
   AgentOutput
 } from '@/shared/schemas';
@@ -19,6 +18,9 @@ import {
   handleSlideTemplate
 } from '@/lib/ai/agent-system';
 import { db } from '@/lib/supabase';
+
+// Define AgentType locally to avoid circular dependencies
+type AgentType = keyof typeof AgentInputSchemas;
 
 // ============================================================================
 // OPTIMIZED API HANDLER

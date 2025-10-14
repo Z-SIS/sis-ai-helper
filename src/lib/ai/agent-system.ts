@@ -5,25 +5,22 @@ import {
   AgentInputSchemas, 
   AgentOutputSchemas,
   AgentMetadata,
-  AgentType,
   AgentInput,
   AgentOutput
 } from '@/shared/schemas';
 import { db } from '@/lib/supabase';
 
+// Define AgentType locally to avoid circular dependencies
+type AgentType = keyof typeof AgentInputSchemas;
+
 // ============================================================================
 // TOKEN OPTIMIZATION CONFIGURATION
 // ============================================================================
 
-// Create Google AI provider with explicit configuration
-const googleProvider = google({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_GENAI_API_KEY,
-});
-
 const TOKEN_CONFIG = {
   // Model configurations for different complexity levels
   models: {
-    fast: googleProvider('gemini-pro'),
+    fast: 'gemini-pro', // Store as string for lazy initialization
     // Using only gemini-pro as it's the most stable and widely available
   },
   
@@ -340,9 +337,15 @@ class OptimizedAgentSystem {
       ? { webSearch: optimizedWebSearchTool }
       : undefined;
     
+    // Create Google AI provider and model dynamically
+    const googleProvider = google({
+      apiKey: apiKey,
+    });
+    const model = googleProvider(TOKEN_CONFIG.models.fast as string);
+    
     // Generate with error handling
     const result = await generateObject({
-      model: TOKEN_CONFIG.models.fast,
+      model: model,
       system: config.system,
       prompt: config.template(input),
       schema: schema as any,
