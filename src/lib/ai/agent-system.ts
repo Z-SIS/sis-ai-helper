@@ -455,8 +455,17 @@ class OptimizedAgentSystem {
     try {
       console.log('Initializing ZAI client...');
       
-      // Create ZAI instance
-      const zai = await ZAI.create();
+      // Try to create ZAI instance with environment variable
+      let zai;
+      try {
+        // Use environment variable for API key if available
+        const apiKey = process.env.ZAI_API_KEY || 'z-ai-default-key';
+        zai = await ZAI.create({ apiKey });
+      } catch (configError) {
+        console.warn('ZAI config creation failed, trying default:', configError);
+        // Fallback to default creation
+        zai = await ZAI.create();
+      }
       
       console.log('ZAI client created successfully');
       
@@ -504,6 +513,19 @@ class OptimizedAgentSystem {
       
       // Provide more helpful error message
       const baseError = zaiError instanceof Error ? zaiError.message : 'Unknown error';
+      
+      // Check for specific config file error
+      if (baseError.includes('Configuration file not found')) {
+        const enhancedError = `ZAI SDK configuration not found. 
+
+This is a deployment configuration issue that needs to be fixed in the backend.
+
+The AI functionality will be available once the configuration is properly set up.
+
+Please try again later or contact support if this issue persists.`;
+        throw new Error(enhancedError);
+      }
+      
       const enhancedError = `Failed to generate AI response: ${baseError}
 
 This could be due to:
