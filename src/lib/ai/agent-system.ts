@@ -15,12 +15,16 @@ import { db } from '@/lib/supabase';
 // TOKEN OPTIMIZATION CONFIGURATION
 // ============================================================================
 
+// Create Google AI provider with explicit configuration
+const googleProvider = google({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_GENAI_API_KEY,
+});
+
 const TOKEN_CONFIG = {
   // Model configurations for different complexity levels
   models: {
-    fast: google('gemini-pro'),
-    fallback: google('gemini-1.5-pro'),
-    // Add more models as needed
+    fast: googleProvider('gemini-pro'),
+    // Using only gemini-pro as it's the most stable and widely available
   },
   
   // Token limits based on agent complexity
@@ -307,9 +311,10 @@ class OptimizedAgentSystem {
     input: AgentInput,
     useCache: boolean = true
   ): Promise<T> {
-    // Check if Google API key is available
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      throw new Error('GOOGLE_GENERATIVE_AI_API_KEY not found. Please configure your Google AI API key in the environment variables.');
+    // Check if Google API key is available (support both variable names)
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_GENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error('Google AI API key not found. Please configure either GOOGLE_GENERATIVE_AI_API_KEY or GOOGLE_GENAI_API_KEY in your environment variables.');
     }
 
     const cacheKey = this.generateCacheKey(agentType, input);
@@ -335,47 +340,29 @@ class OptimizedAgentSystem {
       ? { webSearch: optimizedWebSearchTool }
       : undefined;
     
-    // Try primary model first, then fallback if needed
-    let result;
-    try {
-      result = await generateObject({
-        model: TOKEN_CONFIG.models.fast,
-        system: config.system,
-        prompt: config.template(input),
-        schema: schema as any,
-        temperature: config.temperature,
-        maxTokens: config.maxTokens,
-        tools,
-      });
-    } catch (primaryError) {
-      console.warn('Primary model failed, trying fallback model:', primaryError);
+    // Generate with error handling
+    const result = await generateObject({
+      model: TOKEN_CONFIG.models.fast,
+      system: config.system,
+      prompt: config.template(input),
+      schema: schema as any,
+      temperature: config.temperature,
+      maxTokens: config.maxTokens,
+      tools,
+    }).catch((error) => {
+      console.error('AI model generation error:', error);
       
-      try {
-        result = await generateObject({
-          model: TOKEN_CONFIG.models.fallback,
-          system: config.system,
-          prompt: config.template(input),
-          schema: schema as any,
-          temperature: config.temperature,
-          maxTokens: config.maxTokens,
-          tools,
-        });
-      } catch (fallbackError) {
-        console.error('Both models failed:', { primaryError, fallbackError });
-        
-        // Provide more specific error messages
-        const error = fallbackError || primaryError;
-        if (error.message?.includes('not found') || error.message?.includes('not supported')) {
-          throw new Error(`AI model not available or not supported. Please check your Google AI API configuration and model availability. Original error: ${error.message}`);
-        }
-        
-        if (error.message?.includes('API key')) {
-          throw new Error(`Google AI API key issue: ${error.message}`);
-        }
-        
-        throw new Error(`AI generation failed: ${error.message}`);
+      // Provide more specific error messages
+      if (error.message?.includes('not found') || error.message?.includes('not supported')) {
+        throw new Error(`AI model not available or not supported. Please check your Google AI API configuration. Original error: ${error.message}`);
       }
-    }
+      
+      if (error.message?.includes('API key')) {
+        throw new Error(`Google AI API key issue: ${error.message}`);
+      }
+      
+      throw new Error(`AI generation failed: ${error.message}`);
+    });
     
     const output = result.object as T;
     
