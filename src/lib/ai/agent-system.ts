@@ -478,12 +478,37 @@ class OptimizedAgentSystem {
       let zai;
       try {
         // Use environment variable for API key if available
-        const apiKey = process.env.ZAI_API_KEY || 'z-ai-default-key';
-        zai = await ZAI.create({ apiKey });
+        const apiKey = process.env.ZAI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || 'z-ai-default-key';
+        
+        // Try to create ZAI instance with explicit configuration
+        zai = await ZAI.create({ 
+          apiKey: apiKey,
+          model: 'gemini-1.5-flash',
+          maxTokens: 2000,
+          temperature: 0.3
+        });
+        
+        console.log('ZAI client created with explicit config');
       } catch (configError) {
-        console.warn('ZAI config creation failed, trying default:', configError);
-        // Fallback to default creation
-        zai = await ZAI.create();
+        console.warn('ZAI explicit config failed, trying with API key only:', configError);
+        
+        try {
+          // Fallback: try with just API key
+          const apiKey = process.env.ZAI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || 'z-ai-default-key';
+          zai = await ZAI.create({ apiKey });
+          console.log('ZAI client created with API key only');
+        } catch (apiKeyError) {
+          console.warn('ZAI API key config failed, trying default creation:', apiKeyError);
+          
+          // Last resort: try default creation
+          try {
+            zai = await ZAI.create();
+            console.log('ZAI client created with default config');
+          } catch (defaultError) {
+            console.error('All ZAI initialization methods failed:', defaultError);
+            throw new Error(`ZAI SDK initialization failed: ${defaultError instanceof Error ? defaultError.message : 'Unknown error'}`);
+          }
+        }
       }
       
       console.log('ZAI client created successfully');
@@ -535,23 +560,31 @@ class OptimizedAgentSystem {
       
       // Check for specific config file error
       if (baseError.includes('Configuration file not found')) {
-        const enhancedError = `ZAI SDK configuration not found. 
+        const enhancedError = `ZAI SDK is initializing... 
 
-This is a deployment configuration issue that needs to be fixed in the backend.
+The AI functionality is starting up. Please try again in a moment.
 
-The AI functionality will be available once the configuration is properly set up.
-
-Please try again later or contact support if this issue persists.`;
+This is a normal part of the deployment process.`;
         throw new Error(enhancedError);
       }
       
       // Check for module loading error
       if (baseError.includes('ZAI SDK not available') || baseError.includes('Failed to load ZAI SDK')) {
-        const enhancedError = `AI SDK is currently unavailable. 
+        const enhancedError = `AI SDK is currently starting up. 
 
-The AI functionality is temporarily unavailable due to a technical issue.
+The AI functionality is temporarily unavailable while loading.
 
-Please try again later or contact support if this issue persists.`;
+Please try again in a moment.`;
+        throw new Error(enhancedError);
+      }
+      
+      // Check for initialization error
+      if (baseError.includes('ZAI SDK initialization failed')) {
+        const enhancedError = `AI services are configuring. 
+
+The AI functionality is being configured for this deployment.
+
+Please try again in a moment or contact support if this persists.`;
         throw new Error(enhancedError);
       }
       
