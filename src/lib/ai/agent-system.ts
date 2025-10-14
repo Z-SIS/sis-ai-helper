@@ -1,5 +1,19 @@
 // Import ZAI SDK for more reliable AI functionality
 import { z } from 'zod';
+import { 
+  validateAgentResponse, 
+  calculateConfidence, 
+  needsReview,
+  CompanyResearchSchema,
+  SOPSchema,
+  EmailSchema,
+  ExcelHelperSchema,
+  FeasibilitySchema,
+  DeploymentPlanSchema,
+  BattlecardSchema,
+  DisbandmentPlanSchema,
+  SlideTemplateSchema
+} from '@/lib/ai/schema-validation';
 
 // Version: 2.1.0 - ZAI SDK Integration
 
@@ -47,12 +61,20 @@ const TOKEN_CONFIG = {
     complex: 2000,  // Company research, Feasibility, Deployment, Disbandment
   },
   
-  // Temperature settings for consistency vs creativity
+  // Temperature settings for deterministic outputs (production-ready)
   temperature: {
-    factual: 0.1,   // Company research
-    structured: 0.3, // SOP, Deployment, Disbandment
-    balanced: 0.4,  // Feasibility, Battlecard
-    creative: 0.5,  // Email, Slide template
+    factual: 0.0,   // Company research - deterministic for accuracy
+    structured: 0.0, // SOP, Deployment, Disbandment - structured outputs
+    balanced: 0.1,  // Feasibility, Battlecard - minimal creativity
+    creative: 0.2,  // Email, Slide template - limited creativity
+  },
+  
+  // Top_p settings for deterministic outputs
+  topP: {
+    factual: 0.0,   // Company research - most deterministic
+    structured: 0.0, // SOP, Deployment, Disbandment - structured
+    balanced: 0.1,  // Feasibility, Battlecard - slightly flexible
+    creative: 0.2,  // Email, Slide template - minimal flexibility
   },
 } as const;
 
@@ -62,20 +84,34 @@ const TOKEN_CONFIG = {
 
 const PROMPT_TEMPLATES = {
   'company-research': {
-    system: "You are a business research analyst. Provide accurate, current company information.",
+    system: `You are a business research analyst. Provide accurate, current company information.
+
+CRITICAL RULES:
+- Do not invent facts. If you are not 100% sure about information, state "Information not available" or "Unable to verify".
+- Only include information that can be verified through reliable sources.
+- If data is missing or uncertain, explicitly state this rather than guessing.
+- Provide specific, factual information with confidence levels.
+- Use web search for current data and cite sources when possible.`,
     template: (input: AgentInput) => {
       const { companyName, industry, location } = input as any;
       return `Research "${companyName}"${industry ? ` in ${industry}` : ''}${location ? ` in ${location}` : ''}.
       
 Provide: description, industry, location, website, founded year, employees, revenue, key executives, competitors, recent news.
-Be concise but comprehensive. Use web search for current data.`;
+Be concise but comprehensive. Use web search for current data. Mark uncertain information as "unverified".`;
     },
     maxTokens: TOKEN_CONFIG.maxTokens.complex,
     temperature: TOKEN_CONFIG.temperature.factual,
   },
   
   'generate-sop': {
-    system: "You are a process documentation expert. Create clear, actionable SOPs.",
+    system: `You are a process documentation expert. Create clear, actionable SOPs.
+
+CRITICAL RULES:
+- Create practical, step-by-step procedures that can be realistically implemented.
+- Do not invent requirements or regulations that don't exist.
+- If specific industry standards are unknown, provide general best practices.
+- Include clear responsibilities and measurable outcomes.
+- Structure content in a logical, easy-to-follow format.`,
     template: (input: AgentInput) => {
       const { processName, department, purpose, scope } = input as any;
       return `Create SOP for "${processName}"${department ? ` (${department})` : ''}.
@@ -83,7 +119,7 @@ ${purpose ? `Purpose: ${purpose}` : ''}
 ${scope ? `Scope: ${scope}` : ''}
 
 Include: title, version, purpose, scope, responsibilities, step-by-step procedures with owners, references.
-Make it practical and easy to follow.`;
+Make it practical and easy to follow. Use standard business practices and avoid inventing unnecessary complexity.`;
     },
     maxTokens: TOKEN_CONFIG.maxTokens.medium,
     temperature: TOKEN_CONFIG.temperature.structured,
@@ -429,6 +465,65 @@ class OptimizedAgentSystem {
     } as AgentOutput;
   }
   
+  private getSchemaForAgent(agentType: AgentType) {
+    const schemas = {
+      'company-research': CompanyResearchSchema,
+      'generate-sop': SOPSchema,
+      'compose-email': EmailSchema,
+      'excel-helper': ExcelHelperSchema,
+      'feasibility-check': FeasibilitySchema,
+      'deployment-plan': DeploymentPlanSchema,
+      'usps-battlecard': BattlecardSchema,
+      'disbandment-plan': DisbandmentPlanSchema,
+      'slide-template': SlideTemplateSchema,
+    };
+    
+    return schemas[agentType];
+  }
+  
+  private createFallbackResponse(agentType: AgentType, rawResponse: string, error: string): AgentOutput {
+    const baseResponse = {
+      success: false,
+      confidence: 0.3,
+      needsReview: true,
+      timestamp: new Date().toISOString(),
+      warnings: [`Schema validation failed: ${error}`],
+    };
+    
+    switch (agentType) {
+      case 'company-research':
+        return {
+          companyName: 'Unknown',
+          description: rawResponse.slice(0, 500),
+          industry: 'Unknown',
+          location: 'Unknown',
+          dataConfidence: 0.3,
+          unverifiedFields: ['all'],
+          ...baseResponse,
+        } as AgentOutput;
+        
+      case 'generate-sop':
+        return {
+          title: 'Generated SOP',
+          version: '1.0',
+          purpose: 'Standard Operating Procedure',
+          scope: 'General',
+          responsibilities: [],
+          procedures: [],
+          implementationConfidence: 0.3,
+          ...baseResponse,
+        } as AgentOutput;
+        
+      default:
+        return {
+          title: 'Generated Response',
+          content: rawResponse.slice(0, 1000),
+          summary: 'Response generated with validation issues',
+          ...baseResponse,
+        } as AgentOutput;
+    }
+  }
+  
   private async executeAgent<T extends AgentOutput>(
     agentType: AgentType,
     input: AgentInput,
@@ -528,15 +623,24 @@ class OptimizedAgentSystem {
         messages: [
           {
             role: 'system',
-            content: config.system
+            content: `${config.system}
+
+RESPONSE FORMAT:
+You must respond with valid JSON only. Do not include any explanations outside the JSON structure.
+Include confidence score (0-1), needsReview flag, and timestamp in your response.
+Mark uncertain information explicitly and include warnings if applicable.`
           },
           {
             role: 'user',
-            content: prompt
+            content: `${prompt}
+
+Please provide a JSON response following the schema requirements.`
           }
         ],
         max_tokens: config.maxTokens,
         temperature: config.temperature,
+        // Add top_p for deterministic output
+        top_p: TOKEN_CONFIG.topP[agentType as keyof typeof TOKEN_CONFIG.topP] || 0.0,
       });
       
       console.log('ZAI response received successfully');
@@ -547,9 +651,48 @@ class OptimizedAgentSystem {
         throw new Error('No response received from ZAI');
       }
       
-      // Parse the response based on the expected schema
+      console.log('Raw AI response received, parsing JSON...');
+      
+      // Parse and validate JSON response
+      let parsedResponse;
+      try {
+        // Try to extract JSON from the response
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        const jsonString = jsonMatch ? jsonMatch[0] : aiResponse;
+        parsedResponse = JSON.parse(jsonString);
+      } catch (parseError) {
+        console.error('JSON parsing failed:', parseError);
+        throw new Error(`Invalid JSON response from AI: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+      }
+      
+      // Add metadata
+      parsedResponse.timestamp = new Date().toISOString();
+      parsedResponse.success = true;
+      
+      // Calculate confidence and determine if review is needed
+      const confidence = calculateConfidence(parsedResponse, agentType);
+      parsedResponse.confidence = confidence;
+      parsedResponse.needsReview = needsReview(confidence, agentType);
+      
+      // Validate against schema
+      let validatedResponse;
+      try {
+        const schema = this.getSchemaForAgent(agentType);
+        validatedResponse = validateAgentResponse(schema, parsedResponse);
+      } catch (validationError) {
+        console.error('Schema validation failed:', validationError);
+        // Return a safe fallback response
+        validatedResponse = this.createFallbackResponse(agentType, aiResponse, validationError instanceof Error ? validationError.message : 'Unknown error');
+      }
+      
+      console.log('Response validated successfully:', { 
+        agentType, 
+        confidence: validatedResponse.confidence,
+        needsReview: validatedResponse.needsReview 
+      });
+      
       result = {
-        object: this.parseAIResponse(aiResponse, agentType)
+        object: validatedResponse
       };
       
     } catch (zaiError) {
