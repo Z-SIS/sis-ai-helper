@@ -314,6 +314,8 @@ class OptimizedAgentSystem {
     input: AgentInput,
     useCache: boolean = true
   ): Promise<T> {
+    console.log(`Executing agent: ${agentType}`, { input, useCache });
+    
     // Check if Google API key is available (support both variable names)
     const generativeAIKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     const genAIKey = process.env.GOOGLE_GENAI_API_KEY;
@@ -326,7 +328,17 @@ class OptimizedAgentSystem {
     });
     
     if (!apiKey) {
-      throw new Error('Google AI API key not found. Please configure either GOOGLE_GENERATIVE_AI_API_KEY or GOOGLE_GENAI_API_KEY in your environment variables.');
+      const errorMessage = `Google AI API key not configured. 
+
+To fix this issue:
+1. Get a Google AI API key from: https://aistudio.google.com/app/apikey
+2. Add it to your .env file as: GOOGLE_GENERATIVE_AI_API_KEY=your_api_key_here
+3. Restart the development server
+
+The AI functionality requires a valid API key to work.`;
+      
+      console.error('API Key Error:', errorMessage);
+      throw new Error(errorMessage);
     }
 
     const cacheKey = this.generateCacheKey(agentType, input);
@@ -343,6 +355,8 @@ class OptimizedAgentSystem {
     const config = PROMPT_TEMPLATES[agentType];
     const schema = AgentOutputSchemas[agentType];
     
+    console.log('Agent config:', { agentType, hasConfig: !!config, hasSchema: !!schema });
+    
     // Estimate input tokens
     const inputTokens = Math.ceil(JSON.stringify(input).length / 4);
     this.trackTokenUsage(agentType, inputTokens);
@@ -353,34 +367,47 @@ class OptimizedAgentSystem {
       : undefined;
     
     // Create Google AI provider and model dynamically
-    const googleProvider = google({
-      apiKey: apiKey,
-    });
-    const model = googleProvider(TOKEN_CONFIG.models.fast as string);
+    let model;
+    try {
+      const googleProvider = google({
+        apiKey: apiKey,
+      });
+      model = googleProvider(TOKEN_CONFIG.models.fast as string);
+    } catch (providerError) {
+      console.error('Google AI provider initialization error:', providerError);
+      throw new Error(`Failed to initialize Google AI provider: ${providerError instanceof Error ? providerError.message : 'Unknown error'}`);
+    }
     
     // Generate with error handling
-    const result = await generateObject({
-      model: model,
-      system: config.system,
-      prompt: config.template(input),
-      schema: schema as any,
-      temperature: config.temperature,
-      maxTokens: config.maxTokens,
-      tools,
-    }).catch((error) => {
-      console.error('AI model generation error:', error);
+    let result;
+    try {
+      result = await generateObject({
+        model: model,
+        system: config.system,
+        prompt: config.template(input),
+        schema: schema as any,
+        temperature: config.temperature,
+        maxTokens: config.maxTokens,
+        tools,
+      });
+    } catch (generationError) {
+      console.error('AI model generation error:', generationError);
       
       // Provide more specific error messages
-      if (error.message?.includes('not found') || error.message?.includes('not supported')) {
-        throw new Error(`AI model not available or not supported. Please check your Google AI API configuration. Original error: ${error.message}`);
+      if (generationError instanceof Error) {
+        if (generationError.message?.includes('not found') || generationError.message?.includes('not supported')) {
+          throw new Error(`AI model not available or not supported. Please check your Google AI API configuration. Original error: ${generationError.message}`);
+        }
+        
+        if (generationError.message?.includes('API key')) {
+          throw new Error(`Google AI API key issue: ${generationError.message}`);
+        }
+        
+        throw new Error(`AI generation failed: ${generationError.message}`);
       }
       
-      if (error.message?.includes('API key')) {
-        throw new Error(`Google AI API key issue: ${error.message}`);
-      }
-      
-      throw new Error(`AI generation failed: ${error.message}`);
-    });
+      throw new Error(`AI generation failed: ${String(generationError)}`);
+    }
     
     const output = result.object as T;
     

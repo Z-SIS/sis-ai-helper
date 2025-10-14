@@ -31,27 +31,39 @@ export async function POST(
   { params }: { params: { slug: string } }
 ) {
   try {
+    console.log('Agent API called:', { params });
+    
     // Open platform - no authentication required
     const userId = 'open-user';
     
-    const { slug } = params;
+    const { slug } = await params;
     const body = await request.json();
+    
+    console.log('Request details:', { slug, bodyKeys: Object.keys(body) });
     
     // Validate agent type
     const agentType = slug as AgentType;
     if (!AgentInputSchemas[agentType]) {
+      console.error('Invalid agent type:', { agentType, available: Object.keys(AgentInputSchemas) });
       return NextResponse.json(
         { error: 'Invalid agent type', availableAgents: Object.keys(AgentInputSchemas) },
         { status: 400 }
       );
     }
     
+    console.log('Agent type validated:', { agentType });
+    
     // Validate input schema
     const inputSchema = AgentInputSchemas[agentType];
     const validatedInput = inputSchema.parse(body);
     
+    console.log('Input validated:', { agentType, inputKeys: Object.keys(validatedInput) });
+    
     // Execute agent request with optimized system
+    console.log('Executing agent request...');
     const result = await optimizedAgentSystem.executeAgentRequest(agentType, validatedInput);
+    
+    console.log('Agent execution completed:', { agentType, hasResult: !!result });
     
     // Save to task history (optional for open platform)
     try {

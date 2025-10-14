@@ -200,7 +200,28 @@ export function SopGenerationForm() {
           {mutation.error && (
             <Alert className="mt-4" variant="destructive">
               <AlertDescription>
-                {mutation.error instanceof Error ? mutation.error.message : 'An error occurred'}
+                {mutation.error instanceof Error ? (
+                  <>
+                    {mutation.error.message.includes('API key not configured') ? (
+                      <div className="space-y-2">
+                        <p className="font-semibold">API Key Required</p>
+                        <p>The SOP generation feature requires a Google AI API key to work.</p>
+                        <div className="text-sm bg-gray-100 p-3 rounded-md">
+                          <p className="font-medium mb-1">To fix this issue:</p>
+                          <ol className="list-decimal list-inside space-y-1">
+                            <li>Get a free API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Google AI Studio</a></li>
+                            <li>Add it to your .env file: <code className="bg-gray-200 px-1 rounded">GOOGLE_GENERATIVE_AI_API_KEY=your_api_key_here</code></li>
+                            <li>Restart the development server</li>
+                          </ol>
+                        </div>
+                      </div>
+                    ) : (
+                      mutation.error.message
+                    )}
+                  </>
+                ) : (
+                  'An error occurred while generating the SOP. Please try again.'
+                )}
               </AlertDescription>
             </Alert>
           )}
