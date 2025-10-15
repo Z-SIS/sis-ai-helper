@@ -523,6 +523,174 @@ class GoogleAIAgentSystem {
     } as AgentOutput;
   }
   
+  // Enhanced company research with real web search data
+  private async handleCompanyResearchWithSearch(input: AgentInput): Promise<AgentOutput> {
+    try {
+      console.log('Starting company research with web search...');
+      
+      const { companyName, industry, location } = input as any;
+      
+      // Step 1: Search for real company data using Tavily
+      const searchQueries = [
+        `${companyName} company profile ${industry || ''} ${location || ''}`,
+        `${companyName} employees revenue funding ${location || ''}`,
+        `${companyName} recent news 2024`,
+        `${companyName} competitors ${industry || ''}`
+      ];
+      
+      let searchResults: any[] = [];
+      
+      for (const query of searchQueries) {
+        try {
+          const results = await optimizedWebSearchTool.execute({ query, maxResults: 3 });
+          searchResults = [...searchResults, ...results];
+        } catch (error) {
+          console.warn(`Search failed for query: ${query}`, error);
+        }
+      }
+      
+      console.log(`Found ${searchResults.length} search results`);
+      
+      // Step 2: Process search results with Google AI
+      if (searchResults.length > 0) {
+        const searchContext = searchResults.map((result, index) => 
+          `Source ${index + 1}: ${result.title}\nURL: ${result.url}\nContent: ${result.content}`
+        ).join('\n\n');
+        
+        const researchPrompt = `Based on the following real-time search results, provide comprehensive company information for "${companyName}".
+
+SEARCH RESULTS:
+${searchContext}
+
+CRITICAL REQUIREMENTS:
+- Use ONLY the information from the search results above
+- Do not invent or guess any information
+- If information is not available in the search results, state "Information not available"
+- Provide specific data points with sources
+- Include confidence levels based on source reliability
+
+REQUIRED JSON FORMAT:
+{
+  "companyName": "${companyName}",
+  "industry": "string (from search results)",
+  "location": "string (from search results)",
+  "description": "string (from search results)",
+  "website": "string (valid URL from search results)",
+  "foundedYear": number (if found in search results),
+  "employeeCount": "string or object (from search results)",
+  "revenue": "string or object (from search results)",
+  "keyExecutives": [{"name": "string", "title": "string"}] (if found),
+  "competitors": ["string"] (if found),
+  "recentNews": [{"title": "string", "summary": "string", "date": "YYYY-MM-DD", "url": "string"}] (if found),
+  "dataConfidence": number (0-1, based on source quality),
+  "unverifiedFields": ["string"] (fields that couldn't be verified),
+  "confidenceScore": number (0-1, overall confidence),
+  "needsReview": boolean (if data seems incomplete),
+  "lastUpdated": "${new Date().toISOString().split('T')[0]}",
+  "sources": [{"title": "string", "url": "string", "reliability": "high/medium/low"}]
+}
+
+Analyze the search results and provide accurate, factual information only.`;
+
+        // Check if Google AI API key is available
+        const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+        if (!googleApiKey) {
+          throw new Error('Google AI API key not configured');
+        }
+        
+        // Initialize Google AI
+        const genAI = new GoogleGenerativeAI(googleApiKey);
+        const model = genAI.getGenerativeModel({ 
+          model: TOKEN_CONFIG.models.fast,
+          generationConfig: {
+            temperature: 0.0, // Very low temperature for factual accuracy
+            maxOutputTokens: TOKEN_CONFIG.maxTokens.complex,
+            topP: 0.0,
+          }
+        });
+        
+        console.log('Processing search results with Google AI...');
+        
+        // Generate content with Google AI
+        const result = await model.generateContent([
+          { text: "You are a business research analyst. Process search results to extract accurate company information." },
+          { text: researchPrompt }
+        ]);
+        
+        const response = result.response;
+        const text = response.text();
+        
+        if (!text) {
+          throw new Error('No response received from Google AI');
+        }
+        
+        console.log('Google AI processed search results, parsing response...');
+        
+        // Parse the response
+        const parsedResponse = this.parseCompanyResearchResponse(text);
+        
+        // Add search results metadata
+        if (parsedResponse.data) {
+          (parsedResponse.data as any).searchResultsCount = searchResults.length;
+          (parsedResponse.data as any).searchPerformed = true;
+          (parsedResponse.data as any).searchTimestamp = new Date().toISOString();
+        }
+        
+        // Cache the result
+        const cacheKey = this.generateCacheKey('company-research', input);
+        agentCache.set(cacheKey, parsedResponse, 60); // Cache for 1 hour
+        
+        return parsedResponse;
+      } else {
+        // No search results found - provide fallback response
+        console.log('No search results found, providing fallback response');
+        
+        const fallbackData = {
+          companyName,
+          industry: industry || 'Information not available',
+          location: location || 'Information not available',
+          description: 'No current information found in search results',
+          website: 'Information not available',
+          employeeCount: 'Information not available',
+          revenue: 'Information not available',
+          lastUpdated: new Date().toISOString().split('T')[0],
+          dataConfidence: 0.0,
+          confidenceScore: 0.0,
+          needsReview: true,
+          unverifiedFields: ['all'],
+          searchResultsCount: 0,
+          searchPerformed: true,
+          searchTimestamp: new Date().toISOString(),
+          sources: []
+        };
+        
+        return {
+          title: `Company Research: ${companyName}`,
+          content: `No current information found for "${companyName}" in web search. This could mean:\n\n1. The company name may be misspelled\n2. The company may not have significant online presence\n3. The company may be too new or private\n\nPlease verify the company name and try again.`,
+          summary: `No search results found for ${companyName}`,
+          data: fallbackData
+        } as AgentOutput;
+      }
+      
+    } catch (error) {
+      console.error('Company research with search failed:', error);
+      
+      // Return error response
+      return {
+        title: 'Research Failed',
+        content: `Failed to research company: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        summary: 'Company research failed',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        data: {
+          companyName: (input as any).companyName,
+          lastUpdated: new Date().toISOString().split('T')[0],
+          searchPerformed: false,
+          error: true
+        }
+      } as AgentOutput;
+    }
+  }
+  
   // Main method to handle agent requests using Google AI
   async handleAgentRequest(agentType: AgentType, input: AgentInput): Promise<AgentOutput> {
     try {
@@ -534,6 +702,11 @@ class GoogleAIAgentSystem {
       if (cachedResult) {
         console.log(`Returning cached result for ${agentType}`);
         return cachedResult;
+      }
+      
+      // Special handling for company research - use web search first
+      if (agentType === 'company-research') {
+        return this.handleCompanyResearchWithSearch(input);
       }
       
       // Get the prompt template for this agent type
