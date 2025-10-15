@@ -10,11 +10,10 @@ export async function GET() {
       VERCEL_ENV: process.env.VERCEL_ENV || 'unknown',
     },
     aiServices: {
-      zaiApiKey: process.env.ZAI_API_KEY ? 'configured' : 'missing',
       googleApiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY ? 'configured' : 'missing',
       tavilyApiKey: process.env.TAVILY_API_KEY ? 'configured' : 'missing',
     },
-    version: "2.1.0-zai-sdk"
+    version: "2.1.0-google-only"
   };
 
   return NextResponse.json(healthCheck);

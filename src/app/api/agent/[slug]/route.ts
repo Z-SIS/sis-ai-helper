@@ -6,16 +6,8 @@ import {
   AgentOutput
 } from '@/shared/schemas';
 import { 
-  optimizedAgentSystem,
-  handleCompanyResearch,
-  handleSopGeneration,
-  handleEmailComposition,
-  handleExcelHelper,
-  handleFeasibilityCheck,
-  handleDeploymentPlan,
-  handleUspsBattlecard,
-  handleDisbandmentPlan,
-  handleSlideTemplate
+  googleAIAgentSystem,
+  handleAgentRequest
 } from '@/lib/ai/agent-system';
 import { db } from '@/lib/supabase';
 
@@ -59,9 +51,9 @@ export async function POST(
     
     console.log('Input validated:', { agentType, inputKeys: Object.keys(validatedInput) });
     
-    // Execute agent request with optimized system
+    // Execute agent request with Google AI system
     console.log('Executing agent request...');
-    const result = await optimizedAgentSystem.executeAgentRequest(agentType, validatedInput);
+    const result = await handleAgentRequest(agentType, validatedInput);
     
     console.log('Agent execution completed:', { agentType, hasResult: !!result });
     
@@ -85,7 +77,7 @@ export async function POST(
     }
     
     // Return success response with token usage info
-    const tokenUsage = optimizedAgentSystem.getTokenUsage();
+    const tokenUsage = googleAIAgentSystem.getTokenUsage();
     
     return NextResponse.json({ 
       success: true, 
@@ -133,16 +125,16 @@ export async function POST(
 
 export async function GET() {
   try {
-    const tokenUsage = optimizedAgentSystem.getTokenUsage();
+    const tokenUsage = googleAIAgentSystem.getTokenUsage();
     
     return NextResponse.json({
       status: 'healthy',
-      system: 'SIS AI Helper - Optimized Agent System',
-      version: '2.0.0',
+      system: 'SIS AI Helper - Google AI Agent System',
+      version: '2.1.0-google-only',
       agents: Object.keys(AgentInputSchemas),
       tokenUsage,
       cache: {
-        size: tokenUsage.cacheSize,
+        size: tokenUsage.cacheStats?.size || 0,
         status: 'active',
       },
       timestamp: new Date().toISOString(),
