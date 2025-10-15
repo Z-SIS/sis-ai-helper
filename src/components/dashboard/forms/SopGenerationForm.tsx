@@ -53,7 +53,32 @@ export function SopGenerationForm() {
       return result.data as SopGenerationOutput;
     },
     onSuccess: (data) => {
+      // Validate the response data
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response received from server');
+      }
+      
+      // Ensure required arrays exist
+      if (!Array.isArray(data.responsibilities)) {
+        data.responsibilities = ['Default responsibility: Follow documented procedures'];
+      }
+      
+      if (!Array.isArray(data.procedure)) {
+        data.procedure = [
+          {
+            step: 1,
+            action: 'Process Execution',
+            details: 'Follow the documented procedures',
+            owner: 'Process Owner'
+          }
+        ];
+      }
+      
       setResult(data);
+    },
+    onError: (error) => {
+      console.error('SOP Generation error:', error);
+      // Error is already handled by the UI below
     },
   });
 
@@ -258,7 +283,7 @@ export function SopGenerationForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Responsibilities</h4>
               <ul className="list-disc list-inside space-y-1">
-                {result.responsibilities.map((responsibility, index) => (
+                {(result.responsibilities || []).map((responsibility, index) => (
                   <li key={index} className="text-sm text-gray-600">{responsibility}</li>
                 ))}
               </ul>
@@ -267,7 +292,7 @@ export function SopGenerationForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3">Procedure</h4>
               <div className="space-y-4">
-                {result.procedure.map((step) => (
+                {(result.procedure || []).map((step) => (
                   <div key={step.step} className="border-l-2 border-blue-200 pl-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">

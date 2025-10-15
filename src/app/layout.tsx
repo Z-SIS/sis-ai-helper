@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProviderWrapper } from "@/components/providers/query-client-provider";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+import "@/lib/global-error-handler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,10 +45,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <QueryClientProviderWrapper>
-          {children}
-          <Toaster />
-        </QueryClientProviderWrapper>
+        <ErrorBoundary>
+          <QueryClientProviderWrapper>
+            {children}
+            <Toaster />
+          </QueryClientProviderWrapper>
+        </ErrorBoundary>
       </body>
     </html>
   );

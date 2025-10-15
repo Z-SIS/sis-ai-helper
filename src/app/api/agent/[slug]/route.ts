@@ -65,6 +65,11 @@ export async function POST(
     
     console.log('Agent execution completed:', { agentType, hasResult: !!result });
     
+    // Validate the result before proceeding
+    if (!result || typeof result !== 'object') {
+      throw new Error(`Invalid result from agent ${agentType}: result must be an object`);
+    }
+    
     // Save to task history (optional for open platform)
     try {
       await db.createTaskHistory({

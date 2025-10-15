@@ -45,37 +45,37 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #FFFFFF; /* Primary Background - Canvas White */
+  --foreground: #333333; /* Heading Text (H1, H2) */
+  --card: #FFFFFF;
+  --card-foreground: #333333;
+  --popover: #FFFFFF;
+  --popover-foreground: #333333;
+  --primary: #D2232A; /* Primary Brand Color - Action/Accent Red */
+  --primary-foreground: #FFFFFF; /* Links/Buttons (Accent) - White on red */
+  --secondary: #333333; /* Secondary Background - Dark Footer/Header */
+  --secondary-foreground: #FFFFFF; /* Text on Dark BG - Inverse Text */
+  --muted: #F5F5F5;
+  --muted-foreground: #555555; /* Body Text - Standard */
+  --accent: #D2232A;
+  --accent-foreground: #FFFFFF;
+  --destructive: #D2232A;
+  --border: #E0E0E0; /* Border/Divider - Separation */
+  --input: #E0E0E0;
+  --ring: #D2232A;
+  --chart-1: #D2232A;
+  --chart-2: #333333;
+  --chart-3: #555555;
+  --chart-4: #D0D0D0; /* Secondary Text - Subtle Text/Hint */
+  --chart-5: #A91C22; /* Button (Hover) - Feedback */
+  --sidebar: #333333;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #D2232A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #555555;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #E0E0E0;
+  --sidebar-ring: #D2232A;
 }
 
 .dark {
