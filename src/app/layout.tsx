@@ -4,7 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProviderWrapper } from "@/components/providers/query-client-provider";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import "@/lib/global-error-handler";
+import { GlobalErrorProvider } from "@/components/providers/global-error-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +47,7 @@ export default function RootLayout({
       >
         <ErrorBoundary>
           <QueryClientProviderWrapper>
+            <GlobalErrorProvider />
             {children}
             <Toaster />
           </QueryClientProviderWrapper>
