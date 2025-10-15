@@ -431,6 +431,10 @@ class GoogleAIAgentSystem {
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const data = JSON.parse(jsonMatch[0]);
+        // Add lastUpdated if missing
+        if (!data.lastUpdated) {
+          data.lastUpdated = new Date().toISOString().split('T')[0];
+        }
         return {
           title: `Company Research: ${data.companyName || 'Unknown'}`,
           content: JSON.stringify(data, null, 2),
@@ -442,10 +446,20 @@ class GoogleAIAgentSystem {
       // If JSON parsing fails, create a structured response from text
     }
     
+    // Fallback response with current date
+    const fallbackData = {
+      lastUpdated: new Date().toISOString().split('T')[0],
+      companyName: 'Unknown',
+      industry: 'Not specified',
+      location: 'Not specified',
+      description: response.substring(0, 500) + '...',
+    };
+    
     return {
       title: 'Company Research',
       content: response,
-      summary: 'Company research completed'
+      summary: 'Company research completed',
+      data: fallbackData
     } as AgentOutput;
   }
   

@@ -179,7 +179,7 @@ export function CompanyResearchForm() {
           <CardHeader>
             <CardTitle>Research Results</CardTitle>
             <CardDescription>
-              Last updated: {new Date(result.lastUpdated).toLocaleDateString()}
+              Last updated: {result.lastUpdated ? new Date(result.lastUpdated).toLocaleDateString() : 'Not available'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
