@@ -267,11 +267,18 @@ const optimizedWebSearchTool = {
       const tavilyKey = process.env.TAVILY_API_KEY;
       console.log('Tavily API Key Debug:', {
         hasTavilyKey: !!tavilyKey,
-        keyLength: tavilyKey ? tavilyKey.length : 0
+        keyLength: tavilyKey ? tavilyKey.length : 0,
+        nodeEnv: process.env.NODE_ENV
       });
       
       if (!tavilyKey) {
-        console.warn('TAVILY_API_KEY not found. Web search functionality is disabled.');
+        console.warn('TAVILY_API_KEY not found. Using mock search for development.');
+        
+        // For local development, provide mock search results for common companies
+        if (process.env.NODE_ENV === 'development') {
+          return provideMockSearchResults(query, maxResults);
+        }
+        
         return [];
       }
 
@@ -303,10 +310,87 @@ const optimizedWebSearchTool = {
       })) || [];
     } catch (error) {
       console.error('Optimized web search error:', error);
+      
+      // For development, provide mock results on error
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Providing mock search results due to error in development');
+        return provideMockSearchResults(query, maxResults);
+      }
+      
       return [];
     }
   },
 };
+
+// Mock search results for development/testing
+function provideMockSearchResults(query: string, maxResults: number = 3): any[] {
+  const lowerQuery = query.toLowerCase();
+  
+  // Mock data for well-known companies
+  const mockData: Record<string, any[]> = {
+    'apple': [
+      {
+        title: 'Apple Inc. - Official Website',
+        url: 'https://www.apple.com',
+        content: 'Apple Inc. is an American multinational technology company headquartered in Cupertino, California. Apple is the world\'s largest technology company by revenue and has been the world\'s most valuable company since August 2018.',
+        score: 0.95
+      },
+      {
+        title: 'Apple Inc. - Wikipedia',
+        url: 'https://en.wikipedia.org/wiki/Apple_Inc.',
+        content: 'Apple Inc. is an American multinational technology company that specializes in consumer electronics, computer software, and online services. Apple was founded by Steve Jobs, Steve Wozniak, and Ronald Wayne in April 1976.',
+        score: 0.90
+      },
+      {
+        title: 'Apple (AAPL) Stock Price & News',
+        url: 'https://finance.yahoo.com/quote/AAPL',
+        content: 'Apple Inc. (AAPL) stock price, news, and financial information. Market cap: $2.9 trillion. Employees: 164,000. Revenue: $383.3 billion (2023).',
+        score: 0.88
+      }
+    ],
+    'microsoft': [
+      {
+        title: 'Microsoft - Official Website',
+        url: 'https://www.microsoft.com',
+        content: 'Microsoft Corporation is an American multinational technology corporation headquartered in Redmond, Washington. Microsoft develops, manufactures, licenses, and supports software products and services.',
+        score: 0.95
+      },
+      {
+        title: 'Microsoft - Wikipedia',
+        url: 'https://en.wikipedia.org/wiki/Microsoft',
+        content: 'Microsoft Corporation was founded by Bill Gates and Paul Allen on April 4, 1975. Microsoft is the largest software company in the world and one of the most valuable companies globally.',
+        score: 0.90
+      }
+    ],
+    'google': [
+      {
+        title: 'Google - Official Website',
+        url: 'https://about.google',
+        content: 'Google LLC is an American multinational technology company focusing on search engine technology, online advertising, cloud computing, and artificial intelligence. Founded in 1998 by Larry Page and Sergey Brin.',
+        score: 0.95
+      }
+    ]
+  };
+  
+  // Check if query matches any mock data
+  for (const [key, results] of Object.entries(mockData)) {
+    if (lowerQuery.includes(key)) {
+      console.log(`Providing mock search results for query: ${query}`);
+      return results.slice(0, maxResults);
+    }
+  }
+  
+  // Generic mock result for unknown companies
+  console.log(`Providing generic mock search results for query: ${query}`);
+  return [
+    {
+      title: `${query} - Company Information`,
+      url: 'https://example.com/company',
+      content: `This is mock search result data for "${query}" in development mode. In production, this would be replaced with real search results from Tavily API.`,
+      score: 0.5
+    }
+  ];
+}
 
 // ============================================================================
 // CACHING SYSTEM
@@ -523,6 +607,129 @@ class GoogleAIAgentSystem {
     } as AgentOutput;
   }
   
+  // Mock AI processing for development when API keys are not available
+  private processCompanyResearchWithMockAI(companyName: string, searchResults: any[], industry?: string, location?: string): AgentOutput {
+    console.log('Processing company research with mock AI in development mode');
+    
+    // Extract information from search results
+    const extractedData = this.extractCompanyInfoFromSearchResults(searchResults, companyName);
+    
+    const mockData = {
+      companyName,
+      industry: extractedData.industry || industry || 'Technology',
+      location: extractedData.location || location || 'United States',
+      description: extractedData.description || `${companyName} is a company in the ${industry || 'technology'} sector.`,
+      website: extractedData.website || 'Information not available',
+      foundedYear: extractedData.foundedYear || null,
+      employeeCount: extractedData.employeeCount || 'Information not available',
+      revenue: extractedData.revenue || 'Information not available',
+      keyExecutives: extractedData.keyExecutives || [],
+      competitors: extractedData.competitors || [],
+      recentNews: extractedData.recentNews || [],
+      dataConfidence: 0.7, // Medium confidence for mock data
+      unverifiedFields: extractedData.unverifiedFields || [],
+      confidenceScore: 0.7,
+      needsReview: true,
+      lastUpdated: new Date().toISOString().split('T')[0],
+      sources: searchResults.map(result => ({
+        title: result.title,
+        url: result.url,
+        reliability: 'medium' as const
+      })),
+      searchResultsCount: searchResults.length,
+      searchPerformed: true,
+      searchTimestamp: new Date().toISOString(),
+      developmentMode: true
+    };
+    
+    return {
+      title: `Company Research: ${companyName}`,
+      content: `Company research completed for ${companyName} using mock search results in development mode. In production, this would use real AI processing with Google Gemini.`,
+      summary: `Mock research completed for ${companyName}`,
+      data: mockData
+    } as AgentOutput;
+  }
+  
+  // Helper method to extract company information from search results
+  private extractCompanyInfoFromSearchResults(searchResults: any[], companyName: string): any {
+    const extracted = {
+      industry: '',
+      location: '',
+      description: '',
+      website: '',
+      foundedYear: null as number | null,
+      employeeCount: '',
+      revenue: '',
+      keyExecutives: [] as any[],
+      competitors: [] as string[],
+      recentNews: [] as any[],
+      unverifiedFields: [] as string[]
+    };
+    
+    // Combine all search content for analysis
+    const allContent = searchResults.map(result => result.content).join(' ').toLowerCase();
+    
+    // Extract information based on common patterns
+    for (const result of searchResults) {
+      const content = result.content.toLowerCase();
+      
+      // Extract industry
+      if (content.includes('technology') && !extracted.industry) {
+        extracted.industry = 'Technology';
+      } else if (content.includes('software') && !extracted.industry) {
+        extracted.industry = 'Software';
+      }
+      
+      // Extract location
+      if (content.includes('cupertino, california') && !extracted.location) {
+        extracted.location = 'Cupertino, California';
+      } else if (content.includes('redmond, washington') && !extracted.location) {
+        extracted.location = 'Redmond, Washington';
+      }
+      
+      // Extract website
+      if (result.url.includes('apple.com') && !extracted.website) {
+        extracted.website = 'https://www.apple.com';
+      } else if (result.url.includes('microsoft.com') && !extracted.website) {
+        extracted.website = 'https://www.microsoft.com';
+      } else if (result.url.includes('google.com') && !extracted.website) {
+        extracted.website = 'https://about.google';
+      }
+      
+      // Extract employee count
+      const employeeMatch = content.match(/(\d{1,3}(,\d{3})*(\s*(million|thousand|k))?\s*employees)/);
+      if (employeeMatch && !extracted.employeeCount) {
+        extracted.employeeCount = employeeMatch[1];
+      }
+      
+      // Extract revenue
+      const revenueMatch = content.match(/\$(\d{1,3}(,\d{3})*(\s*(billion|million|trillion)))/);
+      if (revenueMatch && !extracted.revenue) {
+        extracted.revenue = `$${revenueMatch[1]}`;
+      }
+      
+      // Extract founding year
+      const yearMatch = content.match(/founded.*(\d{4})/);
+      if (yearMatch && !extracted.foundedYear) {
+        extracted.foundedYear = parseInt(yearMatch[1]);
+      }
+      
+      // Extract description (use first substantial content)
+      if (!extracted.description && result.content.length > 100) {
+        extracted.description = result.content.substring(0, 200) + '...';
+      }
+    }
+    
+    // Mark fields that couldn't be verified
+    if (!extracted.industry) extracted.unverifiedFields.push('industry');
+    if (!extracted.location) extracted.unverifiedFields.push('location');
+    if (!extracted.employeeCount) extracted.unverifiedFields.push('employeeCount');
+    if (!extracted.revenue) extracted.unverifiedFields.push('revenue');
+    if (!extracted.foundedYear) extracted.unverifiedFields.push('foundedYear');
+    
+    return extracted;
+  }
+  
   // Enhanced company research with real web search data
   private async handleCompanyResearchWithSearch(input: AgentInput): Promise<AgentOutput> {
     try {
@@ -595,6 +802,12 @@ Analyze the search results and provide accurate, factual information only.`;
         // Check if Google AI API key is available
         const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
         if (!googleApiKey) {
+          console.warn('GOOGLE_GENERATIVE_AI_API_KEY not found. Using mock AI processing for development.');
+          
+          if (process.env.NODE_ENV === 'development') {
+            return this.processCompanyResearchWithMockAI(companyName, searchResults, industry, location);
+          }
+          
           throw new Error('Google AI API key not configured');
         }
         
