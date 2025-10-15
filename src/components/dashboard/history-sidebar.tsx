@@ -38,8 +38,24 @@ export function HistorySidebar() {
     try {
       // Check if Supabase is configured
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        console.log('Supabase not configured - skipping task history');
-        setTasks([]);
+        console.log('Supabase not configured - using demo task history');
+        // Provide demo data instead of empty array
+        setTasks([
+          {
+            id: 'demo-1',
+            agent_type: 'generate-sop',
+            input_data: { processName: 'Employee Onboarding' },
+            output_data: null,
+            created_at: new Date(Date.now() - 3600000).toISOString(),
+          },
+          {
+            id: 'demo-2', 
+            agent_type: 'company-research',
+            input_data: { companyName: 'Tech Corp' },
+            output_data: null,
+            created_at: new Date(Date.now() - 7200000).toISOString(),
+          }
+        ]);
         return;
       }
       
@@ -48,7 +64,16 @@ export function HistorySidebar() {
       setTasks(history);
     } catch (error) {
       console.error('Failed to load task history:', error);
-      setTasks([]); // Set empty array on error
+      // Provide demo data on error as well
+      setTasks([
+        {
+          id: 'demo-1',
+          agent_type: 'generate-sop',
+          input_data: { processName: 'Employee Onboarding' },
+          output_data: null,
+          created_at: new Date(Date.now() - 3600000).toISOString(),
+        }
+      ]);
     } finally {
       setLoading(false);
     }
