@@ -53,6 +53,7 @@ export function SopGenerationForm() {
       return result.data as SopGenerationOutput;
     },
     onSuccess: (data) => {
+<<<<<<< HEAD
       // Validate the response data
       if (!data || typeof data !== 'object') {
         throw new Error('Invalid response received from server');
@@ -80,6 +81,10 @@ export function SopGenerationForm() {
       console.error('SOP Generation error:', error);
       // Error is already handled by the UI below
     },
+=======
+      setResult(data);
+    },
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
   });
 
   const onSubmit = (data: SopGenerationInput) => {
@@ -283,7 +288,11 @@ export function SopGenerationForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Responsibilities</h4>
               <ul className="list-disc list-inside space-y-1">
+<<<<<<< HEAD
                 {(result.responsibilities || []).map((responsibility, index) => (
+=======
+                {result.responsibilities.map((responsibility, index) => (
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                   <li key={index} className="text-sm text-gray-600">{responsibility}</li>
                 ))}
               </ul>
@@ -292,7 +301,11 @@ export function SopGenerationForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3">Procedure</h4>
               <div className="space-y-4">
+<<<<<<< HEAD
                 {(result.procedure || []).map((step) => (
+=======
+                {result.procedure.map((step) => (
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                   <div key={step.step} className="border-l-2 border-blue-200 pl-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">

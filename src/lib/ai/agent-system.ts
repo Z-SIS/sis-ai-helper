@@ -726,6 +726,7 @@ class OptimizedAgentSystem {
     switch (agentType) {
       case 'company-research':
         const companyInput = input as any;
+<<<<<<< HEAD
         const currentDate = new Date().toISOString().split('T')[0];
         return {
           companyName: companyInput.companyName || 'Company Name',
@@ -926,6 +927,31 @@ class OptimizedAgentSystem {
           },
           lastUpdated: currentDate,
           confidenceScore: 85,
+=======
+        return {
+          companyName: companyInput.companyName || 'Company Name',
+          industry: companyInput.industry || 'Technology',
+          location: companyInput.location || 'Global',
+          description: `${companyInput.companyName || 'Company'} is a leading company in the ${companyInput.industry || 'technology'} sector. This is a demo response while AI services are initializing.`,
+          website: `https://www.${(companyInput.companyName || 'company').toLowerCase().replace(/\s+/g, '')}.com`,
+          foundedYear: 2010,
+          employeeCount: '1,000-5,000',
+          revenue: '$100M-$500M',
+          keyExecutives: [
+            { name: 'CEO Name', title: 'Chief Executive Officer' },
+            { name: 'CTO Name', title: 'Chief Technology Officer' },
+            { name: 'CFO Name', title: 'Chief Financial Officer' }
+          ],
+          competitors: ['Competitor A', 'Competitor B', 'Competitor C'],
+          recentNews: [
+            { 
+              title: 'Recent Development', 
+              summary: 'Company announces new initiative in expansion strategy', 
+              date: new Date().toISOString().split('T')[0] 
+            }
+          ],
+          lastUpdated: new Date().toISOString().split('T')[0],
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
           ...baseResponse,
         } as AgentOutput;
         
@@ -934,6 +960,7 @@ class OptimizedAgentSystem {
         return {
           title: `Standard Operating Procedure: ${sopInput.processName || 'Business Process'}`,
           version: '1.0',
+<<<<<<< HEAD
           date: new Date().toISOString().split('T')[0],
           purpose: sopInput.purpose || 'To standardize the business process and ensure consistent execution',
           scope: sopInput.scope || 'All departments and personnel involved in the process',
@@ -948,21 +975,67 @@ class OptimizedAgentSystem {
               action: 'Process Initiation',
               details: 'Review process documentation and ensure all resources are available',
               owner: 'Process Owner'
+=======
+          purpose: sopInput.purpose || 'To standardize the business process and ensure consistent execution',
+          scope: sopInput.scope || 'All departments and personnel involved in the process',
+          responsibilities: [
+            {
+              role: 'Process Owner',
+              responsibilities: [
+                'Maintain and update SOP documentation',
+                'Ensure compliance with established procedures',
+                'Train personnel on process requirements'
+              ]
+            },
+            {
+              role: 'Process Executor',
+              responsibilities: [
+                'Follow documented procedures precisely',
+                'Report deviations or issues',
+                'Suggest improvements to the process'
+              ]
+            }
+          ],
+          procedures: [
+            {
+              step: 1,
+              action: 'Process Initiation',
+              owner: 'Process Owner',
+              estimatedTime: '5 minutes',
+              prerequisites: ['Process documentation reviewed', 'Resources available']
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
             },
             {
               step: 2,
               action: 'Execution',
+<<<<<<< HEAD
               details: 'Execute the process according to documented procedures',
               owner: 'Process Executor'
+=======
+              owner: 'Process Executor',
+              estimatedTime: 'Variable',
+              prerequisites: ['Step 1 completed', 'All requirements met']
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
             },
             {
               step: 3,
               action: 'Review & Documentation',
+<<<<<<< HEAD
               details: 'Review results and document any deviations or improvements',
               owner: 'Process Owner'
             }
           ],
           references: ['Company Policy Manual', 'Industry Best Practices'],
+=======
+              owner: 'Process Owner',
+              estimatedTime: '10 minutes',
+              prerequisites: ['Step 2 completed', 'Results documented']
+            }
+          ],
+          references: ['Company Policy Manual', 'Industry Best Practices'],
+          complianceNotes: ['Ensure all regulatory requirements are met', 'Document any deviations'],
+          implementationConfidence: 0.8,
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
           ...baseResponse,
         } as AgentOutput;
         

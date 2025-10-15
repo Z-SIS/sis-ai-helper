@@ -275,7 +275,11 @@ export function DeploymentPlanForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Prerequisites</h4>
               <ul className="list-disc list-inside space-y-1">
+<<<<<<< HEAD
                 {(result.prerequisites || []).map((prereq, index) => (
+=======
+                {result.prerequisites.map((prereq, index) => (
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                   <li key={index} className="text-sm text-gray-600">{prereq}</li>
                 ))}
               </ul>
@@ -284,7 +288,11 @@ export function DeploymentPlanForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3">Deployment Phases</h4>
               <div className="space-y-4">
+<<<<<<< HEAD
                 {(result.phases || []).map((phase) => (
+=======
+                {result.phases.map((phase) => (
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                   <Card key={phase.phase} className="border-l-4 border-l-blue-500">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
@@ -300,17 +308,29 @@ export function DeploymentPlanForm() {
                       <div>
                         <h5 className="font-medium text-xs text-gray-700 mb-1">Tasks</h5>
                         <ul className="list-disc list-inside space-y-1">
+<<<<<<< HEAD
                           {(phase.tasks || []).map((task, index) => (
+=======
+                          {phase.tasks.map((task, index) => (
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                             <li key={index} className="text-xs text-gray-600">{task}</li>
                           ))}
                         </ul>
                       </div>
 
+<<<<<<< HEAD
                       {phase.dependencies && phase.dependencies.length > 0 && (
                         <div>
                           <h5 className="font-medium text-xs text-gray-700 mb-1">Dependencies</h5>
                           <div className="flex flex-wrap gap-1">
                             {(phase.dependencies || []).map((dep, index) => (
+=======
+                      {phase.dependencies.length > 0 && (
+                        <div>
+                          <h5 className="font-medium text-xs text-gray-700 mb-1">Dependencies</h5>
+                          <div className="flex flex-wrap gap-1">
+                            {phase.dependencies.map((dep, index) => (
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                               <Badge key={index} variant="secondary" className="text-xs">
                                 {dep}
                               </Badge>
@@ -332,7 +352,11 @@ export function DeploymentPlanForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Success Criteria</h4>
               <ul className="list-disc list-inside space-y-1">
+<<<<<<< HEAD
                 {(result.successCriteria || []).map((criteria, index) => (
+=======
+                {result.successCriteria.map((criteria, index) => (
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                   <li key={index} className="text-sm text-gray-600">{criteria}</li>
                 ))}
               </ul>
@@ -341,7 +365,11 @@ export function DeploymentPlanForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Monitoring</h4>
               <ul className="list-disc list-inside space-y-1">
+<<<<<<< HEAD
                 {(result.monitoring || []).map((item, index) => (
+=======
+                {result.monitoring.map((item, index) => (
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                   <li key={index} className="text-sm text-gray-600">{item}</li>
                 ))}
               </ul>

@@ -26,6 +26,7 @@ export const CompanyResearchInputSchema = z.object({
   companyName: commonValidations.requiredString('Company name is required'),
   industry: commonValidations.optionalString(),
   location: commonValidations.optionalString(),
+<<<<<<< HEAD
   researchFocus: commonValidations.optionalString(), // Sales focus area
   competitorAnalysis: z.boolean().optional().default(false), // Include competitor analysis
 });
@@ -149,6 +150,34 @@ export const CompanyResearchOutputSchema = z.object({
   
   lastUpdated: commonValidations.dateSchema,
   confidenceScore: z.number().min(0).max(100),
+=======
+});
+
+export const CompanyResearchOutputSchema = z.object({
+  companyName: z.string(),
+  industry: z.string(),
+  location: z.string(),
+  description: z.string(),
+  website: z.string().url(),
+  foundedYear: commonValidations.optionalPositiveNumber(),
+  employeeCount: commonValidations.optionalString(),
+  revenue: commonValidations.optionalString(),
+  keyExecutives: commonValidations.optionalArray(
+    z.object({
+      name: z.string(),
+      title: z.string(),
+    })
+  ),
+  competitors: commonValidations.optionalArray(z.string()),
+  recentNews: commonValidations.optionalArray(
+    z.object({
+      title: z.string(),
+      summary: z.string(),
+      date: commonValidations.dateSchema,
+    })
+  ),
+  lastUpdated: commonValidations.dateSchema,
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
 });
 
 // SOP Generation Agent

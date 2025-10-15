@@ -45,6 +45,7 @@ export default function DashboardPage() {
                 <SelectedForm />
               ) : (
                 <div className="text-center py-12">
+<<<<<<< HEAD
                   <div className="max-w-4xl mx-auto">
                     <h2 className="text-3xl font-bold text-foreground mb-4">
                       SIS Sales Intelligence Dashboard
@@ -117,6 +118,32 @@ export default function DashboardPage() {
                           <div className="text-2xl font-bold text-primary">92%</div>
                           <div className="text-sm text-muted-foreground">Accuracy in insights</div>
                         </div>
+=======
+                  <div className="max-w-md mx-auto">
+                    <h2 className="text-2xl font-bold text-foreground mb-4">
+                      Welcome to SIS AI Helper
+                    </h2>
+                    <p className="text-muted-foreground mb-8">
+                      Select an AI agent from the sidebar to get started with automating your security services tasks.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                      <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="font-semibold text-foreground mb-2">Company Research</h3>
+                        <p className="text-sm text-muted-foreground">Gather comprehensive information about companies and competitors.</p>
+                      </div>
+                      <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="font-semibold text-foreground mb-2">SOP Generation</h3>
+                        <p className="text-sm text-muted-foreground">Create detailed Standard Operating Procedures for your team.</p>
+                      </div>
+                      <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="font-semibold text-foreground mb-2">Email Composition</h3>
+                        <p className="text-sm text-muted-foreground">Draft professional emails for various business purposes.</p>
+                      </div>
+                      <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="font-semibold text-foreground mb-2">Excel Helper</h3>
+                        <p className="text-sm text-muted-foreground">Get Excel formulas, tips, and solutions for your data needs.</p>
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                       </div>
                     </div>
                   </div>

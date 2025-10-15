@@ -5,16 +5,24 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
+<<<<<<< HEAD
 import { Building2, Search, Loader2, Target, Users } from 'lucide-react';
+=======
+import { Building2, Search, Loader2 } from 'lucide-react';
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+<<<<<<< HEAD
 import { Checkbox } from '@/components/ui/checkbox';
 import { CompanyResearchInput, CompanyResearchOutput, CompanyResearchInputSchema } from '@/shared/schemas';
 import { SalesIntelligenceReport } from '@/components/dashboard/reports/SalesIntelligenceReport';
+=======
+import { CompanyResearchInput, CompanyResearchOutput, CompanyResearchInputSchema } from '@/shared/schemas';
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
 
 const formSchema = CompanyResearchInputSchema;
 
@@ -27,8 +35,11 @@ export function CompanyResearchForm() {
       companyName: '',
       industry: '',
       location: '',
+<<<<<<< HEAD
       researchFocus: '',
       competitorAnalysis: false,
+=======
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
     },
   });
 
@@ -61,6 +72,7 @@ export function CompanyResearchForm() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+<<<<<<< HEAD
       <Card className="border-2 border-primary/20">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
           <CardTitle className="flex items-center gap-2 text-xl">
@@ -69,6 +81,16 @@ export function CompanyResearchForm() {
           </CardTitle>
           <CardDescription className="text-base">
             Generate comprehensive company research with sales-focused insights including decision makers, pain points, competitive landscape, and sales opportunities.
+=======
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Building2 className="w-5 h-5" />
+            Company Research
+          </CardTitle>
+          <CardDescription>
+            Research companies and gather comprehensive information including industry, location, executives, and recent news.
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -122,6 +144,7 @@ export function CompanyResearchForm() {
                 )}
               />
 
+<<<<<<< HEAD
               <FormField
                 control={form.control}
                 name="researchFocus"
@@ -178,6 +201,22 @@ export function CompanyResearchForm() {
                   <>
                     <Target className="w-5 h-5 mr-2" />
                     Generate Sales Intelligence Report
+=======
+              <Button 
+                type="submit" 
+                disabled={mutation.isPending}
+                className="w-full"
+              >
+                {mutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Researching Company...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 mr-2" />
+                    Research Company
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                   </>
                 )}
               </Button>
@@ -221,7 +260,108 @@ export function CompanyResearchForm() {
       </Card>
 
       {result && (
+<<<<<<< HEAD
         <SalesIntelligenceReport data={result} />
+=======
+        <Card>
+          <CardHeader>
+            <CardTitle>Research Results</CardTitle>
+            <CardDescription>
+              Last updated: {new Date(result.lastUpdated).toLocaleDateString()}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="font-semibold text-sm text-foreground">Company Name</h4>
+                <p className="text-sm">{result.companyName}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm text-foreground">Industry</h4>
+                <p className="text-sm">{result.industry}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm text-foreground">Location</h4>
+                <p className="text-sm">{result.location}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm text-foreground">Website</h4>
+                <a 
+                  href={result.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  {result.website}
+                </a>
+              </div>
+              {result.foundedYear && (
+                <div>
+                  <h4 className="font-semibold text-sm text-foreground">Founded</h4>
+                  <p className="text-sm">{result.foundedYear}</p>
+                </div>
+              )}
+              {result.employeeCount && (
+                <div>
+                  <h4 className="font-semibold text-sm text-foreground">Employees</h4>
+                  <p className="text-sm">{result.employeeCount}</p>
+                </div>
+              )}
+            </div>
+
+            {result.description && (
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Description</h4>
+                <p className="text-sm text-muted-foreground">{result.description}</p>
+              </div>
+            )}
+
+            {result.keyExecutives && result.keyExecutives.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Key Executives</h4>
+                <div className="space-y-1">
+                  {result.keyExecutives.map((executive, index) => (
+                    <div key={index} className="text-sm">
+                      <span className="font-medium">{executive.name}</span> - {executive.title}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {result.competitors && result.competitors.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Competitors</h4>
+                <div className="flex flex-wrap gap-2">
+                  {result.competitors.map((competitor, index) => (
+                    <span 
+                      key={index}
+                      className="px-2 py-1 bg-secondary text-sm rounded-md"
+                    >
+                      {competitor}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {result.recentNews && result.recentNews.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Recent News</h4>
+                <div className="space-y-3">
+                  {result.recentNews.map((news, index) => (
+                    <div key={index} className="border-l-2 border-border pl-3">
+                      <h5 className="font-medium text-sm">{news.title}</h5>
+                      <p className="text-xs text-muted-foreground mt-1">{news.summary}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">{news.date}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+>>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
       )}
     </div>
   );
