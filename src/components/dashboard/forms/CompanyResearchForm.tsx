@@ -44,7 +44,7 @@ export function CompanyResearchForm() {
       }
 
       const result = await response.json();
-      return result.data as CompanyResearchOutput;
+      return result.data.data as CompanyResearchOutput;
     },
     onSuccess: (data) => {
       setResult(data);
