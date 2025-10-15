@@ -26,131 +26,6 @@ export const CompanyResearchInputSchema = z.object({
   companyName: commonValidations.requiredString('Company name is required'),
   industry: commonValidations.optionalString(),
   location: commonValidations.optionalString(),
-<<<<<<< HEAD
-  researchFocus: commonValidations.optionalString(), // Sales focus area
-  competitorAnalysis: z.boolean().optional().default(false), // Include competitor analysis
-});
-
-export const CompanyResearchOutputSchema = z.object({
-  // Executive Summary
-  companyName: z.string(),
-  companyOverview: z.object({
-    description: z.string(),
-    missionStatement: z.string().optional(),
-    visionStatement: z.string().optional(),
-    foundedYear: commonValidations.optionalPositiveNumber(),
-    headquarters: z.string(),
-    website: z.string().url(),
-  }),
-  
-  // Business Intelligence
-  businessModel: z.object({
-    primaryBusiness: z.string(),
-    revenueStreams: commonValidations.requiredArray(z.string(), 'At least one revenue stream is required'),
-    targetMarkets: commonValidations.requiredArray(z.string(), 'At least one target market is required'),
-    customerSegments: commonValidations.optionalArray(z.string()),
-  }),
-  
-  // Financial Health
-  financials: z.object({
-    revenue: commonValidations.optionalString(),
-    fundingStage: z.string().optional(),
-    estimatedValuation: commonValidations.optionalString(),
-    growthRate: z.string().optional(),
-    profitability: z.string().optional(),
-  }),
-  
-  // Market Position
-  marketPosition: z.object({
-    marketShare: z.string().optional(),
-    industryRanking: z.string().optional(),
-    competitiveAdvantages: commonValidations.requiredArray(z.string(), 'At least one competitive advantage is required'),
-    uniqueValueProposition: z.string(),
-  }),
-  
-  // Sales Intelligence
-  salesIntelligence: z.object({
-    salesCycle: z.string().optional(),
-    averageDealSize: z.string().optional(),
-    decisionMakers: commonValidations.requiredArray(z.object({
-      title: z.string(),
-      department: z.string(),
-      influence: z.enum(['high', 'medium', 'low']),
-    }), 'At least one decision maker is required'),
-    painPoints: commonValidations.requiredArray(z.string(), 'At least one pain point is required'),
-    recentInitiatives: commonValidations.optionalArray(z.string()),
-    budgetSeason: z.string().optional(),
-  }),
-  
-  // Technology Stack
-  technology: z.object({
-    techStack: commonValidations.optionalArray(z.string()),
-    keyPartnerships: commonValidations.optionalArray(z.string()),
-    digitalPresence: z.object({
-      websiteTraffic: z.string().optional(),
-      socialMediaPresence: z.string().optional(),
-      onlineReviews: z.string().optional(),
-    }),
-  }),
-  
-  // Organizational Structure
-  organization: z.object({
-    employeeCount: commonValidations.optionalString(),
-    keyExecutives: commonValidations.optionalArray(
-      z.object({
-        name: z.string(),
-        title: z.string(),
-        department: z.string().optional(),
-        linkedInProfile: z.string().url().optional(),
-      })
-    ),
-    departments: commonValidations.optionalArray(z.string()),
-    companyCulture: z.string().optional(),
-  }),
-  
-  // Competitive Landscape
-  competitiveLandscape: z.object({
-    mainCompetitors: commonValidations.optionalArray(z.string()),
-    marketPosition: z.string().optional(),
-    competitiveThreats: commonValidations.optionalArray(z.string()),
-    opportunities: commonValidations.optionalArray(z.string()),
-  }),
-  
-  // Sales Opportunities
-  salesOpportunities: z.object({
-    entryPoints: commonValidations.requiredArray(z.string(), 'At least one entry point is required'),
-    potentialValue: z.string(),
-    timing: z.string(),
-    riskFactors: commonValidations.optionalArray(z.string()),
-    recommendedApproach: z.string(),
-  }),
-  
-  // Recent Activity
-  recentActivity: z.object({
-    recentNews: commonValidations.optionalArray(
-      z.object({
-        title: z.string(),
-        summary: z.string(),
-        date: commonValidations.dateSchema,
-        source: z.string().optional(),
-      })
-    ),
-    recentHiring: commonValidations.optionalArray(z.string()),
-    recentFunding: commonValidations.optionalArray(z.string()),
-    recentPartnerships: commonValidations.optionalArray(z.string()),
-  }),
-  
-  // Sales Recommendations
-  salesRecommendations: z.object({
-    keyTalkingPoints: commonValidations.requiredArray(z.string(), 'At least one talking point is required'),
-    objectionHandlers: commonValidations.optionalArray(z.string()),
-    nextSteps: commonValidations.requiredArray(z.string(), 'At least one next step is required'),
-    successMetrics: commonValidations.optionalArray(z.string()),
-  }),
-  
-  lastUpdated: commonValidations.dateSchema,
-  confidenceScore: z.number().min(0).max(100),
-=======
 });
 
 export const CompanyResearchOutputSchema = z.object({
@@ -177,7 +52,6 @@ export const CompanyResearchOutputSchema = z.object({
     })
   ),
   lastUpdated: commonValidations.dateSchema,
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
 });
 
 // SOP Generation Agent

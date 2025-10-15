@@ -5,24 +5,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
-<<<<<<< HEAD
-import { Building2, Search, Loader2, Target, Users } from 'lucide-react';
-=======
 import { Building2, Search, Loader2 } from 'lucide-react';
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-<<<<<<< HEAD
-import { Checkbox } from '@/components/ui/checkbox';
 import { CompanyResearchInput, CompanyResearchOutput, CompanyResearchInputSchema } from '@/shared/schemas';
-import { SalesIntelligenceReport } from '@/components/dashboard/reports/SalesIntelligenceReport';
-=======
-import { CompanyResearchInput, CompanyResearchOutput, CompanyResearchInputSchema } from '@/shared/schemas';
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
 
 const formSchema = CompanyResearchInputSchema;
 
@@ -35,11 +25,6 @@ export function CompanyResearchForm() {
       companyName: '',
       industry: '',
       location: '',
-<<<<<<< HEAD
-      researchFocus: '',
-      competitorAnalysis: false,
-=======
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
     },
   });
 
@@ -72,16 +57,6 @@ export function CompanyResearchForm() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-<<<<<<< HEAD
-      <Card className="border-2 border-primary/20">
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Building2 className="w-6 h-6 text-primary" />
-            Sales Intelligence Research
-          </CardTitle>
-          <CardDescription className="text-base">
-            Generate comprehensive company research with sales-focused insights including decision makers, pain points, competitive landscape, and sales opportunities.
-=======
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -90,7 +65,6 @@ export function CompanyResearchForm() {
           </CardTitle>
           <CardDescription>
             Research companies and gather comprehensive information including industry, location, executives, and recent news.
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -144,64 +118,6 @@ export function CompanyResearchForm() {
                 )}
               />
 
-<<<<<<< HEAD
-              <FormField
-                control={form.control}
-                name="researchFocus"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sales Research Focus (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="e.g., Focus on decision makers in IT department, competitive positioning against specific vendors, recent technology investments..."
-                        rows={3}
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="competitorAnalysis"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Include Competitor Analysis
-                      </FormLabel>
-                      <p className="text-sm text-muted-foreground">
-                        Add detailed competitive landscape and positioning insights
-                      </p>
-                    </div>
-                  </FormItem>
-                )}
-              />
-
-              <Button 
-                type="submit" 
-                disabled={mutation.isPending}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3"
-                size="lg"
-              >
-                {mutation.isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Generating Sales Intelligence...
-                  </>
-                ) : (
-                  <>
-                    <Target className="w-5 h-5 mr-2" />
-                    Generate Sales Intelligence Report
-=======
               <Button 
                 type="submit" 
                 disabled={mutation.isPending}
@@ -216,7 +132,6 @@ export function CompanyResearchForm() {
                   <>
                     <Search className="w-4 h-4 mr-2" />
                     Research Company
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
                   </>
                 )}
               </Button>
@@ -260,9 +175,6 @@ export function CompanyResearchForm() {
       </Card>
 
       {result && (
-<<<<<<< HEAD
-        <SalesIntelligenceReport data={result} />
-=======
         <Card>
           <CardHeader>
             <CardTitle>Research Results</CardTitle>
@@ -361,7 +273,6 @@ export function CompanyResearchForm() {
             )}
           </CardContent>
         </Card>
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
       )}
     </div>
   );

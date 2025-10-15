@@ -726,208 +726,6 @@ class OptimizedAgentSystem {
     switch (agentType) {
       case 'company-research':
         const companyInput = input as any;
-<<<<<<< HEAD
-        const currentDate = new Date().toISOString().split('T')[0];
-        return {
-          companyName: companyInput.companyName || 'Company Name',
-          companyOverview: {
-            description: `${companyInput.companyName || 'Company'} is a leading company in the ${companyInput.industry || 'technology'} sector. This is a demo response while AI services are initializing.`,
-            missionStatement: `To empower businesses through innovative ${companyInput.industry || 'technology'} solutions and exceptional customer service.`,
-            visionStatement: `To become the global leader in ${companyInput.industry || 'technology'} innovation and customer satisfaction.`,
-            foundedYear: 2010,
-            headquarters: companyInput.location || 'San Francisco, CA',
-            website: `https://www.${(companyInput.companyName || 'company').toLowerCase().replace(/\s+/g, '')}.com`,
-          },
-          businessModel: {
-            primaryBusiness: `${companyInput.industry || 'Technology'} solutions and services`,
-            revenueStreams: [
-              'Software licensing and subscriptions',
-              'Professional services and consulting',
-              'Support and maintenance contracts',
-              'Training and certification programs'
-            ],
-            targetMarkets: [
-              'Enterprise businesses',
-              'Mid-market companies',
-              'Government agencies',
-              'Educational institutions'
-            ],
-            customerSegments: [
-              'IT departments',
-              'Business leaders',
-              'Development teams',
-              'End users'
-            ]
-          },
-          financials: {
-            revenue: '$100M-$500M annually',
-            fundingStage: 'Series C - Growth Stage',
-            estimatedValuation: '$1B-$2B',
-            growthRate: '25-30% year-over-year',
-            profitability: 'Profitable with strong margins'
-          },
-          marketPosition: {
-            marketShare: '5-7% in target segments',
-            industryRanking: 'Top 10 in ${companyInput.industry || "technology"} sector',
-            competitiveAdvantages: [
-              'Proprietary technology platform',
-              'Strong customer relationships',
-              'Experienced leadership team',
-              'Comprehensive product portfolio'
-            ],
-            uniqueValueProposition: 'Delivering innovative solutions with exceptional ROI and customer success'
-          },
-          salesIntelligence: {
-            salesCycle: '3-6 months for enterprise deals',
-            averageDealSize: '$50K-$250K',
-            decisionMakers: [
-              { title: 'Chief Technology Officer', department: 'Technology', influence: 'high' },
-              { title: 'VP of Engineering', department: 'Engineering', influence: 'high' },
-              { title: 'Chief Information Officer', department: 'IT', influence: 'medium' },
-              { title: 'Director of Operations', department: 'Operations', influence: 'medium' },
-              { title: 'Procurement Manager', department: 'Finance', influence: 'low' }
-            ],
-            painPoints: [
-              'Legacy system integration challenges',
-              'Budget constraints for new technology',
-              'Concerns about data security and compliance',
-              'Need for better ROI measurement',
-              'Limited internal technical resources'
-            ],
-            recentInitiatives: [
-              'Digital transformation program',
-              'Cloud migration strategy',
-              'Cost optimization initiatives',
-              'Security compliance upgrades'
-            ],
-            budgetSeason: 'Q4 planning for next fiscal year'
-          },
-          technology: {
-            techStack: [
-              'Cloud platforms (AWS, Azure, GCP)',
-              'Modern programming languages',
-              'Container orchestration',
-              'AI/ML capabilities'
-            ],
-            keyPartnerships: [
-              'Major cloud providers',
-              'Technology integrators',
-              'Consulting firms',
-              'Industry associations'
-            ],
-            digitalPresence: {
-              websiteTraffic: 'High traffic with good engagement',
-              socialMediaPresence: 'Active on LinkedIn and Twitter',
-              onlineReviews: '4.5/5 stars on major review platforms'
-            }
-          },
-          organization: {
-            employeeCount: '1,000-5,000',
-            keyExecutives: [
-              { name: 'John Smith', title: 'Chief Executive Officer', department: 'Executive', linkedInProfile: 'https://linkedin.com/in/johnsmith' },
-              { name: 'Sarah Johnson', title: 'Chief Technology Officer', department: 'Technology', linkedInProfile: 'https://linkedin.com/in/sarahjohnson' },
-              { name: 'Michael Chen', title: 'Chief Financial Officer', department: 'Finance', linkedInProfile: 'https://linkedin.com/in/michaelchen' },
-              { name: 'Emily Davis', title: 'Chief Revenue Officer', department: 'Sales', linkedInProfile: 'https://linkedin.com/in/emilydavis' }
-            ],
-            departments: [
-              'Engineering',
-              'Sales & Marketing',
-              'Customer Success',
-              'Finance',
-              'Operations',
-              'HR'
-            ],
-            companyCulture: 'Innovation-driven with focus on customer success and employee growth'
-          },
-          competitiveLandscape: {
-            mainCompetitors: ['Competitor A', 'Competitor B', 'Competitor C'],
-            marketPosition: 'Strong position in mid-market segment',
-            competitiveThreats: [
-              'New market entrants with lower pricing',
-              'Rapid technology changes',
-              'Economic uncertainties affecting budgets'
-            ],
-            opportunities: [
-              'Growing demand for digital transformation',
-              'Expansion into new geographic markets',
-              'Strategic acquisitions and partnerships'
-            ]
-          },
-          salesOpportunities: {
-            entryPoints: [
-              'Technology upgrade initiatives',
-              'Competitive replacement opportunities',
-              'New project requirements',
-              'Compliance and security needs'
-            ],
-            potentialValue: '$500K-$2M per account annually',
-            timing: 'Immediate opportunities in Q1-Q2 2024',
-            riskFactors: [
-              'Long sales cycles',
-              'Competitive pressure',
-              'Budget approval processes'
-            ],
-            recommendedApproach: 'Focus on value proposition and ROI, leverage case studies, engage technical decision makers early'
-          },
-          recentActivity: {
-            recentNews: [
-              { 
-                title: 'Company announces new product launch', 
-                summary: 'Latest innovation in AI-powered solutions designed to transform enterprise operations', 
-                date: currentDate,
-                source: 'Tech News'
-              },
-              { 
-                title: 'Strategic partnership with major cloud provider', 
-                summary: 'Collaboration to enhance service delivery and expand market reach', 
-                date: currentDate,
-                source: 'Business Wire'
-              }
-            ],
-            recentHiring: [
-              'Senior Vice President of Sales',
-              'Director of Product Management',
-              'Lead Cloud Architect'
-            ],
-            recentFunding: [
-              'Series C funding round of $100M completed'
-            ],
-            recentPartnerships: [
-              'Global technology integration partnership',
-              'Strategic alliance with consulting firm'
-            ]
-          },
-          salesRecommendations: {
-            keyTalkingPoints: [
-              'Proven ROI of 200%+ within first year',
-              'Industry-leading customer satisfaction rate',
-              'Comprehensive support and training programs',
-              'Flexible deployment options',
-              'Strong security and compliance credentials'
-            ],
-            objectionHandlers: [
-              'Price concerns: Emphasize total cost of ownership and ROI',
-              'Implementation complexity: Highlight dedicated support team',
-              'Feature gaps: Showcase roadmap and customization options',
-              'Vendor risk: Share customer success stories and references'
-            ],
-            nextSteps: [
-              'Schedule technical discovery call',
-              'Provide customized demo based on specific needs',
-              'Share relevant case studies and references',
-              'Conduct ROI analysis workshop',
-              'Present proposal with implementation timeline'
-            ],
-            successMetrics: [
-              'Deal closure rate',
-              'Customer satisfaction scores',
-              'Implementation timeline adherence',
-              'ROI achievement'
-            ]
-          },
-          lastUpdated: currentDate,
-          confidenceScore: 85,
-=======
         return {
           companyName: companyInput.companyName || 'Company Name',
           industry: companyInput.industry || 'Technology',
@@ -951,7 +749,6 @@ class OptimizedAgentSystem {
             }
           ],
           lastUpdated: new Date().toISOString().split('T')[0],
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
           ...baseResponse,
         } as AgentOutput;
         
@@ -960,22 +757,6 @@ class OptimizedAgentSystem {
         return {
           title: `Standard Operating Procedure: ${sopInput.processName || 'Business Process'}`,
           version: '1.0',
-<<<<<<< HEAD
-          date: new Date().toISOString().split('T')[0],
-          purpose: sopInput.purpose || 'To standardize the business process and ensure consistent execution',
-          scope: sopInput.scope || 'All departments and personnel involved in the process',
-          responsibilities: [
-            'Process Owner: Maintain and update SOP documentation',
-            'Quality Team: Ensure compliance with established procedures',
-            'Staff Members: Follow documented procedures precisely'
-          ],
-          procedure: [
-            {
-              step: 1,
-              action: 'Process Initiation',
-              details: 'Review process documentation and ensure all resources are available',
-              owner: 'Process Owner'
-=======
           purpose: sopInput.purpose || 'To standardize the business process and ensure consistent execution',
           scope: sopInput.scope || 'All departments and personnel involved in the process',
           responsibilities: [
@@ -1003,30 +784,17 @@ class OptimizedAgentSystem {
               owner: 'Process Owner',
               estimatedTime: '5 minutes',
               prerequisites: ['Process documentation reviewed', 'Resources available']
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
             },
             {
               step: 2,
               action: 'Execution',
-<<<<<<< HEAD
-              details: 'Execute the process according to documented procedures',
-              owner: 'Process Executor'
-=======
               owner: 'Process Executor',
               estimatedTime: 'Variable',
               prerequisites: ['Step 1 completed', 'All requirements met']
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
             },
             {
               step: 3,
               action: 'Review & Documentation',
-<<<<<<< HEAD
-              details: 'Review results and document any deviations or improvements',
-              owner: 'Process Owner'
-            }
-          ],
-          references: ['Company Policy Manual', 'Industry Best Practices'],
-=======
               owner: 'Process Owner',
               estimatedTime: '10 minutes',
               prerequisites: ['Step 2 completed', 'Results documented']
@@ -1035,7 +803,6 @@ class OptimizedAgentSystem {
           references: ['Company Policy Manual', 'Industry Best Practices'],
           complianceNotes: ['Ensure all regulatory requirements are met', 'Document any deviations'],
           implementationConfidence: 0.8,
->>>>>>> 320175aecb664ade96ffb95e59012c5e62a1005d
           ...baseResponse,
         } as AgentOutput;
         
