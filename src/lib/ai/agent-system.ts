@@ -85,19 +85,36 @@ const TOKEN_CONFIG = {
 
 const PROMPT_TEMPLATES = {
   'company-research': {
-    system: `You are a business research analyst. Provide accurate, current company information.
+    system: `You are a business research analyst. Provide accurate, current company information in JSON format.
 
 CRITICAL RULES:
 - Do not invent facts. If you are not 100% sure about information, state "Information not available" or "Unable to verify".
 - Only include information that can be verified through reliable sources.
-- If data is missing or uncertain, explicitly state this rather than guessing.
 - Provide specific, factual information with confidence levels.
-- Use web search for current data and cite sources when possible.`,
+- Use web search for current data and cite sources when possible.
+- Return valid JSON only - no explanations outside the JSON structure.
+
+REQUIRED JSON FORMAT:
+{
+  "companyName": "string",
+  "industry": "string", 
+  "location": "string",
+  "description": "string",
+  "website": "string (valid URL)",
+  "foundedYear": number (optional),
+  "employeeCount": "string OR object with count field",
+  "revenue": "string OR object with amount field",
+  "keyExecutives": [{"name": "string", "title": "string"}] (optional),
+  "competitors": ["string"] (optional),
+  "recentNews": [{"title": "string", "summary": "string", "date": "YYYY-MM-DD"}] (optional),
+  "lastUpdated": "YYYY-MM-DD"
+}`,
     template: (input: AgentInput) => {
       const { companyName, industry, location } = input as any;
       return `Research "${companyName}"${industry ? ` in ${industry}` : ''}${location ? ` in ${location}` : ''}.
       
-Provide: description, industry, location, website, founded year, employees, revenue, key executives, competitors, recent news.
+Provide comprehensive company information in the required JSON format.
+Include: description, industry, location, website, founded year, employees, revenue, key executives, competitors, recent news.
 Be concise but comprehensive. Use web search for current data. Mark uncertain information as "unverified".`;
     },
     maxTokens: TOKEN_CONFIG.maxTokens.complex,
@@ -1220,12 +1237,51 @@ Please provide a JSON response following the schema requirements.`
       // Parse and validate JSON response
       let parsedResponse;
       try {
+        console.log('Raw AI response:', aiResponse);
+        
         // Try to extract JSON from the response
-        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-        const jsonString = jsonMatch ? jsonMatch[0] : aiResponse;
+        let jsonMatch = aiResponse.match(/```json\s*\n?(\{[\s\S]*?\})\s*```/);
+        let jsonString;
+        
+        if (jsonMatch && jsonMatch[1]) {
+          jsonString = jsonMatch[1];
+          console.log('Extracted JSON from code block');
+        } else {
+          // Try to find JSON without code blocks
+          jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+          jsonString = jsonMatch ? jsonMatch[0] : aiResponse;
+          console.log('Extracted JSON from plain text');
+        }
+        
+        // Clean up the JSON string
+        jsonString = jsonString
+          .replace(/```json\n?/g, '')
+          .replace(/```\n?/g, '')
+          .trim();
+        
+        console.log('Cleaned JSON string:', jsonString);
+        
+        // Try parsing again
         parsedResponse = JSON.parse(jsonString);
+        console.log('Successfully parsed JSON:', Object.keys(parsedResponse));
+        
+        // Ensure required fields have default values if missing
+        if (!parsedResponse.companyName && input.companyName) {
+          parsedResponse.companyName = input.companyName;
+        }
+        if (!parsedResponse.industry && input.industry) {
+          parsedResponse.industry = input.industry;
+        }
+        if (!parsedResponse.location && input.location) {
+          parsedResponse.location = input.location;
+        }
+        if (!parsedResponse.lastUpdated) {
+          parsedResponse.lastUpdated = new Date().toISOString().split('T')[0];
+        }
+        
       } catch (parseError) {
         console.error('JSON parsing failed:', parseError);
+        console.error('Raw response:', aiResponse);
         throw new Error(`Invalid JSON response from AI: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
       }
       

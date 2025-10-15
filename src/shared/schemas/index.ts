@@ -35,15 +35,37 @@ export const CompanyResearchOutputSchema = z.object({
   description: z.string(),
   website: z.string().url(),
   foundedYear: commonValidations.optionalPositiveNumber(),
-  employeeCount: commonValidations.optionalString(),
-  revenue: commonValidations.optionalString(),
+  employeeCount: z.union([
+    z.string(),
+    z.object({
+      count: z.union([z.number(), z.string()]),
+      source: z.string().optional(),
+      confidenceScore: z.number().optional(),
+    })
+  ]).optional(),
+  revenue: z.union([
+    z.string(),
+    z.object({
+      amount: z.union([z.number(), z.string()]),
+      currency: z.string().optional(),
+      year: z.number().optional(),
+    })
+  ]).optional(),
   keyExecutives: commonValidations.optionalArray(
     z.object({
       name: z.string(),
       title: z.string(),
     })
   ),
-  competitors: commonValidations.optionalArray(z.string()),
+  competitors: commonValidations.optionalArray(
+    z.union([
+      z.string(),
+      z.object({
+        name: z.string(),
+        description: z.string().optional(),
+      })
+    ])
+  ),
   recentNews: commonValidations.optionalArray(
     z.object({
       title: z.string(),
@@ -52,6 +74,8 @@ export const CompanyResearchOutputSchema = z.object({
     })
   ),
   lastUpdated: commonValidations.dateSchema,
+  dataConfidence: z.number().min(0).max(1).optional(),
+  unverifiedFields: z.array(z.string()).optional(),
 });
 
 // SOP Generation Agent
