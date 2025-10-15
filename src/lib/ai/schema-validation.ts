@@ -23,7 +23,8 @@ export const CompanyResearchSchema = z.object({
   website: z.string().optional(),
   foundedYear: z.number().optional(),
   employees: z.string().optional(),
-  revenue: z.string().optional(),
+  employeeCount: z.any().optional(), // Allow flexible employee count format
+  revenue: z.any().optional(), // Allow flexible revenue format (string or object)
   keyExecutives: z.array(z.object({
     name: z.string(),
     title: z.string(),
@@ -34,8 +35,12 @@ export const CompanyResearchSchema = z.object({
     date: z.string(),
     summary: z.string(),
   })).optional(),
-  dataConfidence: z.number().min(0).max(1),
-  unverifiedFields: z.array(z.string()),
+  dataConfidence: z.number().min(0).max(1).optional(), // Make optional
+  unverifiedFields: z.array(z.string()).optional(), // Make optional
+  confidenceScore: z.number().min(0).max(1).optional(), // Allow alternative field name
+  needsReview: z.boolean().optional(), // Allow alternative field name
+  lastUpdated: z.string().optional(), // Allow additional fields
+  timestamp: z.string().optional(), // Allow additional fields
 }).merge(BaseResponseSchema);
 
 // SOP Generation Response Schema

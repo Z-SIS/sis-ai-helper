@@ -107,7 +107,12 @@ REQUIRED JSON FORMAT:
   "keyExecutives": [{"name": "string", "title": "string"}] (optional),
   "competitors": ["string"] (optional),
   "recentNews": [{"title": "string", "summary": "string", "date": "YYYY-MM-DD"}] (optional),
-  "lastUpdated": "YYYY-MM-DD"
+  "dataConfidence": number (0-1, optional),
+  "unverifiedFields": ["string"] (optional),
+  "confidenceScore": number (0-1, optional),
+  "needsReview": boolean (optional),
+  "lastUpdated": "YYYY-MM-DD",
+  "timestamp": "YYYY-MM-DDTHH:MM:SSZ" (optional)
 }`,
     template: (input: AgentInput) => {
       const { companyName, industry, location } = input as any;
@@ -115,7 +120,8 @@ REQUIRED JSON FORMAT:
       
 Provide comprehensive company information in the required JSON format.
 Include: description, industry, location, website, founded year, employees, revenue, key executives, competitors, recent news.
-Be concise but comprehensive. Use web search for current data. Mark uncertain information as "unverified".`;
+Be concise but comprehensive. Use web search for current data. Mark uncertain information as "unverified".
+Include confidence score (0-1) and list any unverified fields. Use current date for lastUpdated field.`;
     },
     maxTokens: TOKEN_CONFIG.maxTokens.complex,
     temperature: TOKEN_CONFIG.temperature.factual,
