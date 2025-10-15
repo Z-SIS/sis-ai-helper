@@ -31,7 +31,7 @@ export default function DashboardPage() {
   const SelectedForm = selectedAgent ? agentForms[selectedAgent as keyof typeof agentForms] : null;
 
   return (
-    <div className="h-screen flex bg-gray-50">
+    <div className="h-screen flex bg-background">
       <AgentSidebar 
         selectedAgent={selectedAgent}
         onAgentSelect={setSelectedAgent}
@@ -46,29 +46,29 @@ export default function DashboardPage() {
               ) : (
                 <div className="text-center py-12">
                   <div className="max-w-md mx-auto">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    <h2 className="text-2xl font-bold text-foreground mb-4">
                       Welcome to SIS AI Helper
                     </h2>
-                    <p className="text-gray-600 mb-8">
+                    <p className="text-muted-foreground mb-8">
                       Select an AI agent from the sidebar to get started with automating your security services tasks.
                     </p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                      <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <h3 className="font-semibold text-gray-900 mb-2">Company Research</h3>
-                        <p className="text-sm text-gray-600">Gather comprehensive information about companies and competitors.</p>
+                      <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="font-semibold text-foreground mb-2">Company Research</h3>
+                        <p className="text-sm text-muted-foreground">Gather comprehensive information about companies and competitors.</p>
                       </div>
-                      <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <h3 className="font-semibold text-gray-900 mb-2">SOP Generation</h3>
-                        <p className="text-sm text-gray-600">Create detailed Standard Operating Procedures for your team.</p>
+                      <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="font-semibold text-foreground mb-2">SOP Generation</h3>
+                        <p className="text-sm text-muted-foreground">Create detailed Standard Operating Procedures for your team.</p>
                       </div>
-                      <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <h3 className="font-semibold text-gray-900 mb-2">Email Composition</h3>
-                        <p className="text-sm text-gray-600">Draft professional emails for various business purposes.</p>
+                      <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="font-semibold text-foreground mb-2">Email Composition</h3>
+                        <p className="text-sm text-muted-foreground">Draft professional emails for various business purposes.</p>
                       </div>
-                      <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <h3 className="font-semibold text-gray-900 mb-2">Excel Helper</h3>
-                        <p className="text-sm text-gray-600">Get Excel formulas, tips, and solutions for your data needs.</p>
+                      <div className="bg-card p-4 rounded-lg border border-border">
+                        <h3 className="font-semibold text-foreground mb-2">Excel Helper</h3>
+                        <p className="text-sm text-muted-foreground">Get Excel formulas, tips, and solutions for your data needs.</p>
                       </div>
                     </div>
                   </div>

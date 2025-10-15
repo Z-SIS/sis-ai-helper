@@ -96,14 +96,14 @@ export function HistorySidebar() {
 
   if (loading) {
     return (
-      <div className="w-80 bg-white border-l border-gray-200 h-full overflow-y-auto">
+      <div className="w-80 bg-card border-l border-border h-full overflow-y-auto">
         <div className="p-4">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Task History</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Task History</h2>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -113,18 +113,18 @@ export function HistorySidebar() {
   }
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 h-full overflow-y-auto">
+    <div className="w-80 bg-card border-l border-border h-full overflow-y-auto">
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Task History</h2>
-          <Clock className="w-4 h-4 text-gray-500" />
+          <h2 className="text-lg font-semibold text-foreground">Task History</h2>
+          <Clock className="w-4 h-4 text-muted-foreground" />
         </div>
         
         {tasks.length === 0 ? (
           <div className="text-center py-8">
-            <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">No tasks yet</p>
-            <p className="text-gray-400 text-xs mt-1">Start using an AI agent to see your history</p>
+            <FileText className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-muted-foreground text-sm">No tasks yet</p>
+            <p className="text-muted-foreground/70 text-xs mt-1">Start using an AI agent to see your history</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -133,18 +133,18 @@ export function HistorySidebar() {
               return (
                 <div
                   key={task.id}
-                  className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer"
                 >
                   <div className="flex items-start space-x-3">
-                    <Icon className="w-4 h-4 mt-0.5 text-gray-500 flex-shrink-0" />
+                    <Icon className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-foreground">
                         {getAgentName(task.agent_type)}
                       </div>
-                      <div className="text-xs text-gray-600 mt-1 truncate">
+                      <div className="text-xs text-muted-foreground mt-1 truncate">
                         {getInputSummary(task.input_data, task.agent_type)}
                       </div>
-                      <div className="text-xs text-gray-400 mt-2">
+                      <div className="text-xs text-muted-foreground/70 mt-2">
                         {formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}
                       </div>
                     </div>

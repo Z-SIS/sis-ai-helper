@@ -40,7 +40,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
       {/* Header */}
       <div className="flex flex-col items-center justify-center pt-16 pb-8 px-4">
         <div className="relative w-24 h-24 md:w-32 md:h-32 mb-8">
@@ -52,13 +52,13 @@ export default function Home() {
         </div>
         
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-            Welcome to <span className="text-blue-600">SIS AI Helper</span>
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
+            Welcome to <span className="text-primary">SIS AI Helper</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-8">
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8">
             AI-Powered Security Services Dashboard
           </p>
-          <p className="text-lg text-gray-500 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Automate your business tasks with 9 specialized AI agents designed for security services providers.
             From company research to deployment planning, we've got you covered.
           </p>
@@ -74,7 +74,7 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <p className="text-sm text-green-600 font-medium mt-4">
+            <p className="text-sm text-primary font-medium mt-4">
               ✅ Open Platform - No registration required
             </p>
           </div>
@@ -84,10 +84,10 @@ export default function Home() {
       {/* Features Grid */}
       <div className="max-w-6xl mx-auto px-4 pb-16">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl font-bold text-foreground mb-4">
             Powerful Features for Your Business
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-muted-foreground">
             Everything you need to automate and optimize your security services
           </p>
         </div>
@@ -96,8 +96,8 @@ export default function Home() {
           {features.map((feature, index) => (
             <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
               <CardHeader className="text-center">
-                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-blue-600" />
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-primary" />
                 </div>
                 <CardTitle className="text-lg">{feature.title}</CardTitle>
               </CardHeader>
@@ -112,13 +112,13 @@ export default function Home() {
       </div>
 
       {/* AI Agents Preview */}
-      <div className="bg-white py-16">
+      <div className="bg-card py-16">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
               Meet Your AI Agents
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-muted-foreground">
               Specialized tools for every business need
             </p>
           </div>
@@ -131,9 +131,9 @@ export default function Home() {
             ].map((agent, index) => (
               <div 
                 key={index}
-                className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100 hover:shadow-md transition-shadow"
+                className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20 hover:shadow-md transition-shadow"
               >
-                <div className="font-semibold text-gray-800">{agent}</div>
+                <div className="font-semibold text-foreground">{agent}</div>
               </div>
             ))}
           </div>
@@ -141,12 +141,12 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <div className="bg-gray-900 text-white py-8">
+      <div className="bg-foreground text-background py-8">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <p className="text-lg mb-2">
             Built with ❤️ using Next.js, TypeScript, and modern AI technologies
           </p>
-          <p className="text-gray-400">
+          <p className="text-muted-foreground">
             © 2024 SIS AI Helper. Maintained by Sid T
           </p>
         </div>

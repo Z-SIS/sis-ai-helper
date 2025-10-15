@@ -185,37 +185,37 @@ export function CompanyResearchForm() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="font-semibold text-sm text-gray-700">Company Name</h4>
+                <h4 className="font-semibold text-sm text-foreground">Company Name</h4>
                 <p className="text-sm">{result.companyName}</p>
               </div>
               <div>
-                <h4 className="font-semibold text-sm text-gray-700">Industry</h4>
+                <h4 className="font-semibold text-sm text-foreground">Industry</h4>
                 <p className="text-sm">{result.industry}</p>
               </div>
               <div>
-                <h4 className="font-semibold text-sm text-gray-700">Location</h4>
+                <h4 className="font-semibold text-sm text-foreground">Location</h4>
                 <p className="text-sm">{result.location}</p>
               </div>
               <div>
-                <h4 className="font-semibold text-sm text-gray-700">Website</h4>
+                <h4 className="font-semibold text-sm text-foreground">Website</h4>
                 <a 
                   href={result.website} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-primary hover:underline"
                 >
                   {result.website}
                 </a>
               </div>
               {result.foundedYear && (
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700">Founded</h4>
+                  <h4 className="font-semibold text-sm text-foreground">Founded</h4>
                   <p className="text-sm">{result.foundedYear}</p>
                 </div>
               )}
               {result.employeeCount && (
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700">Employees</h4>
+                  <h4 className="font-semibold text-sm text-foreground">Employees</h4>
                   <p className="text-sm">{result.employeeCount}</p>
                 </div>
               )}
@@ -223,14 +223,14 @@ export function CompanyResearchForm() {
 
             {result.description && (
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">Description</h4>
-                <p className="text-sm text-gray-600">{result.description}</p>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Description</h4>
+                <p className="text-sm text-muted-foreground">{result.description}</p>
               </div>
             )}
 
             {result.keyExecutives && result.keyExecutives.length > 0 && (
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">Key Executives</h4>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Key Executives</h4>
                 <div className="space-y-1">
                   {result.keyExecutives.map((executive, index) => (
                     <div key={index} className="text-sm">
@@ -243,12 +243,12 @@ export function CompanyResearchForm() {
 
             {result.competitors && result.competitors.length > 0 && (
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">Competitors</h4>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Competitors</h4>
                 <div className="flex flex-wrap gap-2">
                   {result.competitors.map((competitor, index) => (
                     <span 
                       key={index}
-                      className="px-2 py-1 bg-gray-100 text-sm rounded-md"
+                      className="px-2 py-1 bg-secondary text-sm rounded-md"
                     >
                       {competitor}
                     </span>
@@ -259,13 +259,13 @@ export function CompanyResearchForm() {
 
             {result.recentNews && result.recentNews.length > 0 && (
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">Recent News</h4>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Recent News</h4>
                 <div className="space-y-3">
                   {result.recentNews.map((news, index) => (
-                    <div key={index} className="border-l-2 border-gray-200 pl-3">
+                    <div key={index} className="border-l-2 border-border pl-3">
                       <h5 className="font-medium text-sm">{news.title}</h5>
-                      <p className="text-xs text-gray-600 mt-1">{news.summary}</p>
-                      <p className="text-xs text-gray-400 mt-1">{news.date}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{news.summary}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">{news.date}</p>
                     </div>
                   ))}
                 </div>
