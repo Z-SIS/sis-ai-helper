@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: https:",
               "font-src 'self' data:",
               "connect-src 'self' https://api.google.com https://generativelanguage.googleapis.com https://api.tavily.com https://vercel.live",
+              "frame-src 'self' https://vercel.live",
+              "child-src 'self' https://vercel.live",
             ].join('; '),
           },
         ],

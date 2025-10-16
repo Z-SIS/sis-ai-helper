@@ -39,8 +39,14 @@ export async function POST(
     const inputSchema = AgentInputSchemas[agentType];
     const validatedInput = inputSchema.parse(body);
     
-    // Execute agent request with Google AI system
-    const result = await handleAgentRequest(agentType, validatedInput);
+    // Execute agent request with timeout to prevent connection resets
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout - agent took too long to respond')), 30000);
+    });
+    
+    const agentPromise = handleAgentRequest(agentType, validatedInput);
+    
+    const result = await Promise.race([agentPromise, timeoutPromise]) as AgentOutput;
     
     // Validate the result before proceeding
     if (!result || typeof result !== 'object') {
@@ -84,6 +90,18 @@ export async function POST(
     
   } catch (error) {
     console.error('Agent API error:', error);
+    
+    // Handle timeout specifically
+    if (error instanceof Error && error.message.includes('timeout')) {
+      return NextResponse.json(
+        { 
+          error: 'Request timeout', 
+          message: 'The agent took too long to respond. Please try again.',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 408 }
+      );
+    }
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
