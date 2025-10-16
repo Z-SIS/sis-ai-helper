@@ -44,7 +44,7 @@ export function CompanyResearchForm() {
       }
 
       const result = await response.json();
-      return result.data as CompanyResearchOutput;
+      return result.data.data as CompanyResearchOutput;
     },
     onSuccess: (data) => {
       setResult(data);
@@ -183,11 +183,10 @@ export function CompanyResearchForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Company Overview Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Company Name</h4>
-                <p className="text-sm font-medium">{result.companyName}</p>
+                <p className="text-sm">{result.companyName}</p>
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Industry</h4>
@@ -199,18 +198,14 @@ export function CompanyResearchForm() {
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Website</h4>
-                {result.website && result.website !== 'Information not available' ? (
-                  <a 
-                    href={result.website} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline break-all"
-                  >
-                    {result.website}
-                  </a>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Not available</p>
-                )}
+                <a 
+                  href={result.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  {result.website}
+                </a>
               </div>
               {result.foundedYear && (
                 <div>
@@ -218,7 +213,7 @@ export function CompanyResearchForm() {
                   <p className="text-sm">{result.foundedYear}</p>
                 </div>
               )}
-              {result.employeeCount && result.employeeCount !== 'Information not available' && (
+              {result.employeeCount && (
                 <div>
                   <h4 className="font-semibold text-sm text-foreground">Employees</h4>
                   <p className="text-sm">{result.employeeCount}</p>
@@ -226,139 +221,56 @@ export function CompanyResearchForm() {
               )}
             </div>
 
-            {/* Description Section */}
-            {result.description && result.description !== 'Information not available' && (
-              <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-semibold text-sm text-foreground mb-2">Company Description</h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">{result.description}</p>
+            {result.description && (
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Description</h4>
+                <p className="text-sm text-muted-foreground">{result.description}</p>
               </div>
             )}
 
-            {/* Financial Information */}
-            {(result.revenue && result.revenue !== 'Information not available') && (
-              <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-semibold text-sm text-foreground mb-2">Financial Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h5 className="text-xs font-medium text-muted-foreground">Revenue</h5>
-                    <p className="text-sm font-medium">{result.revenue}</p>
-                  </div>
-                  {(result as any).dataConfidence && (
-                    <div>
-                      <h5 className="text-xs font-medium text-muted-foreground">Data Confidence</h5>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-green-500 h-2 rounded-full" 
-                            style={{ width: `${(result as any).dataConfidence * 100}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-xs">{Math.round((result as any).dataConfidence * 100)}%</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Key Executives */}
             {result.keyExecutives && result.keyExecutives.length > 0 && (
-              <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-semibold text-sm text-foreground mb-3">Key Executives</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Key Executives</h4>
+                <div className="space-y-1">
                   {result.keyExecutives.map((executive, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 bg-background rounded-md">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-primary">
-                          {executive.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{executive.name}</p>
-                        <p className="text-xs text-muted-foreground">{executive.title}</p>
-                      </div>
+                    <div key={index} className="text-sm">
+                      <span className="font-medium">{executive.name}</span> - {executive.title}
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Competitors */}
             {result.competitors && result.competitors.length > 0 && (
-              <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-semibold text-sm text-foreground mb-3">Main Competitors</h4>
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Competitors</h4>
                 <div className="flex flex-wrap gap-2">
                   {result.competitors.map((competitor, index) => (
                     <span 
                       key={index}
-                      className="px-3 py-1 bg-background border border-border text-sm rounded-md hover:bg-muted/50 transition-colors"
+                      className="px-2 py-1 bg-secondary text-sm rounded-md"
                     >
-                      {typeof competitor === 'string' ? competitor : competitor.name}
+                      {competitor}
                     </span>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Recent News */}
             {result.recentNews && result.recentNews.length > 0 && (
-              <div className="p-4 bg-muted/30 rounded-lg">
-                <h4 className="font-semibold text-sm text-foreground mb-3">Recent Developments</h4>
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-2">Recent News</h4>
                 <div className="space-y-3">
                   {result.recentNews.map((news, index) => (
-                    <div key={index} className="border-l-4 border-primary/20 pl-4 py-2">
-                      <h5 className="font-medium text-sm mb-1">{news.title}</h5>
-                      <p className="text-xs text-muted-foreground mb-2 leading-relaxed">{news.summary}</p>
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-muted-foreground/70">
-                          📅 {news.date}
-                        </p>
-                        {(news as any).url && (
-                          <a 
-                            href={(news as any).url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline"
-                          >
-                            Read more →
-                          </a>
-                        )}
-                      </div>
+                    <div key={index} className="border-l-2 border-border pl-3">
+                      <h5 className="font-medium text-sm">{news.title}</h5>
+                      <p className="text-xs text-muted-foreground mt-1">{news.summary}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">{news.date}</p>
                     </div>
                   ))}
                 </div>
               </div>
             )}
-
-            {/* Data Quality Indicators */}
-            {(result as any).unverifiedFields && (result as any).unverifiedFields.length > 0 && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h4 className="font-semibold text-sm text-foreground mb-2 text-yellow-800">Data Quality Notice</h4>
-                <p className="text-xs text-yellow-700 mb-2">
-                  The following fields could not be verified from reliable sources:
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {(result as any).unverifiedFields.map((field: string, index: number) => (
-                    <span key={index} className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">
-                      {field}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Metadata */}
-            <div className="text-xs text-muted-foreground border-t pt-4">
-              <div className="flex flex-wrap gap-4 justify-between">
-                <span>Last updated: {result.lastUpdated ? new Date(result.lastUpdated).toLocaleDateString() : 'Not available'}</span>
-                {(result as any).searchResultsCount && (
-                  <span>Sources: {(result as any).searchResultsCount} found</span>
-                )}
-                {(result as any).developmentMode && (
-                  <span className="text-amber-600">🔧 Development Mode</span>
-                )}
-              </div>
-            </div>
           </CardContent>
         </Card>
       )}
