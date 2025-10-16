@@ -63,8 +63,8 @@ export async function POST(
         description: "SIS Limited is India's leading security solutions company providing comprehensive security services, facility management, and cash logistics solutions. The company operates with over 200,000 employees across India and international markets.",
         website: "https://www.sisindia.com",
         foundedYear: 1985,
-        employeeCount: { count: "200,000+", type: "approximate" },
-        revenue: { amount: "₹12,000 crore", currency: "INR", year: "2023" },
+        employeeCount: "200,000+",
+        revenue: "₹12,000 crore",
         keyExecutives: [
           { name: "Ravindra Kishore Sinha", title: "Founder & Chairman" },
           { name: "Rituraj Kishore Sinha", title: "Vice Chairman" },
@@ -117,7 +117,8 @@ export async function POST(
       
       console.log(`✅ Demo response prepared for: ${demoData.companyName}`);
       
-      return NextResponse.json({ 
+      // Create response with proper headers
+      const response = NextResponse.json({ 
         success: true, 
         data: demoData,
         meta: {
@@ -126,88 +127,47 @@ export async function POST(
           timestamp: new Date().toISOString(),
         }
       });
+      
+      // Ensure proper headers
+      response.headers.set('Content-Type', 'application/json');
+      
+      return response;
     }
     
-    // For other agents, try the normal flow with timeout
-    console.log(`🔄 Processing non-company-research agent: ${agentType}`);
+    // For other agents, return a simple demo response for now
+    console.log(`🔄 Providing demo response for agent: ${agentType}`);
     
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Request timeout - agent took too long to respond')), 10000); // Reduced timeout
-    });
+    const demoResponse = {
+      title: `${agentType} Demo Response`,
+      content: `This is a demo response for the ${agentType} agent. The full functionality will be available once API keys are configured.`,
+      summary: `Demo response for ${agentType}`,
+      timestamp: new Date().toISOString(),
+      demo: true
+    };
     
-    const agentPromise = handleAgentRequest(agentType, validatedInput);
+    console.log(`✅ Demo response prepared for: ${agentType}`);
     
-    const result = await Promise.race([agentPromise, timeoutPromise]) as AgentOutput;
-    
-    console.log(`✅ Agent ${agentType} completed successfully`);
-    
-    // Validate the result before proceeding
-    if (!result || typeof result !== 'object') {
-      throw new Error(`Invalid result from agent ${agentType}: result must be an object`);
-    }
-    
-    // Extract the actual data from the agent result
-    const actualData = (result as any).data || result;
-    
-    // Save to task history (optional for open platform)
-    try {
-      await db.createTaskHistory({
-        user_id: 'open-user',
-        agent_type: agentType,
-        input_data: validatedInput,
-        output_data: result,
-        status: 'completed',
-      });
-    } catch (error) {
-      // Log error but don't fail the request
-      console.warn('Failed to save task history:', error);
-    }
-    
-    // Return success response with token usage info
-    const tokenUsage = googleAIAgentSystem.getTokenUsage();
-    
-    return NextResponse.json({ 
+    // Create response with proper headers
+    const response = NextResponse.json({ 
       success: true, 
-      data: actualData,
+      data: demoResponse,
       meta: {
         agentType,
-        tokenUsage: {
-          total: tokenUsage.total,
-          byAgent: tokenUsage.byAgent[agentType] || 0,
-        },
+        demo: true,
         timestamp: new Date().toISOString(),
       }
     });
     
+    // Ensure proper headers
+    response.headers.set('Content-Type', 'application/json');
+    
+    return response;
+    
   } catch (error) {
     console.error('❌ Agent API error:', error);
     
-    // Handle timeout specifically
-    if (error instanceof Error && error.message.includes('timeout')) {
-      return NextResponse.json(
-        { 
-          error: 'Request timeout', 
-          message: 'The agent took too long to respond. Please try again.',
-          timestamp: new Date().toISOString(),
-        },
-        { status: 408 }
-      );
-    }
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { 
-          error: 'Invalid input data', 
-          details: error.errors.map(e => ({
-            field: e.path.join('.'),
-            message: e.message,
-          }))
-        },
-        { status: 400 }
-      );
-    }
-    
-    return NextResponse.json(
+    // Create error response with proper headers
+    const errorResponse = NextResponse.json(
       { 
         error: 'Internal server error', 
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -215,6 +175,11 @@ export async function POST(
       },
       { status: 500 }
     );
+    
+    // Ensure proper headers
+    errorResponse.headers.set('Content-Type', 'application/json');
+    
+    return errorResponse;
   }
 }
 
@@ -226,10 +191,10 @@ export async function GET() {
   try {
     const tokenUsage = googleAIAgentSystem.getTokenUsage();
     
-    return NextResponse.json({
+    const responseData = {
       status: 'healthy',
-      system: 'SIS AI Helper - Google AI Agent System',
-      version: '2.1.0-google-only',
+      system: 'SIS AI Helper - Demo Mode',
+      version: '2.1.0-demo',
       agents: Object.keys(AgentInputSchemas),
       tokenUsage,
       cache: {
@@ -237,15 +202,24 @@ export async function GET() {
         status: 'active',
       },
       timestamp: new Date().toISOString(),
-    });
+    };
+    
+    // Create response with proper headers
+    const response = NextResponse.json(responseData);
+    response.headers.set('Content-Type', 'application/json');
+    
+    return response;
   } catch (error) {
-    return NextResponse.json(
-      {
-        status: 'unhealthy',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    );
+    const errorData = {
+      status: 'unhealthy',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+    };
+    
+    // Create error response with proper headers
+    const response = NextResponse.json(errorData, { status: 500 });
+    response.headers.set('Content-Type', 'application/json');
+    
+    return response;
   }
 }
