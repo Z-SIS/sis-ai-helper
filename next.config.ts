@@ -20,11 +20,11 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https://api.google.com https://generativelanguage.googleapis.com https://api.tavily.com",
+              "connect-src 'self' https://api.google.com https://generativelanguage.googleapis.com https://api.tavily.com https://vercel.live",
             ].join('; '),
           },
         ],
