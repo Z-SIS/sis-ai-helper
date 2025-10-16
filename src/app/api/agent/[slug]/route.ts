@@ -62,18 +62,25 @@ export async function POST(
       throw new Error(`Invalid result from agent ${agentType}: result must be an object`);
     }
     
+    // Extract the actual data from the agent result
+    // AgentOutput structure: { title, content, summary, data }
+    const actualData = (result as any).data || result;
+    console.log('Extracted actual data:', { dataType: typeof actualData, hasData: !!actualData });
+    
     // Save to task history (optional for open platform)
     try {
-      await db.createTaskHistory({
+      const dbResult = await db.createTaskHistory({
         user_id: userId,
         agent_type: agentType,
         input_data: validatedInput,
         output_data: result,
         status: 'completed',
       });
+      console.log('Task history saved:', dbResult ? 'success' : 'skipped (no DB)');
     } catch (error) {
       // Log error but don't fail the request
       console.warn('Failed to save task history:', error);
+      // Continue with the request - don't throw the error
     }
     
     // Return success response with token usage info
@@ -81,7 +88,7 @@ export async function POST(
     
     return NextResponse.json({ 
       success: true, 
-      data: result,
+      data: actualData, // Return the actual data, not the wrapper
       meta: {
         agentType,
         tokenUsage: {
