@@ -30,6 +30,8 @@ export function CompanyResearchForm() {
 
   const mutation = useMutation({
     mutationFn: async (data: CompanyResearchInput) => {
+      console.log('🔍 Starting company research for:', data);
+      
       const response = await fetch('/api/agent/company-research', {
         method: 'POST',
         headers: {
@@ -38,16 +40,26 @@ export function CompanyResearchForm() {
         body: JSON.stringify(data),
       });
 
+      console.log('📡 API Response status:', response.status);
+
       if (!response.ok) {
         const error = await response.json();
+        console.error('❌ API Error:', error);
         throw new Error(error.message || 'Failed to research company');
       }
 
       const result = await response.json();
+      console.log('📊 Full API Response:', result);
+      console.log('📋 Extracted data:', result.data);
+      
       return result.data as CompanyResearchOutput;
     },
     onSuccess: (data) => {
+      console.log('✅ Research completed successfully:', data);
       setResult(data);
+    },
+    onError: (error) => {
+      console.error('❌ Research failed:', error);
     },
   });
 

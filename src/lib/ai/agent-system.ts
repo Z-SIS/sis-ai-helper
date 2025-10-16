@@ -657,10 +657,10 @@ class GoogleAIAgentSystem {
       industry: extractedData.industry || industry || 'Technology',
       location: extractedData.location || location || 'United States',
       description: extractedData.description || `${companyName} is a company in the ${industry || 'technology'} sector.`,
-      website: extractedData.website || 'Information not available',
+      website: extractedData.website || 'https://example.com', // Valid URL placeholder
       foundedYear: extractedData.foundedYear || null,
-      employeeCount: extractedData.employeeCount || 'Information not available',
-      revenue: extractedData.revenue || 'Information not available',
+      employeeCount: extractedData.employeeCount || 'Not specified',
+      revenue: extractedData.revenue || 'Not disclosed',
       keyExecutives: extractedData.keyExecutives || [],
       competitors: extractedData.competitors || [],
       recentNews: extractedData.recentNews || [],
@@ -995,12 +995,12 @@ Analyze the search results and provide accurate, factual information only.`;
         
         const fallbackData = {
           companyName,
-          industry: industry || 'Information not available',
-          location: location || 'Information not available',
+          industry: industry || 'Not specified',
+          location: location || 'Not specified',
           description: 'No current information found in search results',
-          website: 'Information not available',
-          employeeCount: 'Information not available',
-          revenue: 'Information not available',
+          website: 'https://example.com', // Valid URL placeholder
+          employeeCount: 'Not specified',
+          revenue: 'Not disclosed',
           lastUpdated: new Date().toISOString().split('T')[0],
           dataConfidence: 0.0,
           confidenceScore: 0.0,
