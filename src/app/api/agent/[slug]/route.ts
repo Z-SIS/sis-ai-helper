@@ -23,39 +23,24 @@ export async function POST(
   { params }: { params: { slug: string } }
 ) {
   try {
-    console.log('Agent API called:', { params });
-    
-    // Open platform - no authentication required
-    const userId = 'open-user';
-    
     const { slug } = await params;
     const body = await request.json();
-    
-    console.log('Request details:', { slug, bodyKeys: Object.keys(body) });
     
     // Validate agent type
     const agentType = slug as AgentType;
     if (!AgentInputSchemas[agentType]) {
-      console.error('Invalid agent type:', { agentType, available: Object.keys(AgentInputSchemas) });
       return NextResponse.json(
         { error: 'Invalid agent type', availableAgents: Object.keys(AgentInputSchemas) },
         { status: 400 }
       );
     }
     
-    console.log('Agent type validated:', { agentType });
-    
     // Validate input schema
     const inputSchema = AgentInputSchemas[agentType];
     const validatedInput = inputSchema.parse(body);
     
-    console.log('Input validated:', { agentType, inputKeys: Object.keys(validatedInput) });
-    
     // Execute agent request with Google AI system
-    console.log('Executing agent request...');
     const result = await handleAgentRequest(agentType, validatedInput);
-    
-    console.log('Agent execution completed:', { agentType, hasResult: !!result });
     
     // Validate the result before proceeding
     if (!result || typeof result !== 'object') {
@@ -65,18 +50,16 @@ export async function POST(
     // Extract the actual data from the agent result
     // AgentOutput structure: { title, content, summary, data }
     const actualData = (result as any).data || result;
-    console.log('Extracted actual data:', { dataType: typeof actualData, hasData: !!actualData });
     
     // Save to task history (optional for open platform)
     try {
-      const dbResult = await db.createTaskHistory({
-        user_id: userId,
+      await db.createTaskHistory({
+        user_id: 'open-user',
         agent_type: agentType,
         input_data: validatedInput,
         output_data: result,
         status: 'completed',
       });
-      console.log('Task history saved:', dbResult ? 'success' : 'skipped (no DB)');
     } catch (error) {
       // Log error but don't fail the request
       console.warn('Failed to save task history:', error);
