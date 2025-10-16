@@ -44,7 +44,7 @@ export function CompanyResearchForm() {
       }
 
       const result = await response.json();
-      return result.data.data as CompanyResearchOutput;
+      return result.data as CompanyResearchOutput;
     },
     onSuccess: (data) => {
       setResult(data);
@@ -186,34 +186,38 @@ export function CompanyResearchForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Company Name</h4>
-                <p className="text-sm">{result.companyName}</p>
+                <p className="text-sm">{result.companyName || 'Not available'}</p>
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Industry</h4>
-                <p className="text-sm">{result.industry}</p>
+                <p className="text-sm">{result.industry || 'Not available'}</p>
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Location</h4>
-                <p className="text-sm">{result.location}</p>
+                <p className="text-sm">{result.location || 'Not available'}</p>
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Website</h4>
-                <a 
-                  href={result.website} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline"
-                >
-                  {result.website}
-                </a>
+                {result.website && result.website !== 'Information not available' ? (
+                  <a 
+                    href={result.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline break-all"
+                  >
+                    {result.website}
+                  </a>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Not available</p>
+                )}
               </div>
-              {result.foundedYear && (
+              {result.foundedYear && result.foundedYear !== 'Information not available' && (
                 <div>
                   <h4 className="font-semibold text-sm text-foreground">Founded</h4>
                   <p className="text-sm">{result.foundedYear}</p>
                 </div>
               )}
-              {result.employeeCount && (
+              {result.employeeCount && result.employeeCount !== 'Information not available' && (
                 <div>
                   <h4 className="font-semibold text-sm text-foreground">Employees</h4>
                   <p className="text-sm">{result.employeeCount}</p>
@@ -221,7 +225,7 @@ export function CompanyResearchForm() {
               )}
             </div>
 
-            {result.description && (
+            {result.description && result.description !== 'Information not available' && (
               <div>
                 <h4 className="font-semibold text-sm text-foreground mb-2">Description</h4>
                 <p className="text-sm text-muted-foreground">{result.description}</p>
