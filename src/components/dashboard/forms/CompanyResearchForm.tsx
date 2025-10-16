@@ -44,11 +44,7 @@ export function CompanyResearchForm() {
       }
 
       const result = await response.json();
-<<<<<<< HEAD
       return result.data as CompanyResearchOutput;
-=======
-      return result.data.data as CompanyResearchOutput;
->>>>>>> origin/master
     },
     onSuccess: (data) => {
       setResult(data);
@@ -187,18 +183,11 @@ export function CompanyResearchForm() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-<<<<<<< HEAD
             {/* Company Overview Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Company Name</h4>
                 <p className="text-sm font-medium">{result.companyName}</p>
-=======
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-semibold text-sm text-foreground">Company Name</h4>
-                <p className="text-sm">{result.companyName}</p>
->>>>>>> origin/master
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Industry</h4>
@@ -210,7 +199,6 @@ export function CompanyResearchForm() {
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Website</h4>
-<<<<<<< HEAD
                 {result.website && result.website !== 'Information not available' ? (
                   <a 
                     href={result.website} 
@@ -223,16 +211,6 @@ export function CompanyResearchForm() {
                 ) : (
                   <p className="text-sm text-muted-foreground">Not available</p>
                 )}
-=======
-                <a 
-                  href={result.website} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline"
-                >
-                  {result.website}
-                </a>
->>>>>>> origin/master
               </div>
               {result.foundedYear && (
                 <div>
@@ -240,11 +218,7 @@ export function CompanyResearchForm() {
                   <p className="text-sm">{result.foundedYear}</p>
                 </div>
               )}
-<<<<<<< HEAD
               {result.employeeCount && result.employeeCount !== 'Information not available' && (
-=======
-              {result.employeeCount && (
->>>>>>> origin/master
                 <div>
                   <h4 className="font-semibold text-sm text-foreground">Employees</h4>
                   <p className="text-sm">{result.employeeCount}</p>
@@ -252,7 +226,6 @@ export function CompanyResearchForm() {
               )}
             </div>
 
-<<<<<<< HEAD
             {/* Description Section */}
             {result.description && result.description !== 'Information not available' && (
               <div className="p-4 bg-muted/30 rounded-lg">
@@ -304,58 +277,29 @@ export function CompanyResearchForm() {
                         <p className="text-sm font-medium">{executive.name}</p>
                         <p className="text-xs text-muted-foreground">{executive.title}</p>
                       </div>
-=======
-            {result.description && (
-              <div>
-                <h4 className="font-semibold text-sm text-foreground mb-2">Description</h4>
-                <p className="text-sm text-muted-foreground">{result.description}</p>
-              </div>
-            )}
-
-            {result.keyExecutives && result.keyExecutives.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-sm text-foreground mb-2">Key Executives</h4>
-                <div className="space-y-1">
-                  {result.keyExecutives.map((executive, index) => (
-                    <div key={index} className="text-sm">
-                      <span className="font-medium">{executive.name}</span> - {executive.title}
->>>>>>> origin/master
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-<<<<<<< HEAD
             {/* Competitors */}
             {result.competitors && result.competitors.length > 0 && (
               <div className="p-4 bg-muted/30 rounded-lg">
                 <h4 className="font-semibold text-sm text-foreground mb-3">Main Competitors</h4>
-=======
-            {result.competitors && result.competitors.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-sm text-foreground mb-2">Competitors</h4>
->>>>>>> origin/master
                 <div className="flex flex-wrap gap-2">
                   {result.competitors.map((competitor, index) => (
                     <span 
                       key={index}
-<<<<<<< HEAD
                       className="px-3 py-1 bg-background border border-border text-sm rounded-md hover:bg-muted/50 transition-colors"
                     >
                       {typeof competitor === 'string' ? competitor : competitor.name}
-=======
-                      className="px-2 py-1 bg-secondary text-sm rounded-md"
-                    >
-                      {competitor}
->>>>>>> origin/master
                     </span>
                   ))}
                 </div>
               </div>
             )}
 
-<<<<<<< HEAD
             {/* Recent News */}
             {result.recentNews && result.recentNews.length > 0 && (
               <div className="p-4 bg-muted/30 rounded-lg">
@@ -380,23 +324,11 @@ export function CompanyResearchForm() {
                           </a>
                         )}
                       </div>
-=======
-            {result.recentNews && result.recentNews.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-sm text-foreground mb-2">Recent News</h4>
-                <div className="space-y-3">
-                  {result.recentNews.map((news, index) => (
-                    <div key={index} className="border-l-2 border-border pl-3">
-                      <h5 className="font-medium text-sm">{news.title}</h5>
-                      <p className="text-xs text-muted-foreground mt-1">{news.summary}</p>
-                      <p className="text-xs text-muted-foreground/70 mt-1">{news.date}</p>
->>>>>>> origin/master
                     </div>
                   ))}
                 </div>
               </div>
             )}
-<<<<<<< HEAD
 
             {/* Data Quality Indicators */}
             {(result as any).unverifiedFields && (result as any).unverifiedFields.length > 0 && (
@@ -427,8 +359,6 @@ export function CompanyResearchForm() {
                 )}
               </div>
             </div>
-=======
->>>>>>> origin/master
           </CardContent>
         </Card>
       )}

@@ -374,7 +374,6 @@ function provideMockSearchResults(query: string, maxResults: number = 3): any[] 
       {
         title: 'SIS Group Enterprises - Official Website',
         url: 'https://www.sisindia.com',
-<<<<<<< HEAD
         content: 'SIS Group Enterprises is India\'s leading security solutions company with over 200,000 employees. Revenue: ₹12,000 crore ($1.5 billion). Founded in 1985 by Ravindra Kishore Sinha. Services: security services, facility management, cash logistics. Headquarters: Delhi NCR, India. CEO: Rituraj Sinha, CFO: Rajiv Mehrotra.',
         score: 0.95
       },
@@ -401,28 +400,6 @@ function provideMockSearchResults(query: string, maxResults: number = 3): any[] 
         url: 'https://www.moneycontrol.com/sis-latest-news',
         content: 'October 2024: SIS Group launches new fintech vertical for digital cash management. Secured major contract with leading e-commerce platform. Plans to hire 50,000 more employees by 2025. Investing ₹500 crore in technology upgrade and AI-based security solutions.',
         score: 0.82
-=======
-        content: 'SIS Group Enterprises is India\'s leading security solutions company with over 200,000 employees. Revenue: ₹12,000 crore. Founded in 1985 by Ravindra Kishore Sinha. Services: security services, facility management, cash logistics.',
-        score: 0.95
-      },
-      {
-        title: 'SIS Limited - Corporate Information',
-        url: 'https://www.sisindia.com/investor-relations',
-        content: 'SIS Limited (NSE: SIS) is a market leader in security, facility management & cash logistics. CEO: Rituraj Sinha, CFO: Rajiv Mehrotra. Founded 1985, headquartered in Delhi NCR. 200,000+ employees across India.',
-        score: 0.92
-      },
-      {
-        title: 'SIS Group - Security Services Market Leader',
-        url: 'https://economictimes.indiatimes.com/sis-group-enterprises',
-        content: 'SIS Group dominates Indian security market with 40% market share. Key competitors: G4S India, Securitas India. Recent expansion into fintech with cash management solutions. Revenue growth: 25% YoY.',
-        score: 0.88
-      },
-      {
-        title: 'SIS Limited Financial Results 2024',
-        url: 'https://www.bseindia.com/stock-price-quote/sis/sis-ltd',
-        content: 'SIS Limited Q2 2024 results: Revenue ₹3,200 crore, profit ₹180 crore. Market cap ₹15,000 crore. Key clients: major banks, retail chains, government agencies. Expansion plans in Southeast Asia.',
-        score: 0.85
->>>>>>> origin/master
       }
     ]
   };
