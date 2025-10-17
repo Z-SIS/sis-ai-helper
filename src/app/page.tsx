@@ -277,6 +277,7 @@ export default function Home() {
               <h3 className="text-lg font-semibold mb-4">USEFUL LINKS</h3>
               <ul className="space-y-2 text-sm opacity-80">
                 <li><Link href="/dashboard" className="hover:opacity-100">Dashboard</Link></li>
+                <li><Link href="/debug" className="hover:opacity-100">Debug Dashboard</Link></li>
                 <li><Link href="#" className="hover:opacity-100">About Us</Link></li>
                 <li><Link href="#" className="hover:opacity-100">Services</Link></li>
                 <li><Link href="#" className="hover:opacity-100">Contact</Link></li>
