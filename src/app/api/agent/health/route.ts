@@ -8,7 +8,11 @@ export async function GET() {
     
     return NextResponse.json({
       status: 'healthy',
+<<<<<<< HEAD
       system: 'SSS AI Helper - Google AI Agent System',
+=======
+      system: 'SIS AI Helper - Google AI Agent System',
+>>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
       version: '2.1.0-google-only',
       agents: Object.keys(AgentInputSchemas),
       tokenUsage,

@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+<<<<<<< HEAD
   title: "SSS AI Helper - Security Services AI Assistant",
   description: "AI-powered dashboard for security services business automation and research",
   keywords: ["SSS", "AI Helper", "Security Services", "Business Automation", "AI Assistant"],
@@ -26,11 +27,26 @@ export const metadata: Metadata = {
     description: "AI-powered dashboard for security services business automation",
     url: "https://sss-ai-helper.com",
     siteName: "SSS AI Helper",
+=======
+  title: "SIS AI Helper - Security Services AI Assistant",
+  description: "AI-powered dashboard for security services business automation and research",
+  keywords: ["SIS", "AI Helper", "Security Services", "Business Automation", "AI Assistant"],
+  authors: [{ name: "SIS Team" }],
+  openGraph: {
+    title: "SIS AI Helper",
+    description: "AI-powered dashboard for security services business automation",
+    url: "https://sis-ai-helper.com",
+    siteName: "SIS AI Helper",
+>>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
+<<<<<<< HEAD
     title: "SSS AI Helper",
+=======
+    title: "SIS AI Helper",
+>>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
     description: "AI-powered dashboard for security services business automation",
   },
 };

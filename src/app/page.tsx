@@ -90,19 +90,33 @@ export default function Home() {
       <div className="bg-secondary text-secondary-foreground py-16">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center">
+<<<<<<< HEAD
             <div className="relative w-32 h-16 md:w-48 md:h-24 mb-8 mx-auto">
               <img
                 src="/logo.png"
                 alt="SSS Group Enterprises"
+=======
+            <div className="relative w-24 h-24 md:w-32 md:h-32 mb-8 mx-auto">
+              <img
+                src="/logo.svg"
+                alt="SIS Group Enterprises"
+>>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
                 className="w-full h-full object-contain"
               />
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
+<<<<<<< HEAD
               SSS Sales Intelligence Platform
             </h1>
             <p className="text-xl md:text-2xl mb-8 opacity-90">
               A Market Leader in Security, Cash Logistics & Facility Management
+=======
+              SIS Sales Intelligence Platform
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 opacity-90">
+              A Market Leader in Security, Facility Management & Cash Logistics
+>>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
             </p>
             <p className="text-lg mb-8 max-w-3xl mx-auto opacity-80">
               Transform your sales process with AI-powered company research, decision maker identification, 
@@ -198,7 +212,11 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-6">
+<<<<<<< HEAD
                 Why Choose SSS Sales Intelligence?
+=======
+                Why Choose SIS Sales Intelligence?
+>>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -267,9 +285,15 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
+<<<<<<< HEAD
               <h3 className="text-lg font-semibold mb-4">ABOUT SSS GROUP</h3>
               <p className="text-sm opacity-80">
                 SSS Group Enterprises is an Indian multinational conglomerate headquartered in Delhi. 
+=======
+              <h3 className="text-lg font-semibold mb-4">ABOUT SIS GROUP</h3>
+              <p className="text-sm opacity-80">
+                SIS Group Enterprises is an Indian multinational conglomerate headquartered in Delhi. 
+>>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
                 The company is engaged in providing security, facility management, and cash logistics services.
               </p>
             </div>
@@ -293,7 +317,11 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-secondary-foreground/20 mt-8 pt-8 text-center text-sm opacity-60">
+<<<<<<< HEAD
             © 2024 SSS Group Enterprises. All rights reserved.
+=======
+            © 2024 SIS Group Enterprises. All rights reserved.
+>>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
           </div>
         </div>
       </footer>
