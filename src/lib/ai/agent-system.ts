@@ -112,34 +112,55 @@ async function callGoogleAI(prompt: string, systemPrompt?: string, model: string
 
   console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
+  // Add timeout to the fetch call
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
+      }
+    );
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Google AI API error: ${response.status} ${response.statusText}`);
     }
-  );
 
-  const data = await response.json();
-  
-  console.log("[Gemini] Raw response:", JSON.stringify(data, null, 2));
-  if (!data?.candidates?.[0]) {
-    console.error("[Gemini] No candidates returned.");
-    throw new Error('No candidates returned from Google AI');
-  }
+    const data = await response.json();
+    
+    console.log("[Gemini] Raw response:", JSON.stringify(data, null, 2));
+    if (!data?.candidates?.[0]) {
+      console.error("[Gemini] No candidates returned.");
+      throw new Error('No candidates returned from Google AI');
+    }
 
-  const text = data.candidates[0]?.content?.parts?.[0]?.text || '';
-  console.log(`📝 Extracted text: "${text}"`);
-  
-  if (!text) {
-    console.error("[Gemini] No text extracted from response");
-    throw new Error('No text extracted from Google AI response');
+    const text = data.candidates[0]?.content?.parts?.[0]?.text || '';
+    console.log(`📝 Extracted text: "${text}"`);
+    
+    if (!text) {
+      console.error("[Gemini] No text extracted from response");
+      throw new Error('No text extracted from Google AI response');
+    }
+    
+    return text;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Google AI API request timed out after 20 seconds');
+    }
+    
+    throw error;
   }
-  
-  return text;
 }
 
 // ============================================================================
@@ -365,6 +386,9 @@ const optimizedWebSearchTool = {
         return [];
       }
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout for search
+
       const response = await fetch('https://api.tavily.com/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -376,7 +400,10 @@ const optimizedWebSearchTool = {
           include_answer: false, // Skip AI-generated answers to save tokens
           include_raw_content: false, // Skip raw content to save tokens
         }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error(`Search API error: ${response.status}`);
@@ -392,7 +419,14 @@ const optimizedWebSearchTool = {
         score: result.score,
       })) || [];
     } catch (error) {
+      clearTimeout(timeoutId);
+      
       console.error('Optimized web search error:', error);
+      
+      // Check if it's a timeout error
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('Search request timed out after 8 seconds');
+      }
       
       // For development, provide mock results on error
       if (process.env.NODE_ENV === 'development') {
@@ -1082,23 +1116,37 @@ class GoogleAIAgentSystem {
         return this.generateDemoCompanyResearch(companyName, industry, location);
       }
       
-      // Step 1: Search for real company data using Tavily
-      const searchQueries = [
-        `${companyName} company profile ${industry || ''} ${location || ''}`,
-        `${companyName} employees revenue funding ${location || ''}`,
-        `${companyName} recent news 2024`,
-        `${companyName} competitors ${industry || ''}`
+      // Step 1: Search for real company data using Tavily (optimized with timeout)
+      const searchPromises = [
+        optimizedWebSearchTool.execute({ query: `${companyName} company profile ${industry || ''} ${location || ''}`, maxResults: 2 }),
+        optimizedWebSearchTool.execute({ query: `${companyName} employees revenue funding`, maxResults: 2 }),
       ];
       
       let searchResults: any[] = [];
       
-      for (const query of searchQueries) {
-        try {
-          const results = await optimizedWebSearchTool.execute({ query, maxResults: 3 });
-          searchResults = [...searchResults, ...results];
-        } catch (error) {
-          console.warn(`Search failed for query: ${query}`, error);
+      try {
+        // Use Promise.allSettled with timeout to avoid hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Search timeout')), 10000) // 10 second timeout
+        );
+        
+        const searchResultsPromises = await Promise.race([
+          Promise.allSettled(searchPromises),
+          timeoutPromise
+        ]);
+        
+        // Collect successful results
+        if (Array.isArray(searchResultsPromises)) {
+          searchResultsPromises.forEach((result, index) => {
+            if (result.status === 'fulfilled' && Array.isArray(result.value)) {
+              searchResults = [...searchResults, ...result.value];
+            } else if (result.status === 'rejected') {
+              console.warn(`Search query ${index + 1} failed:`, result.reason);
+            }
+          });
         }
+      } catch (error) {
+        console.warn('Search timeout or error:', error);
       }
       
       console.log(`Found ${searchResults.length} search results`);
@@ -1106,6 +1154,12 @@ class GoogleAIAgentSystem {
       // If no search results, fall back to demo data
       if (searchResults.length === 0) {
         console.log('No search results found, using demo data');
+        return this.generateDemoCompanyResearch(companyName, industry, location);
+      }
+      
+      // If we have limited results, still try to process but with simplified approach
+      if (searchResults.length < 2) {
+        console.log('Limited search results, using simplified processing');
         return this.generateDemoCompanyResearch(companyName, industry, location);
       }
       
@@ -1168,13 +1222,19 @@ Analyze the search results and provide accurate, factual information.`;
 
       console.log('Processing search results with Direct Google API...');
       
-      // Generate content using direct Google API calls
+      // Generate content using direct Google API calls with timeout
       try {
-        const text = await callGoogleAI(
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Google AI timeout')), 15000) // 15 second timeout
+        );
+        
+        const aiPromise = callGoogleAI(
           researchPrompt,
           "You are a business research analyst. Process search results to extract accurate company information.",
           TOKEN_CONFIG.models.fast
         );
+        
+        const text = await Promise.race([aiPromise, timeoutPromise]) as string;
         
         if (!text) {
           throw new Error('No response received from Google AI');

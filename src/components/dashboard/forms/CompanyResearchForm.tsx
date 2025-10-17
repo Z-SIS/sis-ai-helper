@@ -68,12 +68,6 @@ export function CompanyResearchForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert className="mb-4">
-            <AlertDescription>
-              <strong>API Keys Required:</strong> This feature requires <code>GOOGLE_GENERATIVE_AI_API_KEY</code> and <code>TAVILY_API_KEY</code> environment variables to be configured.
-            </AlertDescription>
-          </Alert>
-          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField

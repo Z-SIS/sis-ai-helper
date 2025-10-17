@@ -48,12 +48,18 @@ export async function POST(
     
     console.log(`✅ Input validated:`, validatedInput);
     
-    // Try to use the actual AI system
+    // Try to use the actual AI system with timeout protection
     console.log(`🔄 Processing request for agent: ${agentType}`);
     
     try {
-      // Call the actual AI agent system
-      const result = await googleAIAgentSystem.handleAgentRequest(agentType, validatedInput);
+      // Add overall timeout protection (25 seconds to stay under Vercel's 30s limit)
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout - processing took too long')), 25000)
+      );
+      
+      const agentPromise = googleAIAgentSystem.handleAgentRequest(agentType, validatedInput);
+      
+      const result = await Promise.race([agentPromise, timeoutPromise]) as AgentOutput;
       
       console.log(`✅ AI response generated for: ${agentType}`);
       
@@ -71,6 +77,13 @@ export async function POST(
       
     } catch (aiError) {
       console.error(`❌ AI processing failed for ${agentType}:`, aiError);
+      
+      // Check if it's a timeout error
+      if (aiError instanceof Error && aiError.message.includes('timeout')) {
+        console.log(`⚠️ Processing timeout for ${agentType}, falling back to demo response`);
+      } else {
+        console.log(`⚠️ AI processing error for ${agentType}, falling back to demo response`);
+      }
       
       // Fallback to demo response only if AI fails
       if (agentType === 'company-research') {
