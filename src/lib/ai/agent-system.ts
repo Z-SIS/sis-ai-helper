@@ -134,8 +134,8 @@ const PROMPT_TEMPLATES = {
 CRITICAL RULES:
 - Do not invent facts. If you are not 100% sure about information, state "Information not available" or "Unable to verify".
 - Only include information that can be verified through reliable sources.
-- Provide specific, factual information with confidence levels.
-- Use web search for current data and cite sources when possible.
+- Use web search results to provide comprehensive information.
+- If limited information is available, create a descriptive paragraph about what is known.
 - Return valid JSON only - no explanations outside the JSON structure.
 
 REQUIRED JSON FORMAT:
@@ -143,8 +143,8 @@ REQUIRED JSON FORMAT:
   "companyName": "string",
   "industry": "string", 
   "location": "string",
-  "description": "string",
-  "website": "string (valid URL)",
+  "description": "string (detailed paragraph about the company, can be based on limited info)",
+  "website": "string (valid URL, or empty string if not found)",
   "foundedYear": number (optional),
   "employeeCount": "string OR object with count field",
   "revenue": "string OR object with amount field",
@@ -157,15 +157,22 @@ REQUIRED JSON FORMAT:
   "needsReview": boolean (optional),
   "lastUpdated": "YYYY-MM-DD",
   "timestamp": "YYYY-MM-DDTHH:MM:SSZ" (optional)
-}`,
+}
+
+DESCRIPTION GUIDELINES:
+- Always provide a meaningful description paragraph
+- If specific details are limited, describe what is known about the company
+- Include business type, market presence, or any available information
+- Make the description helpful even if other fields are limited`,
     template: (input: AgentInput) => {
       const { companyName, industry, location } = input as any;
       return `Research "${companyName}"${industry ? ` in ${industry}` : ''}${location ? ` in ${location}` : ''}.
       
-Provide comprehensive company information in the required JSON format.
-Include: description, industry, location, website, founded year, employees, revenue, key executives, competitors, recent news.
-Be concise but comprehensive. Use web search for current data. Mark uncertain information as "unverified".
-Include confidence score (0-1) and list any unverified fields. Use current date for lastUpdated field.`;
+Use the web search results to provide comprehensive company information.
+Create a detailed description paragraph even if specific data points are limited.
+Include: business type, what the company does, market presence, or any available information.
+Fill in as many fields as possible from search results. For missing information, use "Information not available".
+Use current date for lastUpdated field. Be thorough but accurate.`;
     },
     maxTokens: TOKEN_CONFIG.maxTokens.complex,
     temperature: TOKEN_CONFIG.temperature.factual,
@@ -682,40 +689,81 @@ class GoogleAIAgentSystem {
 
   private parseCompanyResearchResponse(response: string): AgentOutput {
     try {
+      console.log('🔍 Parsing company research response...');
+      console.log('📝 Raw response preview:', response.substring(0, 200) + '...');
+      
       // Try to parse as JSON first
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        const data = JSON.parse(jsonMatch[0]);
-        // Add lastUpdated if missing
-        if (!data.lastUpdated) {
-          data.lastUpdated = new Date().toISOString().split('T')[0];
+        try {
+          const data = JSON.parse(jsonMatch[0]);
+          console.log('✅ JSON parsed successfully:', Object.keys(data));
+          
+          // Ensure required fields with fallbacks
+          const companyData = {
+            companyName: data.companyName || 'Unknown Company',
+            industry: data.industry || 'Information not available',
+            location: data.location || 'Information not available',
+            description: data.description || 'No detailed description available.',
+            website: data.website || '',
+            foundedYear: data.foundedYear,
+            employeeCount: data.employeeCount || 'Not available',
+            revenue: data.revenue || 'Not available',
+            keyExecutives: data.keyExecutives || [],
+            competitors: data.competitors || [],
+            recentNews: data.recentNews || [],
+            lastUpdated: data.lastUpdated || new Date().toISOString().split('T')[0],
+            confidenceScore: data.confidenceScore || 0.5,
+            needsReview: data.needsReview || true
+          };
+          
+          console.log('✅ Company data structured:', companyData.companyName);
+          
+          // Return the data directly as the AgentOutput (not nested in a 'data' property)
+          return companyData as AgentOutput;
+          
+        } catch (jsonError) {
+          console.error('❌ JSON parsing failed:', jsonError);
         }
-        return {
-          title: `Company Research: ${data.companyName || 'Unknown'}`,
-          content: JSON.stringify(data, null, 2),
-          summary: `Research completed for ${data.companyName || 'company'}`,
-          data
-        } as AgentOutput;
       }
     } catch (e) {
-      // If JSON parsing fails, create a structured response from text
+      console.error('❌ Response parsing error:', e);
     }
     
-    // Fallback response with current date
+    // Enhanced fallback response - create meaningful data from text response
+    console.log('🔄 Creating enhanced fallback response...');
+    
+    // Try to extract company name from the response
+    const companyNameMatch = response.match(/(?:company|business|organization)[:\s]*([A-Za-z0-9\s&\-\.]+)/i);
+    const extractedCompanyName = companyNameMatch ? companyNameMatch[1].trim() : 'Unknown Company';
+    
+    // Create a meaningful description from the response
+    let description = response;
+    if (response.length > 800) {
+      description = response.substring(0, 800) + '...';
+    }
+    
     const fallbackData = {
+      companyName: extractedCompanyName,
+      industry: 'Information not available',
+      location: 'Information not available', 
+      description: description || 'Unable to retrieve detailed company information. The company may not have sufficient online presence or the search results were limited.',
+      website: '',
+      foundedYear: undefined,
+      employeeCount: 'Not available',
+      revenue: 'Not available',
+      keyExecutives: [],
+      competitors: [],
+      recentNews: [],
       lastUpdated: new Date().toISOString().split('T')[0],
-      companyName: 'Unknown',
-      industry: 'Not specified',
-      location: 'Not specified',
-      description: response.substring(0, 500) + '...',
+      confidenceScore: 0.2,
+      needsReview: true
     };
     
-    return {
-      title: 'Company Research',
-      content: response,
-      summary: 'Company research completed',
-      data: fallbackData
-    } as AgentOutput;
+    console.log('✅ Fallback data created for:', fallbackData.companyName);
+    
+    // Return the fallback data directly as AgentOutput
+    return fallbackData as AgentOutput;
   }
   
   private parseEmailResponse(response: string): AgentOutput {
