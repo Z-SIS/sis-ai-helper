@@ -15,11 +15,9 @@ import {
   SlideTemplateSchema
 } from '@/lib/ai/schema-validation';
 
-// Version: 2.1.0 - Google AI Only
+// Version: 2.2.0 - Google AI with Direct API Calls
 
-// Google AI is the primary AI service - Using Vercel AI SDK for better Vercel compatibility
-import { generateText } from 'ai';
-import { google } from '@ai-sdk/google';
+// Google AI is the primary AI service - Using direct API calls for better compatibility
 
 import { 
   AgentInputSchemas, 
@@ -40,7 +38,8 @@ type AgentType = keyof typeof AgentInputSchemas;
 const TOKEN_CONFIG = {
   // Model configurations for different complexity levels
   models: {
-    fast: 'gemini-pro', // Google AI model - more stable and widely supported
+    fast: 'gemini-2.5-flash', // Google AI model - fast & cost-efficient
+    pro: 'gemini-2.5-pro',    // Google AI model - higher quality
   },
   
   // Token limits based on agent complexity
@@ -66,6 +65,63 @@ const TOKEN_CONFIG = {
     creative: 0.2,  // Email, Slide template - minimal flexibility
   },
 } as const;
+
+// ============================================================================
+// DIRECT GOOGLE API FUNCTION
+// ============================================================================
+
+async function callGoogleAI(prompt: string, systemPrompt?: string, model: string = 'gemini-2.5-flash'): Promise<string> {
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('GOOGLE_GENERATIVE_AI_API_KEY not configured');
+  }
+
+  console.log(`🤖 Calling Google AI with model: ${model}`);
+  console.log(`🔑 API Key: ${apiKey.substring(0, 10)}...`);
+
+  const contents = [];
+  
+  if (systemPrompt) {
+    contents.push({
+      role: "user",
+      parts: [{ text: `${systemPrompt}\n\n${prompt}` }]
+    });
+  } else {
+    contents.push({
+      role: "user", 
+      parts: [{ text: prompt }]
+    });
+  }
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents,
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 2000,
+        }
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`❌ Google API Error (${response.status}):`, errorText);
+    throw new Error(`Google API Error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  console.log('✅ Google AI response received');
+  
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
 
 // ============================================================================
 // OPTIMIZED PROMPT TEMPLATES
@@ -1043,27 +1099,21 @@ Analyze the search results and provide accurate, factual information.`;
         return this.generateDemoCompanyResearch(companyName, industry, location);
       }
 
-      console.log('Processing search results with Vercel AI SDK + Google AI...');
+      console.log('Processing search results with Direct Google API...');
       
-      // Generate content using Vercel AI SDK with enhanced error handling
+      // Generate content using direct Google API calls
       try {
-        const result = await generateText({
-          model: google('gemini-pro', {
-            apiKey: googleApiKeyForProcessing,
-          }),
-          system: "You are a business research analyst. Process search results to extract accurate company information.",
-          prompt: researchPrompt,
-          maxTokens: TOKEN_CONFIG.maxTokens.complex,
-          temperature: 0.0,
-        });
-        
-        const text = result.text;
+        const text = await callGoogleAI(
+          researchPrompt,
+          "You are a business research analyst. Process search results to extract accurate company information.",
+          TOKEN_CONFIG.models.fast
+        );
         
         if (!text) {
-          throw new Error('No response received from Google AI via Vercel AI SDK');
+          throw new Error('No response received from Google AI');
         }
         
-        console.log('Google AI response received via Vercel AI SDK, parsing...');
+        console.log('Google AI response received via Direct API, parsing...');
         console.log('📊 Response length:', text.length, 'characters');
         
         // Parse the response
@@ -1080,9 +1130,9 @@ Analyze the search results and provide accurate, factual information.`;
         return parsedResponse;
         
       } catch (aiError) {
-        console.error('❌ Vercel AI SDK error:', aiError);
+        console.error('❌ Google AI API error:', aiError);
         
-        // Enhanced error logging for Vercel debugging
+        // Enhanced error logging for debugging
         if (aiError instanceof Error) {
           console.error('Error details:', {
             name: aiError.name,
@@ -1147,29 +1197,22 @@ Analyze the search results and provide accurate, factual information.`;
         throw new Error('Google AI API key not configured');
       }
       
-      console.log('Google AI API Key found, initializing Vercel AI SDK...');
+      console.log('Google AI API Key found, using Direct API...');
       
-      // Generate content using Vercel AI SDK
-      const result = await generateText({
-        model: google('gemini-pro', {
-          apiKey: googleApiKey,
-        }),
-        system: systemPrompt,
-        prompt: userPrompt,
-        maxTokens: promptConfig.maxTokens,
-        temperature: promptConfig.temperature,
-      });
+      // Generate content using direct Google API calls
+      const text = await callGoogleAI(
+        userPrompt,
+        systemPrompt,
+        TOKEN_CONFIG.models.fast
+      );
       
-      console.log('Google AI response received successfully via Vercel AI SDK');
-      
-      // Extract the content from Vercel AI SDK response
-      const text = result.text;
+      console.log('Google AI response received successfully via Direct API');
       
       if (!text) {
-        throw new Error('No response received from Google AI via Vercel AI SDK');
+        throw new Error('No response received from Google AI');
       }
       
-      console.log('Google AI response text extracted, parsing...');
+      console.log('Google AI response text extracted via Direct API, parsing...');
       console.log('📊 Response length:', text.length, 'characters');
       
       // Parse the AI response

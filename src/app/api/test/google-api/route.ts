@@ -31,32 +31,45 @@ export async function POST(request: NextRequest) {
       });
     }
     
-    // Test Vercel AI SDK import
-    console.log('📦 Testing Vercel AI SDK import...');
-    const { generateText } = await import('ai');
-    const { google } = await import('@ai-sdk/google');
-    console.log('✅ Vercel AI SDK imported successfully');
+    // Test direct Google API calls
+    console.log('📦 Testing direct Google API calls...');
+    console.log('✅ Using direct Google API calls');
     
     // Test simple Google API call
     console.log('🤖 Testing simple Google API call...');
-    const simpleResult = await generateText({
-      model: google('gemini-1.5-flash', {
-        apiKey: googleApiKey,
-      }),
-      prompt: 'Respond with exactly: "Google API connection successful"',
-      maxTokens: 50,
-      temperature: 0.0,
-    });
+    const simpleResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${googleApiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            { parts: [{ text: 'Respond with exactly: "Google API connection successful"' }] }
+          ]
+        }),
+      }
+    );
     
-    console.log('✅ Simple API call result:', simpleResult.text);
+    const simpleData = await simpleResponse.json();
+    const simpleResult = simpleData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log('✅ Simple API call result:', simpleResult);
     
     // Test company research call
     console.log('🏢 Testing company research API call...');
-    const companyResult = await generateText({
-      model: google('gemini-1.5-flash', {
-        apiKey: googleApiKey,
-      }),
-      system: `You are a business research analyst. Provide company information in JSON format.
+    const companyResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${googleApiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            { 
+              parts: [{ 
+                text: `You are a business research analyst. Provide company information in JSON format.
       
 Required JSON format:
 {
@@ -69,22 +82,28 @@ Required JSON format:
   "employeeCount": "string",
   "revenue": "string",
   "lastUpdated": "YYYY-MM-DD"
-}`,
-      prompt: 'Research "Apple Inc." and provide the requested company information in the exact JSON format.',
-      maxTokens: 800,
-      temperature: 0.0,
-    });
+}
+
+Research "Apple Inc." and provide the requested company information in the exact JSON format.` 
+              }]
+            }
+          ]
+        }),
+      }
+    );
     
-    console.log('✅ Company research result:', companyResult.text);
+    const companyData = await companyResponse.json();
+    const companyResult = companyData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log('✅ Company research result:', companyResult);
     
     // Parse the JSON response
     let parsedCompanyData = null;
     try {
-      parsedCompanyData = JSON.parse(companyResult.text);
+      parsedCompanyData = JSON.parse(companyResult);
       console.log('✅ JSON parsed successfully:', parsedCompanyData);
     } catch (parseError) {
       console.error('❌ JSON parsing failed:', parseError);
-      console.log('Raw response:', companyResult.text);
+      console.log('Raw response:', companyResult);
     }
     
     // Test Tavily API if available
