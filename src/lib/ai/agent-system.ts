@@ -1025,7 +1025,7 @@ REQUIRED JSON FORMAT:
 
 Analyze the search results and provide accurate, factual information only.`;
 
-  // Check if Google AI API key is available
+      // Check if Google AI API key is available
       const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
       if (!googleApiKey || googleApiKey === 'your_google_gemini_api_key_here') {
         console.warn('GOOGLE_GENERATIVE_AI_API_KEY not configured for company research, using demo data');
@@ -1070,7 +1070,7 @@ Analyze the search results and provide accurate, factual information only.`;
       // Track token usage
       this.trackTokenUsage('company-research', text.length / 4);
       
-    console.log('✅ Company research completed successfully');
+      console.log('✅ Company research completed successfully');
       return parsedResponse;
       
     } catch (error) {
@@ -1081,82 +1081,6 @@ Analyze the search results and provide accurate, factual information only.`;
       console.log(`🎭 Providing fallback demo data for ${companyName} due to error`);
       return this.generateDemoCompanyResearch(companyName, industry, location);
     }
-  }
-  
-  private generateDemoCompanyResearch(companyName: string, industry?: string, location?: string): AgentOutput {
-    const current_date = new Date().toISOString().split('T')[0];
-    
-    // Demo data based on company name
-    const demoData = {
-      "SIS Limited": {
-        companyName: "SIS Limited",
-        industry: "Security Services & Facility Management",
-        location: "Mumbai, Maharashtra, India",
-        description: "SIS Limited is India's leading security solutions company providing comprehensive security services, facility management, and cash logistics solutions. The company operates with over 200,000 employees across India and international markets.",
-        website: "https://www.sisindia.com",
-        foundedYear: 1985,
-        employeeCount: { count: "200,000+", type: "approximate" },
-        revenue: { amount: "₹12,000 crore", currency: "INR", year: "2023" },
-        keyExecutives: [
-          { name: "Ravindra Kishore Sinha", title: "Founder & Chairman" },
-          { name: "Rituraj Kishore Sinha", title: "Vice Chairman" },
-          { name: "Uday Kishore Sinha", title: "Managing Director" }
-        ],
-        competitors: ["Security and Intelligence Services (SIS)", "G4S India", "TOPS Group"],
-        recentNews: [
-          {
-            title: "SIS Limited Expands International Operations",
-            summary: "SIS Limited announces expansion into new international markets with strategic acquisitions.",
-            date: "2024-12-15"
-          },
-          {
-            title: "Q3 Financial Results Show Strong Growth",
-            summary: "SIS Limited reports 15% revenue growth in Q3 2024, driven by facility management segment.",
-            date: "2024-10-20"
-          }
-        ],
-        dataConfidence: 0.85,
-        unverifiedFields: [],
-        confidenceScore: 0.85,
-        needsReview: false,
-        lastUpdated: current_date,
-        timestamp: new Date().toISOString()
-      }
-    };
-    
-    // Get demo data for the company or use default
-    const companyData = demoData[companyName as keyof typeof demoData] || {
-      companyName: companyName,
-      industry: industry || "Information not available",
-      location: location || "Information not available",
-      description: `${companyName} is a company operating in ${industry || 'various sectors'}. Detailed information is currently being updated.`,
-      website: "Information not available",
-      foundedYear: null,
-      employeeCount: "Information not available",
-      revenue: "Information not available",
-      keyExecutives: [],
-      competitors: [],
-      recentNews: [
-        {
-          title: "Company Information Update",
-          summary: "Research is ongoing to gather the most current information about this company.",
-          date: current_date
-        }
-      ],
-      dataConfidence: 0.3,
-      unverifiedFields: ["website", "foundedYear", "employeeCount", "revenue"],
-      confidenceScore: 0.3,
-      needsReview: true,
-      lastUpdated: current_date,
-      timestamp: new Date().toISOString()
-    };
-    
-    return {
-      title: `Company Research: ${companyData.companyName}`,
-      content: JSON.stringify(companyData, null, 2),
-      summary: `Research completed for ${companyData.companyName}`,
-      data: companyData
-    } as AgentOutput;
   }
   
   // Main method to handle agent requests using Google AI
