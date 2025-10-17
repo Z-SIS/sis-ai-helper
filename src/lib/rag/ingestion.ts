@@ -1,11 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import { db } from '@/lib/db';
 import ZAI from 'z-ai-web-dev-sdk';
-
-// Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // ZAI client
 const zai = new ZAI();
@@ -51,32 +45,26 @@ export class KnowledgeBaseIngestion {
   ): Promise<string> {
     try {
       // 1. Create document record
-      const { data: document, error: docError } = await supabase
-        .from('knowledge_documents')
-        .insert({
+      const document = await db.knowledgeDocument.create({
+        data: {
           title: metadata.title,
-          source_url: metadata.source_url,
+          sourceUrl: metadata.source_url,
           content,
-          file_type: metadata.file_type,
-          file_size: metadata.file_size,
-          tags: metadata.tags || [],
-          created_by: metadata.created_by
-        })
-        .select()
-        .single();
-
-      if (docError) throw docError;
+          fileType: metadata.file_type,
+          fileSize: metadata.file_size,
+          tags: metadata.tags ? JSON.stringify(metadata.tags) : null,
+          createdBy: metadata.created_by
+        }
+      });
 
       // 2. Add to processing queue
-      const { error: queueError } = await supabase
-        .from('document_processing_queue')
-        .insert({
-          document_id: document.id,
+      await db.documentProcessingQueue.create({
+        data: {
+          documentId: document.id,
           status: 'processing',
-          processing_started_at: new Date().toISOString()
-        });
-
-      if (queueError) throw queueError;
+          processingStartedAt: new Date()
+        }
+      });
 
       // 3. Process document in background
       this.processDocumentAsync(document.id, content, metadata);
@@ -106,45 +94,43 @@ export class KnowledgeBaseIngestion {
 
       // 3. Store chunks with embeddings
       const chunkData = chunks.map((chunk, index) => ({
-        document_id: documentId,
-        chunk_index: index,
-        chunk_text: chunk.text,
-        embedding: embeddings[index],
-        metadata: {
+        documentId: documentId,
+        chunkIndex: index,
+        chunkText: chunk.text,
+        embedding: JSON.stringify(embeddings[index]),
+        metadata: JSON.stringify({
           ...chunk.metadata,
-          document_title: metadata.title,
-          document_tags: metadata.tags,
-          source_url: metadata.source_url
-        }
+          documentTitle: metadata.title,
+          documentTags: metadata.tags,
+          sourceUrl: metadata.source_url
+        })
       }));
 
-      const { error: chunkError } = await supabase
-        .from('knowledge_chunks')
-        .insert(chunkData);
-
-      if (chunkError) throw chunkError;
+      await db.knowledgeChunk.createMany({
+        data: chunkData
+      });
 
       // 4. Update processing queue
-      await supabase
-        .from('document_processing_queue')
-        .update({
+      await db.documentProcessingQueue.update({
+        where: { documentId: documentId },
+        data: {
           status: 'completed',
-          processing_completed_at: new Date().toISOString()
-        })
-        .eq('document_id', documentId);
+          processingCompletedAt: new Date()
+        }
+      });
 
       console.log(`Successfully processed document: ${documentId}`);
     } catch (error) {
       console.error('Error processing document:', error);
       
       // Update processing queue with error
-      await supabase
-        .from('document_processing_queue')
-        .update({
+      await db.documentProcessingQueue.update({
+        where: { documentId: documentId },
+        data: {
           status: 'failed',
-          error_message: error instanceof Error ? error.message : 'Unknown error'
-        })
-        .eq('document_id', documentId);
+          errorMessage: error instanceof Error ? error.message : 'Unknown error'
+        }
+      });
     }
   }
 
@@ -192,7 +178,8 @@ export class KnowledgeBaseIngestion {
         
         for (const text of batch) {
           try {
-            const response = await this.zai.embeddings.create({
+            const zai = await ZAI.create();
+            const response = await zai.embeddings.create({
               model: 'text-embedding-ada-002',
               input: text
             });
@@ -233,21 +220,29 @@ export class KnowledgeBaseIngestion {
     try {
       // Generate embedding for company search
       const searchText = `${companyData.company_name} ${companyData.description || ''} ${companyData.industry || ''}`;
-      const embeddingResponse = await this.zai.embeddings.create({
+      const zai = await ZAI.create();
+      const embeddingResponse = await zai.embeddings.create({
         model: 'text-embedding-ada-002',
         input: searchText
       });
 
-      const { data: company, error } = await supabase
-        .from('company_research_cache')
-        .insert({
-          ...companyData,
-          company_embedding: embeddingResponse.data[0].embedding
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
+      const company = await db.companyResearchCache.create({
+        data: {
+          companyName: companyData.company_name,
+          industry: companyData.industry,
+          location: companyData.location,
+          description: companyData.description,
+          website: companyData.website,
+          foundedYear: companyData.founded_year,
+          employeeCount: companyData.employee_count,
+          revenue: companyData.revenue,
+          keyExecutives: companyData.key_executives ? JSON.stringify(companyData.key_executives) : null,
+          competitors: companyData.competitors ? JSON.stringify(companyData.competitors) : null,
+          recentNews: companyData.recent_news ? JSON.stringify(companyData.recent_news) : null,
+          researchData: JSON.stringify(companyData.research_data),
+          companyEmbedding: JSON.stringify(embeddingResponse.data[0].embedding)
+        }
+      });
 
       return company.id;
     } catch (error) {
@@ -262,22 +257,22 @@ export class KnowledgeBaseIngestion {
   async getProcessingStatus(documentId: string): Promise<{
     status: 'pending' | 'processing' | 'completed' | 'failed';
     error_message?: string;
-    processing_started_at?: string;
-    processing_completed_at?: string;
+    processing_started_at?: Date;
+    processing_completed_at?: Date;
   }> {
-    const { data, error } = await supabase
-      .from('document_processing_queue')
-      .select('*')
-      .eq('document_id', documentId)
-      .single();
+    const data = await db.documentProcessingQueue.findUnique({
+      where: { documentId: documentId }
+    });
 
-    if (error) throw error;
+    if (!data) {
+      throw new Error('Document not found in processing queue');
+    }
 
     return {
-      status: data.status,
-      error_message: data.error_message,
-      processing_started_at: data.processing_started_at,
-      processing_completed_at: data.processing_completed_at
+      status: data.status as any,
+      error_message: data.errorMessage || undefined,
+      processing_started_at: data.processingStartedAt || undefined,
+      processing_completed_at: data.processingCompletedAt || undefined
     };
   }
 
@@ -296,39 +291,41 @@ export class KnowledgeBaseIngestion {
     documents: any[];
     total: number;
   }> {
-    let query = supabase
-      .from('knowledge_documents')
-      .select('*', { count: 'exact' })
-      .eq('created_by', userId);
+    const where: any = {
+      createdBy: userId
+    };
 
     // Apply filters
     if (options.tags && options.tags.length > 0) {
-      query = query.contains('tags', options.tags);
+      where.tags = {
+        contains: JSON.stringify(options.tags)
+      };
     }
 
     if (options.search) {
-      query = query.ilike('title', `%${options.search}%`);
+      where.OR = [
+        { title: { contains: options.search } },
+        { content: { contains: options.search } }
+      ];
     }
 
-    // Apply pagination
-    if (options.limit) {
-      query = query.limit(options.limit);
-    }
+    // Get total count
+    const total = await db.knowledgeDocument.count({ where });
 
-    if (options.offset) {
-      query = query.range(options.offset, options.offset + (options.limit || 10) - 1);
-    }
-
-    // Order by creation date
-    query = query.order('created_at', { ascending: false });
-
-    const { data, error, count } = await query;
-
-    if (error) throw error;
+    // Get documents with pagination
+    const documents = await db.knowledgeDocument.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: options.limit || 10,
+      skip: options.offset || 0
+    });
 
     return {
-      documents: data || [],
-      total: count || 0
+      documents: documents.map(doc => ({
+        ...doc,
+        tags: doc.tags ? JSON.parse(doc.tags) : []
+      })),
+      total
     };
   }
 
@@ -338,23 +335,19 @@ export class KnowledgeBaseIngestion {
   async deleteDocument(documentId: string, userId: string): Promise<boolean> {
     try {
       // Verify ownership
-      const { data: document } = await supabase
-        .from('knowledge_documents')
-        .select('created_by')
-        .eq('id', documentId)
-        .single();
+      const document = await db.knowledgeDocument.findUnique({
+        where: { id: documentId },
+        select: { createdBy: true }
+      });
 
-      if (!document || document.created_by !== userId) {
+      if (!document || document.createdBy !== userId) {
         throw new Error('Document not found or access denied');
       }
 
       // Delete document (chunks will be deleted via CASCADE)
-      const { error } = await supabase
-        .from('knowledge_documents')
-        .delete()
-        .eq('id', documentId);
-
-      if (error) throw error;
+      await db.knowledgeDocument.delete({
+        where: { id: documentId }
+      });
 
       return true;
     } catch (error) {
@@ -376,22 +369,23 @@ export class KnowledgeBaseIngestion {
   ): Promise<boolean> {
     try {
       // Verify ownership
-      const { data: document } = await supabase
-        .from('knowledge_documents')
-        .select('created_by')
-        .eq('id', documentId)
-        .single();
+      const document = await db.knowledgeDocument.findUnique({
+        where: { id: documentId },
+        select: { createdBy: true }
+      });
 
-      if (!document || document.created_by !== userId) {
+      if (!document || document.createdBy !== userId) {
         throw new Error('Document not found or access denied');
       }
 
-      const { error } = await supabase
-        .from('knowledge_documents')
-        .update(updates)
-        .eq('id', documentId);
+      const updateData: any = {};
+      if (updates.title) updateData.title = updates.title;
+      if (updates.tags) updateData.tags = JSON.stringify(updates.tags);
 
-      if (error) throw error;
+      await db.knowledgeDocument.update({
+        where: { id: documentId },
+        data: updateData
+      });
 
       return true;
     } catch (error) {
@@ -404,28 +398,46 @@ export class KnowledgeBaseIngestion {
    * Get knowledge base statistics
    */
   async getKnowledgeBaseStats(userId?: string): Promise<any> {
-    const { data, error } = await supabase
-      .rpc('get_knowledge_base_stats', {
-        user_id_param: userId || null
-      });
+    const where = userId ? { createdBy: userId } : {};
 
-    if (error) throw error;
+    const [documentCount, chunkCount, processingCount] = await Promise.all([
+      db.knowledgeDocument.count({ where }),
+      db.knowledgeChunk.count({
+        where: {
+          document: { createdBy: userId }
+        }
+      }),
+      db.documentProcessingQueue.count({
+        where: {
+          document: { createdBy: userId },
+          status: 'processing'
+        }
+      })
+    ]);
 
-    return data;
+    return {
+      total_documents: documentCount,
+      total_chunks: chunkCount,
+      processing_documents: processingCount
+    };
   }
 
   /**
    * Clean up old usage logs
    */
   async cleanupOldUsageLogs(daysToKeep: number = 90): Promise<number> {
-    const { data, error } = await supabase
-      .rpc('cleanup_old_usage_logs', {
-        days_to_keep: daysToKeep
-      });
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 
-    if (error) throw error;
+    const result = await db.knowledgeUsage.deleteMany({
+      where: {
+        createdAt: {
+          lt: cutoffDate
+        }
+      }
+    });
 
-    return data || 0;
+    return result.count;
   }
 }
 

@@ -1,11 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
+import { db } from '@/lib/db';
 import ZAI from 'z-ai-web-dev-sdk';
-
-// Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // ZAI client
 const zai = new ZAI();
@@ -70,7 +64,8 @@ export class VectorSearchRetrieval {
    */
   async generateQueryEmbedding(query: string): Promise<number[]> {
     try {
-      const response = await this.zai.embeddings.create({
+      const zai = await ZAI.create();
+      const response = await zai.embeddings.create({
         model: 'text-embedding-ada-002',
         input: query
       });
@@ -147,17 +142,45 @@ export class VectorSearchRetrieval {
     }
   ): Promise<any[]> {
     try {
-      const { data, error } = await supabase.rpc('match_knowledge_chunks', {
-        query_embedding: queryEmbedding,
-        match_count: options.match_count,
-        similarity_threshold: options.similarity_threshold,
-        filter_tags: options.filter_tags || null,
-        filter_created_by: options.filter_created_by || null
+      // Get all chunks for the user with their documents
+      const chunks = await db.knowledgeChunk.findMany({
+        where: {
+          document: {
+            createdBy: options.filter_created_by || null
+          }
+        },
+        include: {
+          document: {
+            select: {
+              title: true,
+              tags: true
+            }
+          }
+        },
+        take: options.match_count * 2 // Get more to filter by similarity
       });
 
-      if (error) throw error;
+      // Calculate similarity and filter
+      const results = chunks
+        .map(chunk => {
+          const embedding = JSON.parse(chunk.embedding);
+          const similarity = this.calculateCosineSimilarity(queryEmbedding, embedding);
+          
+          return {
+            id: chunk.id,
+            document_id: chunk.documentId,
+            chunk_text: chunk.chunkText,
+            similarity,
+            metadata: chunk.metadata ? JSON.parse(chunk.metadata) : {},
+            document_title: chunk.document.title,
+            document_tags: chunk.document.tags ? JSON.parse(chunk.document.tags) : []
+          };
+        })
+        .filter(chunk => chunk.similarity >= options.similarity_threshold)
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, options.match_count);
 
-      return data || [];
+      return results;
     } catch (error) {
       console.error('Error searching knowledge chunks:', error);
       return [];
@@ -175,19 +198,59 @@ export class VectorSearchRetrieval {
     }
   ): Promise<any[]> {
     try {
-      const { data, error } = await supabase.rpc('match_company_research', {
-        query_embedding: queryEmbedding,
-        match_count: options.match_count,
-        similarity_threshold: options.similarity_threshold
+      const companies = await db.companyResearchCache.findMany({
+        take: options.match_count * 2
       });
 
-      if (error) throw error;
+      // Calculate similarity and filter
+      const results = companies
+        .map(company => {
+          if (!company.companyEmbedding) return null;
+          
+          const embedding = JSON.parse(company.companyEmbedding);
+          const similarity = this.calculateCosineSimilarity(queryEmbedding, embedding);
+          
+          return {
+            id: company.id,
+            company_name: company.companyName,
+            description: company.description || '',
+            industry: company.industry || '',
+            similarity,
+            research_data: company.researchData ? JSON.parse(company.researchData) : {}
+          };
+        })
+        .filter((company): company is NonNullable<typeof company> => 
+          company !== null && company.similarity >= options.similarity_threshold
+        )
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, options.match_count);
 
-      return data || [];
+      return results;
     } catch (error) {
       console.error('Error searching company research:', error);
       return [];
     }
+  }
+
+  /**
+   * Calculate cosine similarity between two vectors
+   */
+  private calculateCosineSimilarity(vecA: number[], vecB: number[]): number {
+    if (vecA.length !== vecB.length) return 0;
+
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+
+    for (let i = 0; i < vecA.length; i++) {
+      dotProduct += vecA[i] * vecB[i];
+      normA += vecA[i] * vecA[i];
+      normB += vecB[i] * vecB[i];
+    }
+
+    if (normA === 0 || normB === 0) return 0;
+
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
   /**
@@ -263,6 +326,7 @@ export class VectorSearchRetrieval {
    */
   private async generateResponse(query: string, context: string): Promise<string> {
     try {
+      const zai = await ZAI.create();
       const prompt = `
 You are an AI assistant with access to a knowledge base. Please answer the user's question based on the provided context.
 
@@ -280,7 +344,7 @@ Instructions:
 
 Response:`;
 
-      const response = await this.zai.chat.completions.create({
+      const response = await zai.chat.completions.create({
         messages: [
           {
             role: 'system',
@@ -363,27 +427,23 @@ Response:`;
     try {
       const usageId = crypto.randomUUID();
 
-      const { data, error } = await supabase
-        .from('knowledge_usage')
-        .insert({
+      await db.knowledgeUsage.create({
+        data: {
           id: usageId,
-          user_id: userId,
+          userId,
           query,
-          retrieved_chunks: [
+          retrievedChunks: JSON.stringify([
             ...retrievalResult.knowledge_chunks.map(c => c.id),
             ...retrievalResult.company_research.map(c => c.id)
-          ],
+          ]),
           response: answer,
-          sources: this.formatSources(retrievalResult),
-          relevance_score: this.calculateRelevanceScore(retrievalResult),
-          response_time_ms: responseTime
-        })
-        .select('id')
-        .single();
+          sources: JSON.stringify(this.formatSources(retrievalResult)),
+          relevanceScore: this.calculateRelevanceScore(retrievalResult),
+          responseTimeMs: responseTime
+        }
+      });
 
-      if (error) throw error;
-
-      return data.id;
+      return usageId;
     } catch (error) {
       console.error('Error logging usage:', error);
       return crypto.randomUUID(); // Return fallback ID
@@ -415,43 +475,62 @@ Response:`;
   ): Promise<any[]> {
     try {
       // Get the document chunks
-      const { data: chunks, error: chunkError } = await supabase
-        .from('knowledge_chunks')
-        .select('embedding, chunk_text')
-        .eq('document_id', documentId)
-        .limit(1);
+      const chunks = await db.knowledgeChunk.findMany({
+        where: { documentId: documentId },
+        select: { embedding: true, chunkText: true },
+        take: 1
+      });
 
-      if (chunkError || !chunks || chunks.length === 0) {
+      if (!chunks || chunks.length === 0) {
         return [];
       }
 
       // Use the first chunk's embedding to find similar documents
-      const embedding = chunks[0].embedding;
+      const embedding = JSON.parse(chunks[0].embedding);
 
-      const { data: similarChunks, error: similarError } = await supabase
-        .rpc('match_knowledge_chunks', {
-          query_embedding: embedding,
-          match_count: limit * 2, // Get more chunks to find unique documents
-          similarity_threshold: 0.5,
-          filter_created_by: userId
-        });
+      // Find similar chunks
+      const allChunks = await db.knowledgeChunk.findMany({
+        where: {
+          document: {
+            createdBy: userId
+          },
+          documentId: {
+            not: documentId
+          }
+        },
+        include: {
+          document: {
+            select: {
+              title: true,
+              tags: true
+            }
+          }
+        },
+        take: limit * 2
+      });
 
-      if (similarError) return [];
+      // Calculate similarities and group by document
+      const documentSimilarities = new Map<string, { similarity: number; title: string; tags: string[] }>();
 
-      // Group by document and get unique documents
-      const uniqueDocuments = new Map();
-      similarChunks?.forEach((chunk: any) => {
-        if (chunk.document_id !== documentId && !uniqueDocuments.has(chunk.document_id)) {
-          uniqueDocuments.set(chunk.document_id, {
-            id: chunk.document_id,
-            title: chunk.document_title,
-            similarity: chunk.similarity,
-            tags: chunk.document_tags
+      allChunks.forEach(chunk => {
+        const chunkEmbedding = JSON.parse(chunk.embedding);
+        const similarity = this.calculateCosineSimilarity(embedding, chunkEmbedding);
+        
+        if (!documentSimilarities.has(chunk.documentId) || 
+            documentSimilarities.get(chunk.documentId)!.similarity < similarity) {
+          documentSimilarities.set(chunk.documentId, {
+            similarity,
+            title: chunk.document.title,
+            tags: chunk.document.tags ? JSON.parse(chunk.document.tags) : []
           });
         }
       });
 
-      return Array.from(uniqueDocuments.values()).slice(0, limit);
+      // Sort by similarity and limit
+      return Array.from(documentSimilarities.entries())
+        .map(([id, data]) => ({ id, ...data }))
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, limit);
     } catch (error) {
       console.error('Error getting similar documents:', error);
       return [];
@@ -470,34 +549,35 @@ Response:`;
     } = {}
   ): Promise<any[]> {
     try {
-      let dbQuery = supabase
-        .from('knowledge_documents')
-        .select('*')
-        .eq('created_by', userId);
+      const where: any = {
+        createdBy: userId
+      };
 
       // Apply text search
       if (query) {
-        dbQuery = dbQuery.or(`title.ilike.%${query}%,content.ilike.%${query}%`);
+        where.OR = [
+          { title: { contains: query } },
+          { content: { contains: query } }
+        ];
       }
 
       // Apply tag filter
       if (options.tags && options.tags.length > 0) {
-        dbQuery = dbQuery.contains('tags', options.tags);
+        where.tags = {
+          contains: JSON.stringify(options.tags)
+        };
       }
 
-      // Apply limit
-      if (options.limit) {
-        dbQuery = dbQuery.limit(options.limit);
-      }
+      const documents = await db.knowledgeDocument.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: options.limit || 10
+      });
 
-      // Order by relevance (simple heuristic)
-      dbQuery = dbQuery.order('created_at', { ascending: false });
-
-      const { data, error } = await dbQuery;
-
-      if (error) throw error;
-
-      return data || [];
+      return documents.map(doc => ({
+        ...doc,
+        tags: doc.tags ? JSON.parse(doc.tags) : []
+      }));
     } catch (error) {
       console.error('Error searching documents by text:', error);
       return [];
@@ -518,23 +598,27 @@ Response:`;
       const days = options.days || 30;
       const limit = options.limit || 100;
 
-      const { data, error } = await supabase
-        .from('knowledge_usage')
-        .select('*')
-        .eq('user_id', userId)
-        .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(limit);
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
 
-      if (error) throw error;
+      const usageData = await db.knowledgeUsage.findMany({
+        where: {
+          userId,
+          createdAt: {
+            gte: cutoffDate
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit
+      });
 
       // Calculate analytics
       const analytics = {
-        total_queries: data?.length || 0,
-        avg_response_time: data?.reduce((sum, usage) => sum + usage.response_time_ms, 0) / (data?.length || 1) || 0,
-        avg_relevance_score: data?.reduce((sum, usage) => sum + (usage.relevance_score || 0), 0) / (data?.length || 1) || 0,
-        recent_queries: data?.slice(0, 10) || [],
-        daily_usage: this.groupUsageByDay(data || [])
+        total_queries: usageData.length,
+        avg_response_time: usageData.reduce((sum, usage) => sum + usage.responseTimeMs, 0) / (usageData.length || 1) || 0,
+        avg_relevance_score: usageData.reduce((sum, usage) => sum + (usage.relevanceScore || 0), 0) / (usageData.length || 1) || 0,
+        recent_queries: usageData.slice(0, 10),
+        daily_usage: this.groupUsageByDay(usageData)
       };
 
       return analytics;
@@ -557,7 +641,7 @@ Response:`;
     const grouped: Record<string, number> = {};
 
     usageData.forEach(usage => {
-      const date = usage.created_at.split('T')[0];
+      const date = usage.createdAt.toISOString().split('T')[0];
       grouped[date] = (grouped[date] || 0) + 1;
     });
 
