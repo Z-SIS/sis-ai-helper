@@ -40,7 +40,7 @@ type AgentType = keyof typeof AgentInputSchemas;
 const TOKEN_CONFIG = {
   // Model configurations for different complexity levels
   models: {
-    fast: 'gemini-1.5-flash', // Google AI model
+    fast: 'gemini-pro', // Google AI model - more stable and widely supported
   },
   
   // Token limits based on agent complexity
@@ -1048,7 +1048,7 @@ Analyze the search results and provide accurate, factual information.`;
       // Generate content using Vercel AI SDK with enhanced error handling
       try {
         const result = await generateText({
-          model: google('gemini-1.5-flash', {
+          model: google('gemini-pro', {
             apiKey: googleApiKeyForProcessing,
           }),
           system: "You are a business research analyst. Process search results to extract accurate company information.",
@@ -1151,7 +1151,7 @@ Analyze the search results and provide accurate, factual information.`;
       
       // Generate content using Vercel AI SDK
       const result = await generateText({
-        model: google('gemini-1.5-flash', {
+        model: google('gemini-pro', {
           apiKey: googleApiKey,
         }),
         system: systemPrompt,
