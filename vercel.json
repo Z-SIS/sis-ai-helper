@@ -1,19 +1,5 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "env": {
     "NEXT_TELEMETRY_DISABLED": "1"
-  },
-  "build": {
-    "env": {
-      "PRISMA_GENERATE_DATAPROXY": "false"
-    }
   }
 }
