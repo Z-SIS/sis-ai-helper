@@ -162,14 +162,14 @@ Research "Apple Inc." and provide the requested company information in the exact
         googleApi: {
           simpleCall: {
             success: true,
-            response: simpleResult.text,
-            responseLength: simpleResult.text.length,
+            response: simpleResult,
+            responseLength: simpleResult.length,
           },
           companyResearch: {
             success: !!parsedCompanyData,
-            rawResponse: companyResult.text,
+            rawResponse: companyResult,
             parsedData: parsedCompanyData,
-            responseLength: companyResult.text.length,
+            responseLength: companyResult.length,
           },
         },
         tavilyApi: tavilyResult,

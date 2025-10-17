@@ -79,13 +79,23 @@ async function callGoogleAI(prompt: string, systemPrompt?: string, model: string
 
   console.log(`🤖 Calling Google AI with model: ${model}`);
   console.log(`🔑 API Key: ${apiKey.substring(0, 10)}...`);
+  console.log(`📝 Prompt preview: ${prompt.substring(0, 100)}...`);
 
   const contents = [];
   
+  // Google AI API handles system prompts differently - they should be part of the conversation
   if (systemPrompt) {
     contents.push({
       role: "user",
-      parts: [{ text: `${systemPrompt}\n\n${prompt}` }]
+      parts: [{ text: systemPrompt }]
+    });
+    contents.push({
+      role: "model", 
+      parts: [{ text: "I understand. I'll follow those instructions." }]
+    });
+    contents.push({
+      role: "user",
+      parts: [{ text: prompt }]
     });
   } else {
     contents.push({
@@ -94,6 +104,34 @@ async function callGoogleAI(prompt: string, systemPrompt?: string, model: string
     });
   }
 
+  const requestBody = {
+    contents,
+    generationConfig: {
+      temperature: 0.1,
+      maxOutputTokens: 2000,
+    },
+    safetySettings: [
+      {
+        category: "HARM_CATEGORY_HARASSMENT",
+        threshold: "BLOCK_NONE"
+      },
+      {
+        category: "HARM_CATEGORY_HATE_SPEECH", 
+        threshold: "BLOCK_NONE"
+      },
+      {
+        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+        threshold: "BLOCK_NONE"
+      },
+      {
+        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+        threshold: "BLOCK_NONE"
+      }
+    ]
+  };
+
+  console.log('📤 Request body structure:', JSON.stringify(requestBody, null, 2).substring(0, 500) + '...');
+
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
     {
@@ -101,16 +139,12 @@ async function callGoogleAI(prompt: string, systemPrompt?: string, model: string
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 2000,
-        }
-      }),
+      body: JSON.stringify(requestBody),
     }
   );
 
+  console.log(`📡 API Response Status: ${response.status}`);
+  
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`❌ Google API Error (${response.status}):`, errorText);
@@ -119,8 +153,17 @@ async function callGoogleAI(prompt: string, systemPrompt?: string, model: string
 
   const data = await response.json();
   console.log('✅ Google AI response received');
+  console.log('📊 Response structure:', JSON.stringify(data, null, 2).substring(0, 300) + '...');
   
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  console.log(`📝 Extracted text length: ${text.length}`);
+  
+  if (!text) {
+    console.error('❌ No text extracted from response');
+    console.log('Full response data:', JSON.stringify(data, null, 2));
+  }
+  
+  return text;
 }
 
 // ============================================================================
