@@ -1023,17 +1023,17 @@ REQUIRED JSON FORMAT:
   "sources": [{"title": "string", "url": "string", "reliability": "high/medium/low"}]
 }
 
-Analyze the search results and provide accurate, factual information only.`;
+Analyze the search results and provide accurate, factual information.`;
 
       // Check if Google AI API key is available
-      const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-      if (!googleApiKey || googleApiKey === 'your_google_gemini_api_key_here') {
+      const googleApiKeyForProcessing = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+      if (!googleApiKeyForProcessing || googleApiKeyForProcessing === 'your_google_gemini_api_key_here') {
         console.warn('GOOGLE_GENERATIVE_AI_API_KEY not configured for company research, using demo data');
         return this.generateDemoCompanyResearch(companyName, industry, location);
       }
 
       // Initialize Google AI
-      const genAI = new GoogleGenerativeAI(googleApiKey);
+      const genAI = new GoogleGenerativeAI(googleApiKeyForProcessing);
       const model = genAI.getGenerativeModel({ 
         model: TOKEN_CONFIG.models.fast,
         generationConfig: {
