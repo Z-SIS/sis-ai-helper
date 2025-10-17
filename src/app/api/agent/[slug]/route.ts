@@ -67,9 +67,6 @@ export async function POST(
         }
       });
       
-      // Ensure proper headers
-      response.headers.set('Content-Type', 'application/json');
-      
       return response;
       
     } catch (aiError) {
@@ -156,9 +153,6 @@ export async function POST(
           }
         });
         
-        // Ensure proper headers
-        response.headers.set('Content-Type', 'application/json');
-        
         return response;
       }
       
@@ -186,9 +180,6 @@ export async function POST(
         }
       });
       
-      // Ensure proper headers
-      response.headers.set('Content-Type', 'application/json');
-      
       return response;
     }
     
@@ -204,9 +195,6 @@ export async function POST(
       },
       { status: 500 }
     );
-    
-    // Ensure proper headers
-    errorResponse.headers.set('Content-Type', 'application/json');
     
     return errorResponse;
   }
@@ -235,7 +223,6 @@ export async function GET() {
     
     // Create response with proper headers
     const response = NextResponse.json(responseData);
-    response.headers.set('Content-Type', 'application/json');
     
     return response;
   } catch (error) {
@@ -247,7 +234,6 @@ export async function GET() {
     
     // Create error response with proper headers
     const response = NextResponse.json(errorData, { status: 500 });
-    response.headers.set('Content-Type', 'application/json');
     
     return response;
   }

@@ -64,6 +64,13 @@ export function HistorySidebar() {
       setTasks(history);
     } catch (error) {
       console.error('Failed to load task history:', error);
+      // Check if it's a Headers-related error (common in production without Supabase)
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = (error as Error).message;
+        if (errorMessage.includes('Headers') || errorMessage.includes('Invalid value')) {
+          console.warn('🔐 Headers error caught - this is expected without Supabase configuration');
+        }
+      }
       // Provide demo data on error as well
       setTasks([
         {
