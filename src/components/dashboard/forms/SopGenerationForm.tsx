@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SopGenerationInput, SopGenerationOutput } from '@/shared/schemas';
+import { saveTaskToHistory } from '@/components/dashboard/history-sidebar';
 
 const formSchema = z.object({
   processName: z.string().min(1, 'Process name is required'),
@@ -54,6 +55,8 @@ export function SopGenerationForm() {
     },
     onSuccess: (data) => {
       setResult(data);
+      // Save to history
+      saveTaskToHistory('generate-sop', mutation.variables as SopGenerationInput, data);
     },
   });
 

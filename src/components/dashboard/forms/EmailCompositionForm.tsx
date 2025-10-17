@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EmailCompositionInput, EmailCompositionOutput } from '@/shared/schemas';
+import { saveTaskToHistory } from '@/components/dashboard/history-sidebar';
 
 const formSchema = z.object({
   recipient: z.string().min(1, 'Recipient is required'),
@@ -60,6 +61,8 @@ export function EmailCompositionForm() {
     },
     onSuccess: (data) => {
       setResult(data);
+      // Save to history
+      saveTaskToHistory('compose-email', mutation.variables as EmailCompositionInput, data);
     },
   });
 

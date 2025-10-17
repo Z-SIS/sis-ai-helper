@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CompanyResearchInput, CompanyResearchOutput, CompanyResearchInputSchema } from '@/shared/schemas';
+import { saveTaskToHistory } from '@/components/dashboard/history-sidebar';
 
 const formSchema = CompanyResearchInputSchema;
 
@@ -48,6 +49,8 @@ export function CompanyResearchForm() {
     },
     onSuccess: (data) => {
       setResult(data);
+      // Save to history
+      saveTaskToHistory('company-research', mutation.variables as CompanyResearchInput, data);
     },
   });
 

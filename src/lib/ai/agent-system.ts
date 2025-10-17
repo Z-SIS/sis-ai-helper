@@ -606,6 +606,27 @@ class GoogleAIAgentSystem {
     return `${agentType}:${JSON.stringify(input)}`;
   }
   
+  private saveTaskToHistory(agentType: string, input: AgentInput, output: AgentOutput) {
+    if (typeof window !== 'undefined') {
+      try {
+        const tasks = JSON.parse(localStorage.getItem('sis-ai-helper-task-history') || '[]');
+        const newTask = {
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          agent_type: agentType,
+          input_data: input,
+          output_data: output,
+          created_at: new Date().toISOString(),
+        };
+        tasks.unshift(newTask);
+        const updatedTasks = tasks.slice(0, 50); // Keep last 50 tasks
+        localStorage.setItem('sis-ai-helper-task-history', JSON.stringify(updatedTasks));
+        console.log(`✅ Task saved to history: ${agentType}`);
+      } catch (error) {
+        console.warn('Failed to save task to history:', error);
+      }
+    }
+  }
+
   private trackTokenUsage(agentType: string, tokens: number): void {
     this.tokenUsage.total += tokens;
     this.tokenUsage.byAgent[agentType] = (this.tokenUsage.byAgent[agentType] || 0) + tokens;
@@ -1476,6 +1497,7 @@ Analyze the search results and provide accurate, factual information.`;
         if (agentType === 'company-research') {
           const input = args as any;
           const demoResponse = this.generateDemoCompanyResearch(input.companyName, input.industry, input.location);
+          this.saveTaskToHistory(agentType, input, demoResponse);
           return demoResponse;
         }
         
@@ -1502,6 +1524,9 @@ Analyze the search results and provide accurate, factual information.`;
       
       // Parse the AI response
       const parsedResponse = this.parseAIResponse(text, agentType);
+      
+      // Save task to local storage history
+      this.saveTaskToHistory(agentType, input, parsedResponse);
       
       // Cache the result
       agentCache.set(cacheKey, parsedResponse, 30);

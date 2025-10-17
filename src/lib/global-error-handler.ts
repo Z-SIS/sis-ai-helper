@@ -15,9 +15,7 @@ if (typeof window !== 'undefined') {
       event.message.includes('Failed to load resource: the server responded with a status of 403') ||
       event.message.includes('Failed to load task history') ||
       event.message.includes('Invalid value') && event.message.includes('Headers') ||
-      event.message.includes('TypeError: Failed to execute') && event.message.includes('Headers') ||
-      event.message.includes('Supabase') ||
-      event.message.includes('database')
+      event.message.includes('TypeError: Failed to execute') && event.message.includes('Headers')
     )) {
       console.warn('🌐 Expected authentication/network error suppressed:', event.message);
       event.preventDefault();
@@ -48,9 +46,7 @@ if (typeof window !== 'undefined') {
           event.reason.includes('403') ||
           event.reason.includes('Failed to load task history') ||
           event.reason.includes('Headers') ||
-          event.reason.includes('TypeError: Failed to execute') && event.reason.includes('Headers') ||
-          event.reason.includes('Supabase') ||
-          event.reason.includes('database')) {
+          event.reason.includes('TypeError: Failed to execute') && event.reason.includes('Headers')) {
         console.warn('🔐 Expected authentication promise rejection suppressed:', event.reason);
         event.preventDefault();
         return false;
@@ -64,9 +60,7 @@ if (typeof window !== 'undefined') {
           event.reason.message.includes('TypeError: Failed to execute') ||
           event.reason.message.includes('DialogContent') ||
           event.reason.message.includes('DialogTitle') ||
-          event.reason.message.includes('identitytoolkit') ||
-          event.reason.message.includes('Supabase') ||
-          event.reason.message.includes('database')) {
+          event.reason.message.includes('identitytoolkit')) {
         console.warn('🔐 Expected Headers/auth promise rejection suppressed:', event.reason.message);
         event.preventDefault();
         return false;
