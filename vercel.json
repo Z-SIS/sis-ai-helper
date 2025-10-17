@@ -5,7 +5,15 @@
   "framework": "nextjs",
   "functions": {
     "src/app/api/**/*.ts": {
-      "maxDuration": 30
+      "runtime": "nodejs18.x"
+    }
+  },
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "build": {
+    "env": {
+      "PRISMA_GENERATE_DATAPROXY": "false"
     }
   }
 }

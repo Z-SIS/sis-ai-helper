@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "db:push": "prisma db push",
@@ -12,7 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "dev:custom": "nodemon --exec \"npx tsx server.ts\" --watch server.ts --watch src --ext ts,tsx,js,jsx 2>&1 | tee dev.log",
-    "start:custom": "NODE_ENV=production tsx server.ts 2>&1 | tee server.log"
+    "start:custom": "NODE_ENV=production tsx server.ts 2>&1 | tee server.log",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.0.12",
