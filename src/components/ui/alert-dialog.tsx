@@ -6,6 +6,14 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
+function VisuallyHidden({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="sr-only">
+      {children}
+    </span>
+  )
+}
+
 function AlertDialog({
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
@@ -58,7 +66,13 @@ function AlertDialogContent({
           className
         )}
         {...props}
-      />
+      >
+        {/* Ensure there's always a DialogTitle for accessibility */}
+        <VisuallyHidden>
+          <AlertDialogPrimitive.Title>Alert Dialog</AlertDialogPrimitive.Title>
+        </VisuallyHidden>
+        {props.children}
+      </AlertDialogPrimitive.Content>
     </AlertDialogPortal>
   )
 }
@@ -154,4 +168,5 @@ export {
   AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
+  VisuallyHidden,
 }

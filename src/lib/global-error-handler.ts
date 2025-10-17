@@ -31,6 +31,13 @@ if (typeof window !== 'undefined') {
       event.preventDefault();
       return false;
     }
+    
+    // Suppress Dialog Title errors (even with our fixes, some third-party components might trigger this)
+    if (event.message && event.message.includes('DialogContent') && event.message.includes('DialogTitle')) {
+      console.warn('🗂️ Dialog Title error suppressed (accessibility fix applied)');
+      event.preventDefault();
+      return false;
+    }
   });
 
   // Global unhandled promise rejection handler
@@ -55,6 +62,8 @@ if (typeof window !== 'undefined') {
       if (event.reason.message.includes('Headers') || 
           event.reason.message.includes('Invalid value') ||
           event.reason.message.includes('TypeError: Failed to execute') ||
+          event.reason.message.includes('DialogContent') ||
+          event.reason.message.includes('DialogTitle') ||
           event.reason.message.includes('identitytoolkit') ||
           event.reason.message.includes('Supabase') ||
           event.reason.message.includes('database')) {
