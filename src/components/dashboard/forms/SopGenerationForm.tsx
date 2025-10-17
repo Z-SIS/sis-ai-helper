@@ -64,21 +64,33 @@ export function SopGenerationForm() {
   const downloadAsMarkdown = () => {
     if (!result) return;
     
-    let markdown = `# ${result.title}\n\n`;
-    markdown += `**Version:** ${result.version}\n`;
-    markdown += `**Date:** ${result.date}\n\n`;
-    markdown += `## Purpose\n${result.purpose}\n\n`;
-    markdown += `## Scope\n${result.scope}\n\n`;
+    let markdown = `# ${result.title || 'Standard Operating Procedure'}\n\n`;
+    markdown += `**Version:** ${result.version || '1.0'}\n`;
+    markdown += `**Date:** ${result.date || new Date().toISOString().split('T')[0]}\n\n`;
+    markdown += `## Purpose\n${result.purpose || 'Not specified'}\n\n`;
+    markdown += `## Scope\n${result.scope || 'Not specified'}\n\n`;
     markdown += `## Responsibilities\n`;
-    result.responsibilities.forEach(resp => {
-      markdown += `- ${resp}\n`;
-    });
+    
+    const responsibilities = result.responsibilities || [];
+    if (responsibilities.length > 0) {
+      responsibilities.forEach(resp => {
+        markdown += `- ${resp}\n`;
+      });
+    } else {
+      markdown += `- No specific responsibilities defined\n`;
+    }
+    
     markdown += `\n## Procedure\n`;
-    result.procedure.forEach(step => {
-      markdown += `### Step ${step.step}: ${step.action}\n`;
-      markdown += `${step.details}\n`;
-      markdown += `**Owner:** ${step.owner}\n\n`;
-    });
+    const procedures = result.procedure || [];
+    if (procedures.length > 0) {
+      procedures.forEach(step => {
+        markdown += `### Step ${step.step}: ${step.action}\n`;
+        markdown += `${step.details || step.action}\n`;
+        markdown += `**Owner:** ${step.owner || 'Not specified'}\n\n`;
+      });
+    } else {
+      markdown += `No specific procedures defined.\n`;
+    }
     
     if (result.references && result.references.length > 0) {
       markdown += `## References\n`;
@@ -91,7 +103,7 @@ export function SopGenerationForm() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${result.title.replace(/\s+/g, '_')}_SOP.md`;
+    a.download = `${(result.title || 'SOP').replace(/\s+/g, '_')}_SOP.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -233,9 +245,9 @@ export function SopGenerationForm() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>{result.title}</CardTitle>
+                <CardTitle>{result.title || 'Standard Operating Procedure'}</CardTitle>
                 <CardDescription>
-                  Version {result.version} • {result.date}
+                  Version {result.version || '1.0'} • {result.date || new Date().toISOString().split('T')[0]}
                 </CardDescription>
               </div>
               <Button onClick={downloadAsMarkdown} variant="outline" size="sm">
@@ -247,18 +259,18 @@ export function SopGenerationForm() {
           <CardContent className="space-y-6">
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Purpose</h4>
-              <p className="text-sm text-gray-600">{result.purpose}</p>
+              <p className="text-sm text-gray-600">{result.purpose || 'Not specified'}</p>
             </div>
 
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Scope</h4>
-              <p className="text-sm text-gray-600">{result.scope}</p>
+              <p className="text-sm text-gray-600">{result.scope || 'Not specified'}</p>
             </div>
 
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Responsibilities</h4>
               <ul className="list-disc list-inside space-y-1">
-                {result.responsibilities.map((responsibility, index) => (
+                {(result.responsibilities || []).map((responsibility, index) => (
                   <li key={index} className="text-sm text-gray-600">{responsibility}</li>
                 ))}
               </ul>
@@ -267,7 +279,7 @@ export function SopGenerationForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3">Procedure</h4>
               <div className="space-y-4">
-                {result.procedure.map((step) => (
+                {(result.procedure || []).map((step) => (
                   <div key={step.step} className="border-l-2 border-blue-200 pl-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
@@ -275,9 +287,9 @@ export function SopGenerationForm() {
                       </span>
                       <h5 className="font-medium text-sm">{step.action}</h5>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">{step.details}</p>
+                    <p className="text-sm text-gray-600 mb-2">{step.details || step.action}</p>
                     <p className="text-xs text-gray-500">
-                      <strong>Owner:</strong> {step.owner}
+                      <strong>Owner:</strong> {step.owner || 'Not specified'}
                     </p>
                   </div>
                 ))}

@@ -648,20 +648,178 @@ class GoogleAIAgentSystem {
   }
   
   private parseSOPResponse(response: string): AgentOutput {
-    // Generate a proper SOP structure from the response
-    const lines = response.split('\n').filter(line => line.trim());
-    const title = lines[0]?.replace(/^#\s*/, '') || 'Standard Operating Procedure';
-    
-    return {
-      title,
-      content: response,
-      summary: `SOP document generated with ${lines.length} sections`,
-      sections: lines.map((line, index) => ({
-        id: `section-${index}`,
-        title: line.replace(/^#+\s*/, ''),
-        content: line
-      }))
-    } as AgentOutput;
+    try {
+      console.log('🔍 Parsing SOP response...');
+      console.log('📝 Raw response preview:', response.substring(0, 200) + '...');
+      
+      // Try to extract structured information from the response
+      const lines = response.split('\n').filter(line => line.trim());
+      const title = lines.find(line => line.startsWith('#'))?.replace(/^#\s*/, '') || 
+                   lines.find(line => line.toLowerCase().includes('title:'))?.split(':')[1]?.trim() ||
+                   lines[0]?.trim() || 'Standard Operating Procedure';
+      
+      // Extract version
+      const versionMatch = response.match(/version[:\s]*([0-9.]+)/i) || 
+                          response.match(/v[:\s]*([0-9.]+)/i);
+      const version = versionMatch ? versionMatch[1] : '1.0';
+      
+      // Extract date or use current date
+      const dateMatch = response.match(/date[:\s]*(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})/i);
+      const date = dateMatch ? dateMatch[1] : new Date().toISOString().split('T')[0];
+      
+      // Extract purpose
+      const purposeSection = response.match(/purpose[:\s]*([^]*?)(?=scope|responsibilities|procedure|\n#|$)/i);
+      const purpose = purposeSection ? purposeSection[1].trim() : 
+                     lines.find(line => line.toLowerCase().includes('purpose'))?.split(':')[1]?.trim() ||
+                     'This SOP outlines the standard procedures for the identified process.';
+      
+      // Extract scope
+      const scopeSection = response.match(/scope[:\s]*([^]*?)(?=purpose|responsibilities|procedure|\n#|$)/i);
+      const scope = scopeSection ? scopeSection[1].trim() :
+                   lines.find(line => line.toLowerCase().includes('scope'))?.split(':')[1]?.trim() ||
+                   'This SOP applies to all personnel involved in the process.';
+      
+      // Extract responsibilities (as simple strings for compatibility)
+      const responsibilities: string[] = [];
+      const respSection = response.match(/responsibilities[:\s]*([^]*?)(?=procedure|references|\n#|$)/i);
+      if (respSection) {
+        const respLines = respSection[1].split('\n').filter(line => line.trim());
+        respLines.forEach(line => {
+          const cleaned = line.replace(/^[-*•]\s*/, '').replace(/^\d+\.\s*/, '').trim();
+          if (cleaned && !cleaned.toLowerCase().includes('responsibilities')) {
+            responsibilities.push(cleaned);
+          }
+        });
+      }
+      
+      // If no responsibilities found, add default ones
+      if (responsibilities.length === 0) {
+        responsibilities.push('Process Owner: Overall responsibility for SOP implementation');
+        responsibilities.push('Quality Team: Monitor compliance and effectiveness');
+        responsibilities.push('All Staff: Follow procedures as outlined');
+      }
+      
+      // Extract procedure steps
+      const procedure: any[] = [];
+      const procSection = response.match(/procedure[:\s]*([^]*?)(?=references|\n#|$)/i);
+      if (procSection) {
+        const procLines = procSection[1].split('\n').filter(line => line.trim());
+        let stepNumber = 1;
+        
+        procLines.forEach(line => {
+          // Look for step patterns
+          const stepMatch = line.match(/^(\d+)\.\s*(.+)|step\s*(\d+):\s*(.+)|^[-*•]\s*(.+)/i);
+          if (stepMatch) {
+            const step = stepMatch[1] || stepMatch[3] || stepNumber.toString();
+            const action = stepMatch[2] || stepMatch[4] || line.replace(/^[-*•]\s*/, '').trim();
+            
+            procedure.push({
+              step: parseInt(step),
+              action: action,
+              details: action, // Use action as details for now
+              owner: 'Process Owner' // Default owner
+            });
+            stepNumber++;
+          }
+        });
+      }
+      
+      // If no procedure steps found, add default ones
+      if (procedure.length === 0) {
+        procedure.push({
+          step: 1,
+          action: 'Preparation',
+          details: 'Gather all necessary resources and information',
+          owner: 'Process Owner'
+        });
+        procedure.push({
+          step: 2,
+          action: 'Execution',
+          details: 'Follow the outlined steps and procedures',
+          owner: 'Process Owner'
+        });
+        procedure.push({
+          step: 3,
+          action: 'Review',
+          details: 'Verify completion and document results',
+          owner: 'Quality Team'
+        });
+      }
+      
+      // Extract references
+      const references: string[] = [];
+      const refSection = response.match(/references[:\s]*([^]*?)(?=$)/i);
+      if (refSection) {
+        const refLines = refSection[1].split('\n').filter(line => line.trim());
+        refLines.forEach(line => {
+          const cleaned = line.replace(/^[-*•]\s*/, '').replace(/^\d+\.\s*/, '').trim();
+          if (cleaned && !cleaned.toLowerCase().includes('references')) {
+            references.push(cleaned);
+          }
+        });
+      }
+      
+      const sopData = {
+        title,
+        version,
+        date,
+        purpose,
+        scope,
+        responsibilities,
+        procedure,
+        references: references.length > 0 ? references : undefined,
+        content: response,
+        summary: `SOP document generated with ${procedure.length} steps and ${responsibilities.length} responsibilities`,
+        sections: lines.map((line, index) => ({
+          id: `section-${index}`,
+          title: line.replace(/^#+\s*/, ''),
+          content: line
+        }))
+      };
+      
+      console.log('✅ SOP data structured:', {
+        title: sopData.title,
+        stepsCount: sopData.procedure.length,
+        responsibilitiesCount: sopData.responsibilities.length
+      });
+      
+      return sopData as AgentOutput;
+      
+    } catch (error) {
+      console.error('❌ SOP parsing error:', error);
+      
+      // Fallback structure
+      const fallbackData = {
+        title: 'Standard Operating Procedure',
+        version: '1.0',
+        date: new Date().toISOString().split('T')[0],
+        purpose: 'This SOP outlines standard procedures for the identified process.',
+        scope: 'This SOP applies to all relevant personnel and processes.',
+        responsibilities: [
+          'Process Owner: Overall responsibility for implementation',
+          'Quality Team: Monitor compliance and effectiveness'
+        ],
+        procedure: [
+          {
+            step: 1,
+            action: 'Initial Setup',
+            details: 'Prepare necessary resources and documentation',
+            owner: 'Process Owner'
+          },
+          {
+            step: 2,
+            action: 'Execution',
+            details: 'Follow the established procedures',
+            owner: 'Process Owner'
+          }
+        ],
+        references: [],
+        content: response,
+        summary: 'SOP document generated'
+      };
+      
+      return fallbackData as AgentOutput;
+    }
   }
   
   private generateDemoCompanyResearch(companyName: string, industry?: string, location?: string): AgentOutput {
