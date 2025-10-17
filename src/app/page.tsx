@@ -155,22 +155,12 @@ export default function Home() {
             
             {/* Call to Action */}
             <div className="mb-8">
-              <Link href="/rag">
+              <Link href="/dashboard">
                 <Button 
                   className="px-8 py-3 text-lg bg-primary hover:bg-primary/90 text-primary-foreground mr-4"
                   size="lg"
                 >
-                  🚀 Try RAG Knowledge Base
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button 
-                  className="px-8 py-3 text-lg bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                  size="lg"
-                  variant="outline"
-                >
-                  Explore AI Dashboard
+                  🚀 Launch AI Agent Dashboard
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -254,11 +244,11 @@ export default function Home() {
             <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-lg max-w-3xl mx-auto">
               <h3 className="text-2xl font-bold mb-3">🚀 Ready to Transform Your Knowledge Management?</h3>
               <p className="mb-4">
-                Upload your first document and experience the power of AI-driven knowledge discovery
+                Experience the power of AI-driven knowledge discovery with our intelligent agents
               </p>
-              <Link href="/rag">
+              <Link href="/dashboard">
                 <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
-                  Start Using RAG Technology
+                  Launch AI Agent Dashboard
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -389,9 +379,9 @@ export default function Home() {
                 <div className="text-4xl font-bold text-primary mb-6">100%</div>
                 <p className="text-muted-foreground mb-6">Secure Document Management</p>
                 
-                <Link href="/rag">
+                <Link href="/dashboard">
                   <Button className="w-full mt-6">
-                    Start Using RAG Platform
+                    Start Using AI Agent Platform
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -415,8 +405,7 @@ export default function Home() {
             <div>
               <h3 className="text-lg font-semibold mb-4">USEFUL LINKS</h3>
               <ul className="space-y-2 text-sm opacity-80">
-                <li><Link href="/rag" className="hover:opacity-100">RAG Knowledge Base</Link></li>
-                <li><Link href="/dashboard" className="hover:opacity-100">Dashboard</Link></li>
+                <li><Link href="/dashboard" className="hover:opacity-100">AI Agent Dashboard</Link></li>
                 <li><Link href="#" className="hover:opacity-100">About Us</Link></li>
                 <li><Link href="#" className="hover:opacity-100">Services</Link></li>
                 <li><Link href="#" className="hover:opacity-100">Contact</Link></li>
