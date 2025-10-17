@@ -114,7 +114,7 @@ async function callGoogleAI(prompt: string, systemPrompt?: string, model: string
 
   // Add timeout to the fetch call
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
+  const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
 
   try {
     const response = await fetch(
@@ -1404,7 +1404,7 @@ Analyze the search results and provide accurate, factual information.`;
       // Generate content using direct Google API calls with timeout
       try {
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Google AI timeout')), 15000) // 15 second timeout
+          setTimeout(() => reject(new Error('Google AI timeout')), 22000) // 22 second timeout
         );
         
         const aiPromise = callGoogleAI(
@@ -1445,6 +1445,19 @@ Analyze the search results and provide accurate, factual information.`;
             message: aiError.message,
             stack: aiError.stack
           });
+        }
+        
+        // Try to create a basic response from search results when AI fails
+        if (searchResults && searchResults.length > 0) {
+          console.log('🔄 Creating fallback response from search results...');
+          
+          try {
+            const fallbackResponse = this.createFallbackFromSearchResults(searchResults, input);
+            console.log('✅ Fallback response created from search results');
+            return fallbackResponse;
+          } catch (fallbackError) {
+            console.error('❌ Failed to create fallback response:', fallbackError);
+          }
         }
         
         throw aiError;
@@ -1563,6 +1576,120 @@ Analyze the search results and provide accurate, factual information.`;
   // Clear cache
   clearCache() {
     agentCache.clear();
+  }
+
+  // Create fallback response from search results when AI fails
+  private createFallbackFromSearchResults(searchResults: any[], input: any): any {
+    const { companyName, industry, location } = input;
+    const current_date = new Date().toISOString().split('T')[0];
+    
+    // Extract basic information from search results
+    let description = `${companyName} is a company operating in various sectors. `;
+    let companyIndustry = industry || "Information not available";
+    let companyLocation = location || "Information not available";
+    let website = "Information not available";
+    let revenue = "Information not available";
+    let foundedYear = null;
+    
+    // Try to extract information from search results
+    if (searchResults.length > 0) {
+      const firstResult = searchResults[0];
+      
+      // Extract description from first result
+      if (firstResult.content) {
+        const sentences = firstResult.content.split('. ');
+        if (sentences.length > 0) {
+          description = sentences[0] + '.';
+        }
+      }
+      
+      // Extract website from search results
+      const websiteResult = searchResults.find(result => 
+        result.url && (result.url.includes('http') && !result.url.includes('search'))
+      );
+      if (websiteResult) {
+        website = websiteResult.url;
+      }
+      
+      // Try to find industry information
+      const industryResult = searchResults.find(result => 
+        result.content && result.content.toLowerCase().includes('industry')
+      );
+      if (industryResult && industryResult.content) {
+        const industryMatch = industryResult.content.match(/(?:industry|sector)[^:]*:\s*([^,\n]+)/i);
+        if (industryMatch) {
+          companyIndustry = industryMatch[1].trim();
+        }
+      }
+      
+      // Try to find location information
+      const locationResult = searchResults.find(result => 
+        result.content && result.content.toLowerCase().match(/(?:based|located|headquartered)/)
+      );
+      if (locationResult && locationResult.content) {
+        const locationMatch = locationResult.content.match(/(?:based|located|headquartered)\s+(?:in\s+)?([^,\n.]+)/i);
+        if (locationMatch) {
+          companyLocation = locationMatch[1].trim();
+        }
+      }
+      
+      // Try to find revenue information
+      const revenueResult = searchResults.find(result => 
+        result.content && result.content.toLowerCase().match(/(?:revenue|sales|income)/)
+      );
+      if (revenueResult && revenueResult.content) {
+        const revenueMatch = revenueResult.content.match(/\$(\d+(?:\.\d+)?)(?:\s*(billion|million|bn|mn))?/i);
+        if (revenueMatch) {
+          const amount = revenueMatch[1];
+          const unit = revenueMatch[2] || 'billion';
+          revenue = `$${amount} ${unit}`;
+        }
+      }
+      
+      // Try to find founding year
+      const foundedResult = searchResults.find(result => 
+        result.content && result.content.toLowerCase().match(/(?:founded|established|since)/)
+      );
+      if (foundedResult && foundedResult.content) {
+        const yearMatch = foundedResult.content.match(/\b(19|20)\d{2}\b/);
+        if (yearMatch) {
+          foundedYear = parseInt(yearMatch[0]);
+        }
+      }
+    }
+    
+    // Create fallback response
+    const fallbackResponse = {
+      companyName: companyName || 'Unknown',
+      industry: companyIndustry,
+      location: companyLocation,
+      description: description,
+      website: website,
+      foundedYear: foundedYear,
+      employeeCount: "Information not available",
+      revenue: revenue,
+      keyExecutives: [],
+      competitors: [],
+      recentNews: [
+        {
+          title: "Company Information Update",
+          summary: "Research is ongoing to gather the most current information about this company.",
+          date: current_date
+        }
+      ],
+      dataConfidence: 0.6,
+      unverifiedFields: foundedYear ? ["employeeCount", "keyExecutives"] : ["foundedYear", "employeeCount", "keyExecutives"],
+      confidenceScore: 0.6,
+      needsReview: true,
+      lastUpdated: current_date,
+      sources: searchResults.map(result => ({
+        title: result.name || 'Source',
+        url: result.url || '',
+        reliability: 'medium'
+      }))
+    };
+    
+    return fallbackResponse;
   }
 }
 
