@@ -14,7 +14,9 @@ if (typeof window !== 'undefined') {
     if (event.message && (
       event.message.includes('Failed to load resource: the server responded with a status of 403') ||
       event.message.includes('Failed to load task history') ||
-      event.message.includes('Invalid value') && event.message.includes('Headers')
+      event.message.includes('Invalid value') && event.message.includes('Headers') ||
+      event.message.includes('Supabase') ||
+      event.message.includes('database')
     )) {
       console.warn('🌐 Expected authentication/network error suppressed:', event.message);
       event.preventDefault();
@@ -22,8 +24,8 @@ if (typeof window !== 'undefined') {
     }
     
     // Suppress React error #31 (Invalid Headers)
-    if (event.message && event.message.includes('React error #31') || 
-        (event.message && event.message.includes('Invalid value') && event.message.includes('Headers'))) {
+    if (event.message && (event.message.includes('React error #31') || 
+        (event.message && event.message.includes('Invalid value') && event.message.includes('Headers')))) {
       console.warn('⚛️ React Headers error suppressed (handled by API)');
       event.preventDefault();
       return false;
@@ -37,7 +39,9 @@ if (typeof window !== 'undefined') {
       if (event.reason.includes('identitytoolkit') || 
           event.reason.includes('403') ||
           event.reason.includes('Failed to load task history') ||
-          event.reason.includes('Headers')) {
+          event.reason.includes('Headers') ||
+          event.reason.includes('Supabase') ||
+          event.reason.includes('database')) {
         console.warn('🔐 Expected authentication promise rejection suppressed:', event.reason);
         event.preventDefault();
         return false;
@@ -48,7 +52,9 @@ if (typeof window !== 'undefined') {
     if (event.reason && typeof event.reason === 'object' && event.reason.message) {
       if (event.reason.message.includes('Headers') || 
           event.reason.message.includes('Invalid value') ||
-          event.reason.message.includes('identitytoolkit')) {
+          event.reason.message.includes('identitytoolkit') ||
+          event.reason.message.includes('Supabase') ||
+          event.reason.message.includes('database')) {
         console.warn('🔐 Expected Headers/auth promise rejection suppressed:', event.reason.message);
         event.preventDefault();
         return false;

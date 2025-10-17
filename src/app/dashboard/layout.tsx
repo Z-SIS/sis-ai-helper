@@ -15,11 +15,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-<<<<<<< HEAD
-              <h1 className="text-2xl font-bold text-gray-900">SSS AI Helper</h1>
-=======
               <h1 className="text-2xl font-bold text-gray-900">SIS AI Helper</h1>
->>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
               <p className="text-sm text-gray-600">Security Services AI Assistant</p>
             </div>
             <div className="flex items-center space-x-4">

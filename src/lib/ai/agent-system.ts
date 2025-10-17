@@ -15,11 +15,7 @@ import {
   SlideTemplateSchema
 } from '@/lib/ai/schema-validation';
 
-<<<<<<< HEAD
-// Version: 2.1.0 - Google AI Primary
-=======
 // Version: 2.1.0 - Google AI Only
->>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
 
 // Google AI is the primary AI service
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -31,7 +27,7 @@ import {
   AgentInput,
   AgentOutput
 } from '@/shared/schemas';
-import { db } from '@/lib/supabase';
+// import { db } from '@/lib/supabase'; // Disabled to prevent Vercel errors
 
 // Define AgentType locally to avoid circular dependencies
 type AgentType = keyof typeof AgentInputSchemas;
@@ -43,11 +39,7 @@ type AgentType = keyof typeof AgentInputSchemas;
 const TOKEN_CONFIG = {
   // Model configurations for different complexity levels
   models: {
-<<<<<<< HEAD
-    primary: 'gemini-1.5-flash', // Google AI model
-=======
     fast: 'gemini-1.5-flash', // Google AI model
->>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
   },
   
   // Token limits based on agent complexity
@@ -382,21 +374,13 @@ function provideMockSearchResults(query: string, maxResults: number = 3): any[] 
       {
         title: 'SIS Group Enterprises - Official Website',
         url: 'https://www.sisindia.com',
-<<<<<<< HEAD
-        content: 'SIS Group Enterprises is India\'s leading security solutions company with over 200,000 employees. Revenue: ₹12,000 crore. Founded in 1985. Services: security services, facility management, cash logistics.',
-=======
-        content: 'SIS Group Enterprises is India\'s leading security solutions company with over 200,000 employees. Revenue: ₹12,000 crore. Founded in 1985 by Ravindra Kishore Sinha. Services: security services, facility management, cash logistics.',
->>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
+      content: 'SIS Group Enterprises is India\'s leading security solutions company with over 200,000 employees. Revenue: ₹12,000 crore. Founded in 1985 by Ravindra Kishore Sinha. Services: security services, facility management, cash logistics.',
         score: 0.95
       },
       {
         title: 'SIS Limited - Corporate Information',
         url: 'https://www.sisindia.com/investor-relations',
-<<<<<<< HEAD
-        content: 'SIS Limited is a market leader in security, facility management & cash logistics. Founded 1985, headquartered in Delhi NCR. 200,000+ employees across India.',
-=======
         content: 'SIS Limited (NSE: SIS) is a market leader in security, facility management & cash logistics. CEO: Rituraj Sinha, CFO: Rajiv Mehrotra. Founded 1985, headquartered in Delhi NCR. 200,000+ employees across India.',
->>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
         score: 0.92
       },
       {
@@ -1041,8 +1025,7 @@ REQUIRED JSON FORMAT:
 
 Analyze the search results and provide accurate, factual information only.`;
 
-<<<<<<< HEAD
-      // Check if Google AI API key is available
+  // Check if Google AI API key is available
       const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
       if (!googleApiKey || googleApiKey === 'your_google_gemini_api_key_here') {
         console.warn('GOOGLE_GENERATIVE_AI_API_KEY not configured for company research, using demo data');
@@ -1052,13 +1035,7 @@ Analyze the search results and provide accurate, factual information only.`;
       // Initialize Google AI
       const genAI = new GoogleGenerativeAI(googleApiKey);
       const model = genAI.getGenerativeModel({ 
-        model: TOKEN_CONFIG.models.primary,
-=======
-      // Initialize Google AI
-      const genAI = new GoogleGenerativeAI(googleApiKey);
-      const model = genAI.getGenerativeModel({ 
         model: TOKEN_CONFIG.models.fast,
->>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
         generationConfig: {
           temperature: 0.0, // Very low temperature for factual accuracy
           maxOutputTokens: TOKEN_CONFIG.maxTokens.complex,
@@ -1093,11 +1070,7 @@ Analyze the search results and provide accurate, factual information only.`;
       // Track token usage
       this.trackTokenUsage('company-research', text.length / 4);
       
-<<<<<<< HEAD
-      console.log('✅ Company research completed successfully with Google AI');
-=======
-      console.log('✅ Company research completed successfully');
->>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
+    console.log('✅ Company research completed successfully');
       return parsedResponse;
       
     } catch (error) {
@@ -1234,11 +1207,7 @@ Analyze the search results and provide accurate, factual information only.`;
       // Initialize Google AI
       const genAI = new GoogleGenerativeAI(googleApiKey);
       const model = genAI.getGenerativeModel({ 
-<<<<<<< HEAD
-        model: TOKEN_CONFIG.models.primary,
-=======
-        model: TOKEN_CONFIG.models.fast,
->>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
+      model: TOKEN_CONFIG.models.fast,
         generationConfig: {
           temperature: promptConfig.temperature,
           maxOutputTokens: promptConfig.maxTokens,

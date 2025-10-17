@@ -47,11 +47,7 @@ export default function DashboardPage() {
                 <div className="text-center py-12">
                   <div className="max-w-4xl mx-auto">
                     <h2 className="text-3xl font-bold text-foreground mb-4">
-<<<<<<< HEAD
-                      SSS Sales Intelligence Dashboard
-=======
                       SIS Sales Intelligence Dashboard
->>>>>>> a2e2a6c76f13a7d105f2a332da938e23d0affaaf
                     </h2>
                     <p className="text-lg text-muted-foreground mb-8">
                       Transform your sales process with AI-powered insights. Select a tool from the sidebar to get started with comprehensive sales intelligence and research.
