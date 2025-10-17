@@ -6,6 +6,14 @@ import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+function VisuallyHidden({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="sr-only">
+      {children}
+    </span>
+  )
+}
+
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -65,6 +73,10 @@ function DialogContent({
         )}
         {...props}
       >
+        {/* Ensure there's always a DialogTitle for accessibility */}
+        <VisuallyHidden>
+          <DialogPrimitive.Title>Dialog</DialogPrimitive.Title>
+        </VisuallyHidden>
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close
@@ -140,4 +152,5 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
+  VisuallyHidden,
 }

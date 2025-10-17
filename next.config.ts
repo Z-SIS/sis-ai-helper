@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: https://vercel.live",
               "font-src 'self' data:",
-              "connect-src 'self' https://api.google.com https://generativelanguage.googleapis.com https://api.tavily.com https://vercel.live",
+              "connect-src 'self' https://api.google.com https://generativelanguage.googleapis.com https://api.tavily.com https://vercel.live wss://ws-us3.pusher.com wss://*.pusher.com",
               "frame-src 'self' https://vercel.live",
               "child-src 'self' https://vercel.live",
               "default-src 'self'",
