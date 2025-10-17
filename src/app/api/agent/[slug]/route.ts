@@ -63,10 +63,23 @@ export async function POST(
       
       console.log(`✅ AI response generated for: ${agentType}`);
       
+      // Handle company research response format
+      let processedResult = result;
+      if (agentType === 'company-research' && result.content) {
+        try {
+          // Parse the JSON content to get the actual company data
+          const companyData = JSON.parse(result.content);
+          processedResult = companyData;
+        } catch (parseError) {
+          console.warn('Failed to parse company research content, using original result');
+          // If parsing fails, use the original result
+        }
+      }
+      
       // Create response with proper headers
       const response = NextResponse.json({ 
         success: true, 
-        data: result,
+        data: processedResult,
         meta: {
           agentType,
           timestamp: new Date().toISOString(),

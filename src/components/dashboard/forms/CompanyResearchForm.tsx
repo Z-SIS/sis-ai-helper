@@ -143,13 +143,14 @@ export function CompanyResearchForm() {
                     {mutation.error.message.includes('API key not configured') ? (
                       <div className="space-y-2">
                         <p className="font-semibold">API Keys Required</p>
-                        <p>The company research feature requires both Google AI and Tavily API keys to work.</p>
+                        <p>The company research feature requires API keys to provide real-time data. Currently running in demo mode.</p>
                         <div className="text-sm bg-gray-100 p-3 rounded-md">
-                          <p className="font-medium mb-1">To fix this issue:</p>
+                          <p className="font-medium mb-1">To enable real-time research:</p>
                           <ol className="list-decimal list-inside space-y-1">
                             <li>Get a free Google AI API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Google AI Studio</a></li>
                             <li>Get a Tavily API key from <a href="https://tavily.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Tavily</a></li>
-                            <li>Add them to your .env file:</li>
+                            <li>Create a <code className="bg-gray-200 px-1 rounded">.env.local</code> file in your project root</li>
+                            <li>Add the API keys:</li>
                             <ul className="list-disc list-inside ml-4 mt-1">
                               <li><code className="bg-gray-200 px-1 rounded">GOOGLE_GENERATIVE_AI_API_KEY=your_google_api_key</code></li>
                               <li><code className="bg-gray-200 px-1 rounded">TAVILY_API_KEY=your_tavily_api_key</code></li>
@@ -157,6 +158,9 @@ export function CompanyResearchForm() {
                             <li>Restart the development server</li>
                           </ol>
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Demo Mode:</strong> Try "SIS Limited" as company name to see sample data with full features.
+                        </p>
                       </div>
                     ) : (
                       mutation.error.message
