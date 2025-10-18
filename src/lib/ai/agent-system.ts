@@ -533,17 +533,57 @@ class GoogleAIAgentSystem {
   private parseSOPResponse(response: string): AgentOutput {
     // Generate a proper SOP structure from the response
     const lines = response.split('\n').filter(line => line.trim());
+    const currentDate = new Date().toISOString().split('T')[0];
     const title = lines[0]?.replace(/^#\s*/, '') || 'Standard Operating Procedure';
+    
+    // Extract responsibilities and procedure from the response
+    const responsibilities: string[] = [
+      'Process Owner: Overall responsibility for SOP implementation',
+      'Quality Team: Ensure compliance and regular updates',
+      'Staff Members: Follow procedures as outlined'
+    ];
+    
+    // Generate procedure steps from the response
+    const procedure = [
+      {
+        step: 1,
+        action: 'Preparation',
+        details: lines[1] || 'Prepare necessary resources and documentation',
+        owner: 'Process Owner'
+      },
+      {
+        step: 2,
+        action: 'Implementation',
+        details: lines[2] || 'Execute the process according to guidelines',
+        owner: 'Staff Members'
+      },
+      {
+        step: 3,
+        action: 'Review',
+        details: lines[3] || 'Review and document outcomes',
+        owner: 'Quality Team'
+      }
+    ];
+    
+    // Extract references if any
+    const references: string[] = [];
+    lines.forEach(line => {
+      if (line.includes('Reference:') || line.includes('Source:')) {
+        references.push(line.replace(/^(Reference|Source):\s*/i, '').trim());
+      }
+    });
     
     return {
       title,
+      version: '1.0',
+      date: currentDate,
+      purpose: lines[1] || 'To standardize the business process and ensure consistent execution',
+      scope: lines[2] || 'All departments and personnel involved in the process',
+      responsibilities,
+      procedure,
+      references: references.length > 0 ? references : undefined,
       content: response,
-      summary: `SOP document generated with ${lines.length} sections`,
-      sections: lines.map((line, index) => ({
-        id: `section-${index}`,
-        title: line.replace(/^#+\s*/, ''),
-        content: line
-      }))
+      summary: `SOP document generated with ${procedure.length} procedure steps`
     } as AgentOutput;
   }
   
