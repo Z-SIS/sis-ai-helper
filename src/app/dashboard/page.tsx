@@ -12,6 +12,7 @@ import { UspsBattlecardForm } from '@/components/dashboard/forms/UspsBattlecardF
 import { DisbandmentPlanForm } from '@/components/dashboard/forms/DisbandmentPlanForm';
 import { SlideTemplateForm } from '@/components/dashboard/forms/SlideTemplateForm';
 import { HistorySidebar } from '@/components/dashboard/history-sidebar';
+import { SupabaseSetupWizard } from '@/components/dashboard/supabase-setup-wizard';
 
 const agentForms = {
   'company-research': CompanyResearchForm,
@@ -96,6 +97,11 @@ export default function DashboardPage() {
                         <h3 className="font-semibold text-foreground mb-2">Feasibility Check</h3>
                         <p className="text-sm text-muted-foreground">Assess market entry viability and opportunity potential.</p>
                       </div>
+                    </div>
+                    
+                    {/* Supabase Setup Section */}
+                    <div className="mt-8">
+                      <SupabaseSetupWizard />
                     </div>
                     
                     <div className="mt-12 p-8 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
