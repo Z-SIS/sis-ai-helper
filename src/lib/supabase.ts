@@ -1,117 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get Supabase configuration
-function getSupabaseUrl() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!url) {
-    console.warn('NEXT_PUBLIC_SUPABASE_URL not configured - Supabase features disabled');
-    return null;
-  }
-  // Clean up any potential whitespace or newlines
-  const cleanUrl = url.trim().replace(/\n/g, '').replace(/\r/g, '');
-  if (cleanUrl.includes('NEXT_PUBLIC_SUPABASE_URL=')) {
-    console.error('Environment variable parsing error - URL contains variable name');
-    return null;
-  }
-  return cleanUrl;
-}
-
-function getSupabaseAnonKey() {
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!key) {
-    console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY not configured - Supabase features disabled');
-    return null;
-  }
-  // Clean up any potential whitespace or newlines
-  const cleanKey = key.trim().replace(/\n/g, '').replace(/\r/g, '');
-  if (cleanKey.includes('NEXT_PUBLIC_SUPABASE_ANON_KEY=')) {
-    console.error('Environment variable parsing error - ANON_KEY contains variable name');
-    return null;
-  }
-  return cleanKey;
-}
-
-function getSupabaseServiceRoleKey() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) {
-    console.warn('SUPABASE_SERVICE_ROLE_KEY not configured - Supabase admin features disabled');
-    return null;
-  }
-  // Clean up any potential whitespace or newlines
-  const cleanKey = key.trim().replace(/\n/g, '').replace(/\r/g, '');
-  if (cleanKey.includes('SUPABASE_SERVICE_ROLE_KEY=')) {
-    console.error('Environment variable parsing error - SERVICE_ROLE_KEY contains variable name');
-    return null;
-  }
-  return cleanKey;
-}
-
-// Client instance - for client-side operations
-export const supabase = (() => {
-  try {
-    const url = getSupabaseUrl();
-    const key = getSupabaseAnonKey();
-    if (!url || !key) {
-      console.warn('Supabase configuration incomplete - client disabled');
-      return null;
-    }
-    
-    // Validate URL format
-    try {
-      new URL(url);
-    } catch (e) {
-      console.error('Invalid Supabase URL format:', url);
-      return null;
-    }
-    
-    // Validate key format (basic JWT validation)
-    if (!key.startsWith('eyJ') || key.split('.').length !== 3) {
-      console.error('Invalid Supabase key format');
-      return null;
-    }
-    
-    return createClient(url, key);
-  } catch (error) {
-    console.error('Failed to create Supabase client:', error);
-    return null;
-  }
-})();
+// Initialize Supabase client using environment variables
+export const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 // Admin instance - for server-side operations (bypasses RLS)
-export const supabaseAdmin = (() => {
-  try {
-    const url = getSupabaseUrl();
-    const key = getSupabaseServiceRoleKey();
-    if (!url || !key) {
-      console.warn('Supabase admin configuration incomplete - admin client disabled');
-      return null;
+export const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
     }
-    
-    // Validate URL format
-    try {
-      new URL(url);
-    } catch (e) {
-      console.error('Invalid Supabase URL format:', url);
-      return null;
-    }
-    
-    // Validate key format (basic JWT validation)
-    if (!key.startsWith('eyJ') || key.split('.').length !== 3) {
-      console.error('Invalid Supabase service role key format');
-      return null;
-    }
-    
-    return createClient(url, key, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
-  } catch (error) {
-    console.error('Failed to create Supabase admin client:', error);
-    return null;
   }
-})();
+);
 
 // Database types
 export interface TaskHistory {
@@ -147,13 +52,7 @@ export interface CompanyResearchCache {
 export const db = {
   // Task History operations
   async getTaskHistory(userId: string, limit = 50) {
-    const client = supabase;
-    if (!client) {
-      console.warn('Supabase not configured - returning empty task history');
-      return [];
-    }
-    
-    const { data, error } = await client
+    const { data, error } = await supabase
       .from('task_history')
       .select('*')
       .eq('user_id', userId)
@@ -165,13 +64,7 @@ export const db = {
   },
 
   async createTaskHistory(task: Omit<TaskHistory, 'id' | 'created_at' | 'updated_at'>) {
-    const client = supabase;
-    if (!client) {
-      console.warn('Supabase not configured - skipping task history creation');
-      return null;
-    }
-    
-    const { data, error } = await client
+    const { data, error } = await supabase
       .from('task_history')
       .insert(task)
       .select()
@@ -183,13 +76,7 @@ export const db = {
 
   // Company Research Cache operations
   async getCompanyResearchCache(companyName: string) {
-    const client = supabase;
-    if (!client) {
-      console.warn('Supabase not configured - no cache available');
-      return null;
-    }
-    
-    const { data, error } = await client
+    const { data, error } = await supabase
       .from('company_research_cache')
       .select('*')
       .eq('company_name', companyName.toLowerCase())
@@ -211,13 +98,7 @@ export const db = {
   },
 
   async upsertCompanyResearchCache(cache: Omit<CompanyResearchCache, 'id' | 'created_at' | 'updated_at'>) {
-    const client = supabaseAdmin;
-    if (!client) {
-      console.warn('Supabase not configured - skipping cache update');
-      return null;
-    }
-    
-    const { data, error } = await client
+    const { data, error } = await supabaseAdmin
       .from('company_research_cache')
       .upsert({
         ...cache,
