@@ -1,11 +1,31 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get Supabase configuration with proper error handling
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Get Supabase configuration with proper error handling and cleaning
+function getCleanEnvVar(varName: string): string | null {
+  const value = process.env[varName];
+  if (!value) return null;
+  
+  // Clean up any potential whitespace, newlines, or variable name contamination
+  const cleanValue = value
+    .trim()
+    .replace(/\n/g, '')
+    .replace(/\r/g, '')
+    .replace(new RegExp(`^${varName}=`), '');
+  
+  // Check if the value looks like it contains variable name contamination
+  if (cleanValue.includes(varName) || cleanValue.includes('\n')) {
+    console.error(`Environment variable ${varName} appears to be contaminated:`, cleanValue);
+    return null;
+  }
+  
+  return cleanValue;
+}
 
-// Initialize Supabase client only if environment variables are available
+const supabaseUrl = getCleanEnvVar('NEXT_PUBLIC_SUPABASE_URL');
+const supabaseAnonKey = getCleanEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+const supabaseServiceRoleKey = getCleanEnvVar('SUPABASE_SERVICE_ROLE_KEY');
+
+// Initialize Supabase client only if environment variables are available and valid
 export const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
