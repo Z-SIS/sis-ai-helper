@@ -7,7 +7,13 @@ function getSupabaseUrl() {
     console.warn('NEXT_PUBLIC_SUPABASE_URL not configured - Supabase features disabled');
     return null;
   }
-  return url;
+  // Clean up any potential whitespace or newlines
+  const cleanUrl = url.trim().replace(/\n/g, '').replace(/\r/g, '');
+  if (cleanUrl.includes('NEXT_PUBLIC_SUPABASE_URL=')) {
+    console.error('Environment variable parsing error - URL contains variable name');
+    return null;
+  }
+  return cleanUrl;
 }
 
 function getSupabaseAnonKey() {
@@ -16,7 +22,13 @@ function getSupabaseAnonKey() {
     console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY not configured - Supabase features disabled');
     return null;
   }
-  return key;
+  // Clean up any potential whitespace or newlines
+  const cleanKey = key.trim().replace(/\n/g, '').replace(/\r/g, '');
+  if (cleanKey.includes('NEXT_PUBLIC_SUPABASE_ANON_KEY=')) {
+    console.error('Environment variable parsing error - ANON_KEY contains variable name');
+    return null;
+  }
+  return cleanKey;
 }
 
 function getSupabaseServiceRoleKey() {
@@ -25,32 +37,80 @@ function getSupabaseServiceRoleKey() {
     console.warn('SUPABASE_SERVICE_ROLE_KEY not configured - Supabase admin features disabled');
     return null;
   }
-  return key;
+  // Clean up any potential whitespace or newlines
+  const cleanKey = key.trim().replace(/\n/g, '').replace(/\r/g, '');
+  if (cleanKey.includes('SUPABASE_SERVICE_ROLE_KEY=')) {
+    console.error('Environment variable parsing error - SERVICE_ROLE_KEY contains variable name');
+    return null;
+  }
+  return cleanKey;
 }
 
 // Client instance - for client-side operations
 export const supabase = (() => {
-  const url = getSupabaseUrl();
-  const key = getSupabaseAnonKey();
-  if (!url || !key) {
+  try {
+    const url = getSupabaseUrl();
+    const key = getSupabaseAnonKey();
+    if (!url || !key) {
+      console.warn('Supabase configuration incomplete - client disabled');
+      return null;
+    }
+    
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch (e) {
+      console.error('Invalid Supabase URL format:', url);
+      return null;
+    }
+    
+    // Validate key format (basic JWT validation)
+    if (!key.startsWith('eyJ') || key.split('.').length !== 3) {
+      console.error('Invalid Supabase key format');
+      return null;
+    }
+    
+    return createClient(url, key);
+  } catch (error) {
+    console.error('Failed to create Supabase client:', error);
     return null;
   }
-  return createClient(url, key);
 })();
 
 // Admin instance - for server-side operations (bypasses RLS)
 export const supabaseAdmin = (() => {
-  const url = getSupabaseUrl();
-  const key = getSupabaseServiceRoleKey();
-  if (!url || !key) {
+  try {
+    const url = getSupabaseUrl();
+    const key = getSupabaseServiceRoleKey();
+    if (!url || !key) {
+      console.warn('Supabase admin configuration incomplete - admin client disabled');
+      return null;
+    }
+    
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch (e) {
+      console.error('Invalid Supabase URL format:', url);
+      return null;
+    }
+    
+    // Validate key format (basic JWT validation)
+    if (!key.startsWith('eyJ') || key.split('.').length !== 3) {
+      console.error('Invalid Supabase service role key format');
+      return null;
+    }
+    
+    return createClient(url, key, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+  } catch (error) {
+    console.error('Failed to create Supabase admin client:', error);
     return null;
   }
-  return createClient(url, key, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  });
 })();
 
 // Database types
