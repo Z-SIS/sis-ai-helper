@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { optimizedAgentSystem } from '@/lib/ai/agent-system';
+import { googleAIAgentSystem } from '@/lib/ai/agent-system';
 
 export async function GET() {
   try {
-    const tokenUsage = optimizedAgentSystem.getTokenUsage();
+    const tokenUsage = googleAIAgentSystem.getTokenUsage();
     
     return NextResponse.json({
       status: 'healthy',

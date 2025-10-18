@@ -29,7 +29,7 @@ interface Recommendation {
   description: string
 }
 
-export default function SupabaseSetupWizard() {
+export function SupabaseSetupWizard() {
   const [config, setConfig] = useState<SupabaseConfig | null>(null)
   const [connection, setConnection] = useState<ConnectionStatus | null>(null)
   const [recommendations, setRecommendations] = useState<Recommendation[]>([])
