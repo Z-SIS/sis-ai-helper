@@ -3,7 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 // Get Supabase configuration with proper error handling and cleaning
 function getCleanEnvVar(varName: string): string | null {
   const value = process.env[varName];
-  if (!value) return null;
+  if (!value) {
+    console.error(`Environment variable ${varName} is not set`);
+    return null;
+  }
   
   // Clean up any potential whitespace, newlines, or variable name contamination
   const cleanValue = value
@@ -18,12 +21,27 @@ function getCleanEnvVar(varName: string): string | null {
     return null;
   }
   
+  // Validate the format of the key
+  if (varName.includes('KEY') && cleanValue.length < 10) {
+    console.error(`Environment variable ${varName} appears to be too short to be valid`);
+    return null;
+  }
+  
   return cleanValue;
 }
 
 const supabaseUrl = getCleanEnvVar('NEXT_PUBLIC_SUPABASE_URL');
 const supabaseAnonKey = getCleanEnvVar('NEXT_PUBLIC_SUPABASE_ANON_KEY');
 const supabaseServiceRoleKey = getCleanEnvVar('SUPABASE_SERVICE_ROLE_KEY');
+
+// Log initialization status for debugging
+console.log('Supabase initialization:', {
+  hasUrl: !!supabaseUrl,
+  hasAnonKey: !!supabaseAnonKey,
+  hasServiceKey: !!supabaseServiceRoleKey,
+  urlPreview: supabaseUrl ? supabaseUrl.replace(/https:\/\/(.*)\.supabase\.co/, 'https://***.supabase.co') : null,
+  anonKeyLength: supabaseAnonKey?.length || 0
+});
 
 // Initialize Supabase client only if environment variables are available and valid
 export const supabase = supabaseUrl && supabaseAnonKey 
@@ -96,14 +114,29 @@ export const db = {
       return null;
     }
     
-    const { data, error } = await supabase
-      .from('task_history')
-      .insert(task)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as TaskHistory;
+    try {
+      const { data, error } = await supabase
+        .from('task_history')
+        .insert(task)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Failed to save task history:', {
+          error: error.message,
+          hint: error.hint,
+          code: error.code,
+          details: error.details
+        });
+        throw error;
+      }
+      
+      console.log('Task history saved successfully');
+      return data as TaskHistory;
+    } catch (error) {
+      console.error('Unexpected error in createTaskHistory:', error);
+      throw error;
+    }
   },
 
   // Company Research Cache operations
