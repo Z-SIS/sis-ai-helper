@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   },
   // Add output standalone for better deployment compatibility
   output: 'standalone',
+<<<<<<< HEAD
   // Fix Content Security Policy issues
   async headers() {
     return [
@@ -33,6 +34,8 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 };
 
 export default nextConfig;

@@ -9,7 +9,11 @@ import {
   googleAIAgentSystem,
   handleAgentRequest
 } from '@/lib/ai/agent-system';
+<<<<<<< HEAD
 // import { db } from '@/lib/supabase'; // Disabled to prevent Vercel errors
+=======
+import { db } from '@/lib/supabase';
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 
 // Define AgentType locally to avoid circular dependencies
 type AgentType = keyof typeof AgentInputSchemas;
@@ -22,6 +26,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
+<<<<<<< HEAD
   console.log(`🚀 Agent API called: ${params.slug}`);
   
   try {
@@ -29,23 +34,44 @@ export async function POST(
     const body = await request.json();
     
     console.log(`📥 Request body:`, { slug, body });
+=======
+  try {
+    console.log('Agent API called:', { params });
+    
+    // Open platform - no authentication required
+    const userId = 'open-user';
+    
+    const { slug } = await params;
+    const body = await request.json();
+    
+    console.log('Request details:', { slug, bodyKeys: Object.keys(body) });
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     
     // Validate agent type
     const agentType = slug as AgentType;
     if (!AgentInputSchemas[agentType]) {
+<<<<<<< HEAD
       console.log(`❌ Invalid agent type: ${agentType}`);
+=======
+      console.error('Invalid agent type:', { agentType, available: Object.keys(AgentInputSchemas) });
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       return NextResponse.json(
         { error: 'Invalid agent type', availableAgents: Object.keys(AgentInputSchemas) },
         { status: 400 }
       );
     }
     
+<<<<<<< HEAD
     console.log(`✅ Agent type validated: ${agentType}`);
+=======
+    console.log('Agent type validated:', { agentType });
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     
     // Validate input schema
     const inputSchema = AgentInputSchemas[agentType];
     const validatedInput = inputSchema.parse(body);
     
+<<<<<<< HEAD
     console.log(`✅ Input validated:`, validatedInput);
     
     // Try to use the actual AI system with timeout protection
@@ -214,6 +240,68 @@ export async function POST(
     
     // Create error response with proper headers
     const errorResponse = NextResponse.json(
+=======
+    console.log('Input validated:', { agentType, inputKeys: Object.keys(validatedInput) });
+    
+    // Execute agent request with Google AI system
+    console.log('Executing agent request...');
+    const result = await handleAgentRequest(agentType, validatedInput);
+    
+    console.log('Agent execution completed:', { agentType, hasResult: !!result });
+    
+    // Validate the result before proceeding
+    if (!result || typeof result !== 'object') {
+      throw new Error(`Invalid result from agent ${agentType}: result must be an object`);
+    }
+    
+    // Save to task history (optional for open platform)
+    try {
+      await db.createTaskHistory({
+        user_id: userId,
+        agent_type: agentType,
+        input_data: validatedInput,
+        output_data: result,
+        status: 'completed',
+      });
+    } catch (error) {
+      // Log error but don't fail the request
+      console.warn('Failed to save task history:', error);
+    }
+    
+    // Return success response with token usage info
+    const tokenUsage = googleAIAgentSystem.getTokenUsage();
+    
+    return NextResponse.json({ 
+      success: true, 
+      data: result,
+      meta: {
+        agentType,
+        tokenUsage: {
+          total: tokenUsage.total,
+          byAgent: tokenUsage.byAgent[agentType] || 0,
+        },
+        timestamp: new Date().toISOString(),
+      }
+    });
+    
+  } catch (error) {
+    console.error('Agent API error:', error);
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { 
+          error: 'Invalid input data', 
+          details: error.errors.map(e => ({
+            field: e.path.join('.'),
+            message: e.message,
+          }))
+        },
+        { status: 400 }
+      );
+    }
+    
+    return NextResponse.json(
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       { 
         error: 'Internal server error', 
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -221,8 +309,11 @@ export async function POST(
       },
       { status: 500 }
     );
+<<<<<<< HEAD
     
     return errorResponse;
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
   }
 }
 
@@ -234,10 +325,17 @@ export async function GET() {
   try {
     const tokenUsage = googleAIAgentSystem.getTokenUsage();
     
+<<<<<<< HEAD
     const responseData = {
       status: 'healthy',
       system: 'SIS AI Helper - Demo Mode',
       version: '2.1.0-demo',
+=======
+    return NextResponse.json({
+      status: 'healthy',
+      system: 'SIS AI Helper - Google AI Agent System',
+      version: '2.1.0-google-only',
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       agents: Object.keys(AgentInputSchemas),
       tokenUsage,
       cache: {
@@ -245,6 +343,7 @@ export async function GET() {
         status: 'active',
       },
       timestamp: new Date().toISOString(),
+<<<<<<< HEAD
     };
     
     // Create response with proper headers
@@ -262,5 +361,17 @@ export async function GET() {
     const response = NextResponse.json(errorData, { status: 500 });
     
     return response;
+=======
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
   }
 }

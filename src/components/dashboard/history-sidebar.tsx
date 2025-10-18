@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Clock, FileText, Building2, Mail, Table, CheckCircle, Rocket, Target, XCircle, Presentation } from 'lucide-react';
+<<<<<<< HEAD
+=======
+import { db } from '@/lib/supabase';
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 import { cn } from '@/lib/utils';
 
 const agentIcons = {
@@ -35,6 +39,7 @@ export function HistorySidebar() {
 
   const loadTaskHistory = async () => {
     try {
+<<<<<<< HEAD
       // Use local storage for task history instead of Supabase
       const storedTasks = localStorage.getItem('sis-ai-helper-task-history');
       
@@ -43,6 +48,12 @@ export function HistorySidebar() {
         setTasks(parsedTasks.slice(0, 20)); // Show last 20 tasks
       } else {
         // Provide demo data for first-time users
+=======
+      // Check if Supabase is configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.log('Supabase not configured - using demo task history');
+        // Provide demo data instead of empty array
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
         setTasks([
           {
             id: 'demo-1',
@@ -59,10 +70,22 @@ export function HistorySidebar() {
             created_at: new Date(Date.now() - 7200000).toISOString(),
           }
         ]);
+<<<<<<< HEAD
       }
     } catch (error) {
       console.error('Failed to load task history:', error);
       // Provide demo data on error
+=======
+        return;
+      }
+      
+      // Use a default user ID for open platform
+      const history = await db.getTaskHistory('open-user', 20);
+      setTasks(history);
+    } catch (error) {
+      console.error('Failed to load task history:', error);
+      // Provide demo data on error as well
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       setTasks([
         {
           id: 'demo-1',
@@ -180,6 +203,7 @@ export function HistorySidebar() {
       </div>
     </div>
   );
+<<<<<<< HEAD
 }
 
 // Helper function to save tasks to local storage
@@ -204,3 +228,6 @@ export const saveTaskToHistory = (agentType: string, inputData: any, outputData:
     console.error('Failed to save task to history:', error);
   }
 };
+=======
+}
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2

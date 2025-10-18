@@ -12,7 +12,10 @@ import { UspsBattlecardForm } from '@/components/dashboard/forms/UspsBattlecardF
 import { DisbandmentPlanForm } from '@/components/dashboard/forms/DisbandmentPlanForm';
 import { SlideTemplateForm } from '@/components/dashboard/forms/SlideTemplateForm';
 import { HistorySidebar } from '@/components/dashboard/history-sidebar';
+<<<<<<< HEAD
 import { SupabaseSetupWizard } from '@/components/dashboard/supabase-setup-wizard';
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 
 const agentForms = {
   'company-research': CompanyResearchForm,
@@ -99,11 +102,14 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     
+<<<<<<< HEAD
                     {/* Supabase Setup Section */}
                     <div className="mt-8">
                       <SupabaseSetupWizard />
                     </div>
                     
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
                     <div className="mt-12 p-8 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
                       <h3 className="text-xl font-semibold text-foreground mb-4">Start with Sales Intelligence</h3>
                       <p className="text-muted-foreground mb-6">

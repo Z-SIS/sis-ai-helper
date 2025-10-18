@@ -13,7 +13,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CompanyResearchInput, CompanyResearchOutput, CompanyResearchInputSchema } from '@/shared/schemas';
+<<<<<<< HEAD
 import { saveTaskToHistory } from '@/components/dashboard/history-sidebar';
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 
 const formSchema = CompanyResearchInputSchema;
 
@@ -45,12 +48,19 @@ export function CompanyResearchForm() {
       }
 
       const result = await response.json();
+<<<<<<< HEAD
       return result.data as CompanyResearchOutput;
     },
     onSuccess: (data) => {
       setResult(data);
       // Save to history
       saveTaskToHistory('company-research', mutation.variables as CompanyResearchInput, data);
+=======
+      return result.data.data as CompanyResearchOutput;
+    },
+    onSuccess: (data) => {
+      setResult(data);
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     },
   });
 
@@ -71,6 +81,15 @@ export function CompanyResearchForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+<<<<<<< HEAD
+=======
+          <Alert className="mb-4">
+            <AlertDescription>
+              <strong>API Keys Required:</strong> This feature requires <code>GOOGLE_GENERATIVE_AI_API_KEY</code> and <code>TAVILY_API_KEY</code> environment variables to be configured.
+            </AlertDescription>
+          </Alert>
+          
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -143,6 +162,7 @@ export function CompanyResearchForm() {
                     {mutation.error.message.includes('API key not configured') ? (
                       <div className="space-y-2">
                         <p className="font-semibold">API Keys Required</p>
+<<<<<<< HEAD
                         <p>The company research feature requires API keys to provide real-time data. Currently running in demo mode.</p>
                         <div className="text-sm bg-gray-100 p-3 rounded-md">
                           <p className="font-medium mb-1">To enable real-time research:</p>
@@ -151,6 +171,15 @@ export function CompanyResearchForm() {
                             <li>Get a Tavily API key from <a href="https://tavily.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Tavily</a></li>
                             <li>Create a <code className="bg-gray-200 px-1 rounded">.env.local</code> file in your project root</li>
                             <li>Add the API keys:</li>
+=======
+                        <p>The company research feature requires both Google AI and Tavily API keys to work.</p>
+                        <div className="text-sm bg-gray-100 p-3 rounded-md">
+                          <p className="font-medium mb-1">To fix this issue:</p>
+                          <ol className="list-decimal list-inside space-y-1">
+                            <li>Get a free Google AI API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Google AI Studio</a></li>
+                            <li>Get a Tavily API key from <a href="https://tavily.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Tavily</a></li>
+                            <li>Add them to your .env file:</li>
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
                             <ul className="list-disc list-inside ml-4 mt-1">
                               <li><code className="bg-gray-200 px-1 rounded">GOOGLE_GENERATIVE_AI_API_KEY=your_google_api_key</code></li>
                               <li><code className="bg-gray-200 px-1 rounded">TAVILY_API_KEY=your_tavily_api_key</code></li>
@@ -158,9 +187,12 @@ export function CompanyResearchForm() {
                             <li>Restart the development server</li>
                           </ol>
                         </div>
+<<<<<<< HEAD
                         <p className="text-sm text-muted-foreground">
                           <strong>Demo Mode:</strong> Try "SIS Limited" as company name to see sample data with full features.
                         </p>
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
                       </div>
                     ) : (
                       mutation.error.message
@@ -187,6 +219,7 @@ export function CompanyResearchForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Company Name</h4>
+<<<<<<< HEAD
                 <p className="text-sm">{result.companyName || 'Not available'}</p>
               </div>
               <div>
@@ -213,12 +246,40 @@ export function CompanyResearchForm() {
                 )}
               </div>
               {result.foundedYear && result.foundedYear !== 'Information not available' && (
+=======
+                <p className="text-sm">{result.companyName}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm text-foreground">Industry</h4>
+                <p className="text-sm">{result.industry}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm text-foreground">Location</h4>
+                <p className="text-sm">{result.location}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm text-foreground">Website</h4>
+                <a 
+                  href={result.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  {result.website}
+                </a>
+              </div>
+              {result.foundedYear && (
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
                 <div>
                   <h4 className="font-semibold text-sm text-foreground">Founded</h4>
                   <p className="text-sm">{result.foundedYear}</p>
                 </div>
               )}
+<<<<<<< HEAD
               {result.employeeCount && result.employeeCount !== 'Information not available' && (
+=======
+              {result.employeeCount && (
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
                 <div>
                   <h4 className="font-semibold text-sm text-foreground">Employees</h4>
                   <p className="text-sm">{result.employeeCount}</p>
@@ -226,7 +287,11 @@ export function CompanyResearchForm() {
               )}
             </div>
 
+<<<<<<< HEAD
             {result.description && result.description !== 'Information not available' && (
+=======
+            {result.description && (
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
               <div>
                 <h4 className="font-semibold text-sm text-foreground mb-2">Description</h4>
                 <p className="text-sm text-muted-foreground">{result.description}</p>

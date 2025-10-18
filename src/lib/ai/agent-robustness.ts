@@ -4,7 +4,11 @@ import {
   AgentOutput,
   AgentMetadata
 } from '@/shared/schemas';
+<<<<<<< HEAD
 import { googleAIAgentSystem } from './agent-system';
+=======
+import { optimizedAgentSystem } from './agent-system';
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 
 // ============================================================================
 // AGENT ROBUSTNESS TYPES
@@ -299,7 +303,11 @@ export class AgentRobustnessManager {
         });
         
         // Execute agent
+<<<<<<< HEAD
         const agentPromise = googleAIAgentSystem.handleAgentRequest(agentType, input);
+=======
+        const agentPromise = optimizedAgentSystem.executeAgentRequest(agentType, input);
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
         
         // Race between agent execution and timeout
         const result = await Promise.race([agentPromise, timeoutPromise]);
@@ -404,7 +412,11 @@ export class AgentRobustnessManager {
     metrics.averageResponseTime = totalResponseTime / metrics.totalRequests;
     
     // Update token usage from agent system
+<<<<<<< HEAD
     const tokenUsage = googleAIAgentSystem.getTokenUsage();
+=======
+    const tokenUsage = optimizedAgentSystem.getTokenUsage();
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     if (tokenUsage.byAgent[agentType]) {
       metrics.tokenUsage.total = tokenUsage.byAgent[agentType];
       metrics.tokenUsage.average = metrics.tokenUsage.total / metrics.totalRequests;

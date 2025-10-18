@@ -15,9 +15,16 @@ import {
   SlideTemplateSchema
 } from '@/lib/ai/schema-validation';
 
+<<<<<<< HEAD
 // Version: 2.2.0 - Google AI with Direct API Calls
 
 // Google AI is the primary AI service - Using direct API calls for better compatibility
+=======
+// Version: 2.1.0 - Google AI Only
+
+// Google AI is the primary AI service
+import { GoogleGenerativeAI } from '@google/generative-ai';
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 
 import { 
   AgentInputSchemas, 
@@ -26,7 +33,11 @@ import {
   AgentInput,
   AgentOutput
 } from '@/shared/schemas';
+<<<<<<< HEAD
 // import { db } from '@/lib/supabase'; // Disabled to prevent Vercel errors
+=======
+import { db } from '@/lib/supabase';
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 
 // Define AgentType locally to avoid circular dependencies
 type AgentType = keyof typeof AgentInputSchemas;
@@ -38,8 +49,12 @@ type AgentType = keyof typeof AgentInputSchemas;
 const TOKEN_CONFIG = {
   // Model configurations for different complexity levels
   models: {
+<<<<<<< HEAD
     fast: 'gemini-2.5-flash', // Google AI model - fast & cost-efficient
     pro: 'gemini-2.5-pro',    // Google AI model - higher quality
+=======
+    fast: 'gemini-1.5-flash', // Google AI model
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
   },
   
   // Token limits based on agent complexity
@@ -67,6 +82,7 @@ const TOKEN_CONFIG = {
 } as const;
 
 // ============================================================================
+<<<<<<< HEAD
 // DIRECT GOOGLE API FUNCTION
 // ============================================================================
 
@@ -164,6 +180,8 @@ async function callGoogleAI(prompt: string, systemPrompt?: string, model: string
 }
 
 // ============================================================================
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 // OPTIMIZED PROMPT TEMPLATES
 // ============================================================================
 
@@ -174,8 +192,13 @@ const PROMPT_TEMPLATES = {
 CRITICAL RULES:
 - Do not invent facts. If you are not 100% sure about information, state "Information not available" or "Unable to verify".
 - Only include information that can be verified through reliable sources.
+<<<<<<< HEAD
 - Use web search results to provide comprehensive information.
 - If limited information is available, create a descriptive paragraph about what is known.
+=======
+- Provide specific, factual information with confidence levels.
+- Use web search for current data and cite sources when possible.
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 - Return valid JSON only - no explanations outside the JSON structure.
 
 REQUIRED JSON FORMAT:
@@ -183,8 +206,13 @@ REQUIRED JSON FORMAT:
   "companyName": "string",
   "industry": "string", 
   "location": "string",
+<<<<<<< HEAD
   "description": "string (detailed paragraph about the company, can be based on limited info)",
   "website": "string (valid URL, or empty string if not found)",
+=======
+  "description": "string",
+  "website": "string (valid URL)",
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
   "foundedYear": number (optional),
   "employeeCount": "string OR object with count field",
   "revenue": "string OR object with amount field",
@@ -197,6 +225,7 @@ REQUIRED JSON FORMAT:
   "needsReview": boolean (optional),
   "lastUpdated": "YYYY-MM-DD",
   "timestamp": "YYYY-MM-DDTHH:MM:SSZ" (optional)
+<<<<<<< HEAD
 }
 
 DESCRIPTION GUIDELINES:
@@ -204,15 +233,25 @@ DESCRIPTION GUIDELINES:
 - If specific details are limited, describe what is known about the company
 - Include business type, market presence, or any available information
 - Make the description helpful even if other fields are limited`,
+=======
+}`,
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     template: (input: AgentInput) => {
       const { companyName, industry, location } = input as any;
       return `Research "${companyName}"${industry ? ` in ${industry}` : ''}${location ? ` in ${location}` : ''}.
       
+<<<<<<< HEAD
 Use the web search results to provide comprehensive company information.
 Create a detailed description paragraph even if specific data points are limited.
 Include: business type, what the company does, market presence, or any available information.
 Fill in as many fields as possible from search results. For missing information, use "Information not available".
 Use current date for lastUpdated field. Be thorough but accurate.`;
+=======
+Provide comprehensive company information in the required JSON format.
+Include: description, industry, location, website, founded year, employees, revenue, key executives, competitors, recent news.
+Be concise but comprehensive. Use web search for current data. Mark uncertain information as "unverified".
+Include confidence score (0-1) and list any unverified fields. Use current date for lastUpdated field.`;
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     },
     maxTokens: TOKEN_CONFIG.maxTokens.complex,
     temperature: TOKEN_CONFIG.temperature.factual,
@@ -386,9 +425,12 @@ const optimizedWebSearchTool = {
         return [];
       }
 
+<<<<<<< HEAD
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout for search
 
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       const response = await fetch('https://api.tavily.com/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -400,11 +442,16 @@ const optimizedWebSearchTool = {
           include_answer: false, // Skip AI-generated answers to save tokens
           include_raw_content: false, // Skip raw content to save tokens
         }),
+<<<<<<< HEAD
         signal: controller.signal,
       });
       
       clearTimeout(timeoutId);
       
+=======
+      });
+      
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       if (!response.ok) {
         throw new Error(`Search API error: ${response.status}`);
       }
@@ -419,6 +466,7 @@ const optimizedWebSearchTool = {
         score: result.score,
       })) || [];
     } catch (error) {
+<<<<<<< HEAD
       clearTimeout(timeoutId);
       
       console.error('Optimized web search error:', error);
@@ -428,6 +476,10 @@ const optimizedWebSearchTool = {
         console.warn('Search request timed out after 8 seconds');
       }
       
+=======
+      console.error('Optimized web search error:', error);
+      
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       // For development, provide mock results on error
       if (process.env.NODE_ENV === 'development') {
         console.log('Providing mock search results due to error in development');
@@ -491,7 +543,11 @@ function provideMockSearchResults(query: string, maxResults: number = 3): any[] 
       {
         title: 'SIS Group Enterprises - Official Website',
         url: 'https://www.sisindia.com',
+<<<<<<< HEAD
       content: 'SIS Group Enterprises is India\'s leading security solutions company with over 200,000 employees. Revenue: ₹12,000 crore. Founded in 1985 by Ravindra Kishore Sinha. Services: security services, facility management, cash logistics.',
+=======
+        content: 'SIS Group Enterprises is India\'s leading security solutions company with over 200,000 employees. Revenue: ₹12,000 crore. Founded in 1985 by Ravindra Kishore Sinha. Services: security services, facility management, cash logistics.',
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
         score: 0.95
       },
       {
@@ -606,6 +662,7 @@ class GoogleAIAgentSystem {
     return `${agentType}:${JSON.stringify(input)}`;
   }
   
+<<<<<<< HEAD
   private saveTaskToHistory(agentType: string, input: AgentInput, output: AgentOutput) {
     if (typeof window !== 'undefined') {
       try {
@@ -627,6 +684,8 @@ class GoogleAIAgentSystem {
     }
   }
 
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
   private trackTokenUsage(agentType: string, tokens: number): void {
     this.tokenUsage.total += tokens;
     this.tokenUsage.byAgent[agentType] = (this.tokenUsage.byAgent[agentType] || 0) + tokens;
@@ -669,6 +728,7 @@ class GoogleAIAgentSystem {
   }
   
   private parseSOPResponse(response: string): AgentOutput {
+<<<<<<< HEAD
     try {
       console.log('🔍 Parsing SOP response...');
       console.log('📝 Raw response preview:', response.substring(0, 200) + '...');
@@ -996,6 +1056,60 @@ class GoogleAIAgentSystem {
     
     // Return the fallback data directly as AgentOutput
     return fallbackData as AgentOutput;
+=======
+    // Generate a proper SOP structure from the response
+    const lines = response.split('\n').filter(line => line.trim());
+    const title = lines[0]?.replace(/^#\s*/, '') || 'Standard Operating Procedure';
+    
+    return {
+      title,
+      content: response,
+      summary: `SOP document generated with ${lines.length} sections`,
+      sections: lines.map((line, index) => ({
+        id: `section-${index}`,
+        title: line.replace(/^#+\s*/, ''),
+        content: line
+      }))
+    } as AgentOutput;
+  }
+  
+  private parseCompanyResearchResponse(response: string): AgentOutput {
+    try {
+      // Try to parse as JSON first
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const data = JSON.parse(jsonMatch[0]);
+        // Add lastUpdated if missing
+        if (!data.lastUpdated) {
+          data.lastUpdated = new Date().toISOString().split('T')[0];
+        }
+        return {
+          title: `Company Research: ${data.companyName || 'Unknown'}`,
+          content: JSON.stringify(data, null, 2),
+          summary: `Research completed for ${data.companyName || 'company'}`,
+          data
+        } as AgentOutput;
+      }
+    } catch (e) {
+      // If JSON parsing fails, create a structured response from text
+    }
+    
+    // Fallback response with current date
+    const fallbackData = {
+      lastUpdated: new Date().toISOString().split('T')[0],
+      companyName: 'Unknown',
+      industry: 'Not specified',
+      location: 'Not specified',
+      description: response.substring(0, 500) + '...',
+    };
+    
+    return {
+      title: 'Company Research',
+      content: response,
+      summary: 'Company research completed',
+      data: fallbackData
+    } as AgentOutput;
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
   }
   
   private parseEmailResponse(response: string): AgentOutput {
@@ -1070,10 +1184,17 @@ class GoogleAIAgentSystem {
       industry: extractedData.industry || industry || 'Technology',
       location: extractedData.location || location || 'United States',
       description: extractedData.description || `${companyName} is a company in the ${industry || 'technology'} sector.`,
+<<<<<<< HEAD
       website: extractedData.website || 'https://example.com', // Valid URL placeholder
       foundedYear: extractedData.foundedYear || null,
       employeeCount: extractedData.employeeCount || 'Not specified',
       revenue: extractedData.revenue || 'Not disclosed',
+=======
+      website: extractedData.website || 'Information not available',
+      foundedYear: extractedData.foundedYear || null,
+      employeeCount: extractedData.employeeCount || 'Information not available',
+      revenue: extractedData.revenue || 'Information not available',
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       keyExecutives: extractedData.keyExecutives || [],
       competitors: extractedData.competitors || [],
       recentNews: extractedData.recentNews || [],
@@ -1285,6 +1406,7 @@ class GoogleAIAgentSystem {
       
       const { companyName, industry, location } = input as any;
       
+<<<<<<< HEAD
       // Check if we should use demo data directly (development mode without API keys)
       const tavilyKey = process.env.TAVILY_API_KEY;
       const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -1299,10 +1421,19 @@ class GoogleAIAgentSystem {
       const searchPromises = [
         optimizedWebSearchTool.execute({ query: `${companyName} company profile ${industry || ''} ${location || ''}`, maxResults: 2 }),
         optimizedWebSearchTool.execute({ query: `${companyName} employees revenue funding`, maxResults: 2 }),
+=======
+      // Step 1: Search for real company data using Tavily
+      const searchQueries = [
+        `${companyName} company profile ${industry || ''} ${location || ''}`,
+        `${companyName} employees revenue funding ${location || ''}`,
+        `${companyName} recent news 2024`,
+        `${companyName} competitors ${industry || ''}`
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       ];
       
       let searchResults: any[] = [];
       
+<<<<<<< HEAD
       try {
         // Use Promise.allSettled with timeout to avoid hanging
         const timeoutPromise = new Promise((_, reject) => 
@@ -1326,10 +1457,20 @@ class GoogleAIAgentSystem {
         }
       } catch (error) {
         console.warn('Search timeout or error:', error);
+=======
+      for (const query of searchQueries) {
+        try {
+          const results = await optimizedWebSearchTool.execute({ query, maxResults: 3 });
+          searchResults = [...searchResults, ...results];
+        } catch (error) {
+          console.warn(`Search failed for query: ${query}`, error);
+        }
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       }
       
       console.log(`Found ${searchResults.length} search results`);
       
+<<<<<<< HEAD
       // If no search results, fall back to demo data
       if (searchResults.length === 0) {
         console.log('No search results found, using demo data');
@@ -1348,6 +1489,15 @@ class GoogleAIAgentSystem {
       ).join('\n\n');
       
       const researchPrompt = `Based on the following real-time search results, provide comprehensive company information for "${companyName}".
+=======
+      // Step 2: Process search results with Google AI
+      if (searchResults.length > 0) {
+        const searchContext = searchResults.map((result, index) => 
+          `Source ${index + 1}: ${result.title}\nURL: ${result.url}\nContent: ${result.content}`
+        ).join('\n\n');
+        
+        const researchPrompt = `Based on the following real-time search results, provide comprehensive company information for "${companyName}".
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 
 SEARCH RESULTS:
 ${searchContext}
@@ -1380,6 +1530,7 @@ REQUIRED JSON FORMAT:
   "sources": [{"title": "string", "url": "string", "reliability": "high/medium/low"}]
 }
 
+<<<<<<< HEAD
 Analyze the search results and provide accurate, factual information.`;
 
       // Check if Google AI API key is available
@@ -1414,17 +1565,59 @@ Analyze the search results and provide accurate, factual information.`;
         );
         
         const text = await Promise.race([aiPromise, timeoutPromise]) as string;
+=======
+Analyze the search results and provide accurate, factual information only.`;
+
+        // Check if Google AI API key is available
+        const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+        if (!googleApiKey) {
+          console.warn('GOOGLE_GENERATIVE_AI_API_KEY not found. Using mock AI processing for development.');
+          
+          if (process.env.NODE_ENV === 'development') {
+            return this.processCompanyResearchWithMockAI(companyName, searchResults, industry, location);
+          }
+          
+          throw new Error('Google AI API key not configured');
+        }
+        
+        // Initialize Google AI
+        const genAI = new GoogleGenerativeAI(googleApiKey);
+        const model = genAI.getGenerativeModel({ 
+          model: TOKEN_CONFIG.models.fast,
+          generationConfig: {
+            temperature: 0.0, // Very low temperature for factual accuracy
+            maxOutputTokens: TOKEN_CONFIG.maxTokens.complex,
+            topP: 0.0,
+          }
+        });
+        
+        console.log('Processing search results with Google AI...');
+        
+        // Generate content with Google AI
+        const result = await model.generateContent([
+          { text: "You are a business research analyst. Process search results to extract accurate company information." },
+          { text: researchPrompt }
+        ]);
+        
+        const response = result.response;
+        const text = response.text();
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
         
         if (!text) {
           throw new Error('No response received from Google AI');
         }
         
+<<<<<<< HEAD
         console.log('Google AI response received via Direct API, parsing...');
         console.log('📊 Response length:', text.length, 'characters');
+=======
+        console.log('Google AI processed search results, parsing response...');
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
         
         // Parse the response
         const parsedResponse = this.parseCompanyResearchResponse(text);
         
+<<<<<<< HEAD
         // Cache the result
         const cacheKey = this.generateCacheKey('company-research', input);
         agentCache.set(cacheKey, parsedResponse, 30);
@@ -1470,6 +1663,67 @@ Analyze the search results and provide accurate, factual information.`;
       const { companyName, industry, location } = input as any;
       console.log(`🎭 Providing fallback demo data for ${companyName} due to error`);
       return this.generateDemoCompanyResearch(companyName, industry, location);
+=======
+        // Add search results metadata
+        if (parsedResponse.data) {
+          (parsedResponse.data as any).searchResultsCount = searchResults.length;
+          (parsedResponse.data as any).searchPerformed = true;
+          (parsedResponse.data as any).searchTimestamp = new Date().toISOString();
+        }
+        
+        // Cache the result
+        const cacheKey = this.generateCacheKey('company-research', input);
+        agentCache.set(cacheKey, parsedResponse, 60); // Cache for 1 hour
+        
+        return parsedResponse;
+      } else {
+        // No search results found - provide fallback response
+        console.log('No search results found, providing fallback response');
+        
+        const fallbackData = {
+          companyName,
+          industry: industry || 'Information not available',
+          location: location || 'Information not available',
+          description: 'No current information found in search results',
+          website: 'Information not available',
+          employeeCount: 'Information not available',
+          revenue: 'Information not available',
+          lastUpdated: new Date().toISOString().split('T')[0],
+          dataConfidence: 0.0,
+          confidenceScore: 0.0,
+          needsReview: true,
+          unverifiedFields: ['all'],
+          searchResultsCount: 0,
+          searchPerformed: true,
+          searchTimestamp: new Date().toISOString(),
+          sources: []
+        };
+        
+        return {
+          title: `Company Research: ${companyName}`,
+          content: `No current information found for "${companyName}" in web search. This could mean:\n\n1. The company name may be misspelled\n2. The company may not have significant online presence\n3. The company may be too new or private\n\nPlease verify the company name and try again.`,
+          summary: `No search results found for ${companyName}`,
+          data: fallbackData
+        } as AgentOutput;
+      }
+      
+    } catch (error) {
+      console.error('Company research with search failed:', error);
+      
+      // Return error response
+      return {
+        title: 'Research Failed',
+        content: `Failed to research company: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        summary: 'Company research failed',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        data: {
+          companyName: (input as any).companyName,
+          lastUpdated: new Date().toISOString().split('T')[0],
+          searchPerformed: false,
+          error: true
+        }
+      } as AgentOutput;
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     }
   }
   
@@ -1503,6 +1757,7 @@ Analyze the search results and provide accurate, factual information.`;
       
       // Check if Google AI API key is available
       const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+<<<<<<< HEAD
       if (!googleApiKey || googleApiKey === 'your_google_gemini_api_key_here') {
         console.warn('GOOGLE_GENERATIVE_AI_API_KEY not configured, providing demo response for development');
         
@@ -1527,20 +1782,60 @@ Analyze the search results and provide accurate, factual information.`;
       );
       
       console.log('Google AI response received successfully via Direct API');
+=======
+      if (!googleApiKey) {
+        console.error('GOOGLE_GENERATIVE_AI_API_KEY not found in environment');
+        throw new Error('Google AI API key not configured');
+      }
+      
+      console.log('Google AI API Key found, initializing Google AI...');
+      
+      // Initialize Google AI
+      const genAI = new GoogleGenerativeAI(googleApiKey);
+      const model = genAI.getGenerativeModel({ 
+        model: TOKEN_CONFIG.models.fast,
+        generationConfig: {
+          temperature: promptConfig.temperature,
+          maxOutputTokens: promptConfig.maxTokens,
+          topP: TOKEN_CONFIG.topP.factual,
+        }
+      });
+      
+      console.log('Google AI model initialized, sending request...');
+      
+      // Generate content with Google AI
+      const result = await model.generateContent([
+        { text: systemPrompt },
+        { text: userPrompt }
+      ]);
+      
+      console.log('Google AI response received successfully');
+      
+      // Extract the content from Google AI response
+      const response = result.response;
+      const text = response.text();
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       
       if (!text) {
         throw new Error('No response received from Google AI');
       }
       
+<<<<<<< HEAD
       console.log('Google AI response text extracted via Direct API, parsing...');
       console.log('📊 Response length:', text.length, 'characters');
+=======
+      console.log('Google AI response text extracted, parsing...');
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       
       // Parse the AI response
       const parsedResponse = this.parseAIResponse(text, agentType);
       
+<<<<<<< HEAD
       // Save task to local storage history
       this.saveTaskToHistory(agentType, input, parsedResponse);
       
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
       // Cache the result
       agentCache.set(cacheKey, parsedResponse, 30);
       
@@ -1577,6 +1872,7 @@ Analyze the search results and provide accurate, factual information.`;
   clearCache() {
     agentCache.clear();
   }
+<<<<<<< HEAD
 
   // Create fallback response from search results when AI fails
   private createFallbackFromSearchResults(searchResults: any[], input: any): any {
@@ -1691,6 +1987,8 @@ Analyze the search results and provide accurate, factual information.`;
     
     return fallbackResponse;
   }
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 }
 
 // Export the Google AI agent system

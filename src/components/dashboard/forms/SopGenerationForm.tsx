@@ -13,7 +13,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SopGenerationInput, SopGenerationOutput } from '@/shared/schemas';
+<<<<<<< HEAD
 import { saveTaskToHistory } from '@/components/dashboard/history-sidebar';
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
 
 const formSchema = z.object({
   processName: z.string().min(1, 'Process name is required'),
@@ -55,8 +58,11 @@ export function SopGenerationForm() {
     },
     onSuccess: (data) => {
       setResult(data);
+<<<<<<< HEAD
       // Save to history
       saveTaskToHistory('generate-sop', mutation.variables as SopGenerationInput, data);
+=======
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     },
   });
 
@@ -67,6 +73,7 @@ export function SopGenerationForm() {
   const downloadAsMarkdown = () => {
     if (!result) return;
     
+<<<<<<< HEAD
     let markdown = `# ${result.title || 'Standard Operating Procedure'}\n\n`;
     markdown += `**Version:** ${result.version || '1.0'}\n`;
     markdown += `**Date:** ${result.date || new Date().toISOString().split('T')[0]}\n\n`;
@@ -94,6 +101,23 @@ export function SopGenerationForm() {
     } else {
       markdown += `No specific procedures defined.\n`;
     }
+=======
+    let markdown = `# ${result.title}\n\n`;
+    markdown += `**Version:** ${result.version}\n`;
+    markdown += `**Date:** ${result.date}\n\n`;
+    markdown += `## Purpose\n${result.purpose}\n\n`;
+    markdown += `## Scope\n${result.scope}\n\n`;
+    markdown += `## Responsibilities\n`;
+    result.responsibilities.forEach(resp => {
+      markdown += `- ${resp}\n`;
+    });
+    markdown += `\n## Procedure\n`;
+    result.procedure.forEach(step => {
+      markdown += `### Step ${step.step}: ${step.action}\n`;
+      markdown += `${step.details}\n`;
+      markdown += `**Owner:** ${step.owner}\n\n`;
+    });
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     
     if (result.references && result.references.length > 0) {
       markdown += `## References\n`;
@@ -106,7 +130,11 @@ export function SopGenerationForm() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
+<<<<<<< HEAD
     a.download = `${(result.title || 'SOP').replace(/\s+/g, '_')}_SOP.md`;
+=======
+    a.download = `${result.title.replace(/\s+/g, '_')}_SOP.md`;
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -248,9 +276,15 @@ export function SopGenerationForm() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
+<<<<<<< HEAD
                 <CardTitle>{result.title || 'Standard Operating Procedure'}</CardTitle>
                 <CardDescription>
                   Version {result.version || '1.0'} • {result.date || new Date().toISOString().split('T')[0]}
+=======
+                <CardTitle>{result.title}</CardTitle>
+                <CardDescription>
+                  Version {result.version} • {result.date}
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
                 </CardDescription>
               </div>
               <Button onClick={downloadAsMarkdown} variant="outline" size="sm">
@@ -262,18 +296,30 @@ export function SopGenerationForm() {
           <CardContent className="space-y-6">
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Purpose</h4>
+<<<<<<< HEAD
               <p className="text-sm text-gray-600">{result.purpose || 'Not specified'}</p>
+=======
+              <p className="text-sm text-gray-600">{result.purpose}</p>
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
             </div>
 
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Scope</h4>
+<<<<<<< HEAD
               <p className="text-sm text-gray-600">{result.scope || 'Not specified'}</p>
+=======
+              <p className="text-sm text-gray-600">{result.scope}</p>
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
             </div>
 
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Responsibilities</h4>
               <ul className="list-disc list-inside space-y-1">
+<<<<<<< HEAD
                 {(result.responsibilities || []).map((responsibility, index) => (
+=======
+                {result.responsibilities.map((responsibility, index) => (
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
                   <li key={index} className="text-sm text-gray-600">{responsibility}</li>
                 ))}
               </ul>
@@ -282,7 +328,11 @@ export function SopGenerationForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3">Procedure</h4>
               <div className="space-y-4">
+<<<<<<< HEAD
                 {(result.procedure || []).map((step) => (
+=======
+                {result.procedure.map((step) => (
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
                   <div key={step.step} className="border-l-2 border-blue-200 pl-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
@@ -290,9 +340,15 @@ export function SopGenerationForm() {
                       </span>
                       <h5 className="font-medium text-sm">{step.action}</h5>
                     </div>
+<<<<<<< HEAD
                     <p className="text-sm text-gray-600 mb-2">{step.details || step.action}</p>
                     <p className="text-xs text-gray-500">
                       <strong>Owner:</strong> {step.owner || 'Not specified'}
+=======
+                    <p className="text-sm text-gray-600 mb-2">{step.details}</p>
+                    <p className="text-xs text-gray-500">
+                      <strong>Owner:</strong> {step.owner}
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
                     </p>
                   </div>
                 ))}

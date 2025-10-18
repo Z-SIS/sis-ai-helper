@@ -1,5 +1,16 @@
 {
+<<<<<<< HEAD
   "env": {
     "NEXT_TELEMETRY_DISABLED": "1"
+=======
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+>>>>>>> ce90f203a7f4fdbb224ace3244ef0e4aad1043b2
   }
 }
