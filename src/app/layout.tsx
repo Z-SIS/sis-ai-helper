@@ -17,21 +17,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SIS Group Enterprises - Security, Facility Management & Cash Logistics",
-  description: "A Market Leader in Security, Cash Logistics & Facility Management. Indian multinational conglomerate providing world-class security and facility management services.",
-  keywords: ["SIS Group", "Security Services", "Facility Management", "Cash Logistics", "Indian Multinational", "Security Solutions"],
-  authors: [{ name: "SIS Group Enterprises" }],
+  title: "SIS AI Helper - Security Services AI Assistant",
+  description: "AI-powered dashboard for security services business automation and research",
+  keywords: ["SIS", "AI Helper", "Security Services", "Business Automation", "AI Assistant"],
+  authors: [{ name: "SIS Team" }],
   openGraph: {
-    title: "SIS Group Enterprises",
-    description: "A Market Leader in Security, Cash Logistics & Facility Management",
-    url: "https://sisgroup.in",
-    siteName: "SIS Group Enterprises",
+    title: "SIS AI Helper",
+    description: "AI-powered dashboard for security services business automation",
+    url: "https://sis-ai-helper.com",
+    siteName: "SIS AI Helper",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SIS Group Enterprises",
-    description: "A Market Leader in Security, Cash Logistics & Facility Management",
+    title: "SIS AI Helper",
+    description: "AI-powered dashboard for security services business automation",
   },
 };
 
