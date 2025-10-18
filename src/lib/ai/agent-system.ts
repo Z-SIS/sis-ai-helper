@@ -1063,12 +1063,48 @@ Analyze the search results and provide accurate, factual information only.`;
     } catch (error) {
       console.error('Company research with search failed:', error);
       
-      // Return error response
+      // Check for specific Google API errors
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Handle quota/rate limit errors specifically
+      if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+        return {
+          title: 'API Rate Limit Exceeded',
+          content: `The Google AI service has temporarily reached its usage limit. Please try again in a few minutes. This is a temporary limitation and will reset automatically.`,
+          summary: 'Rate limit exceeded - please try again later',
+          error: 'API rate limit exceeded',
+          data: {
+            companyName: (input as any).companyName,
+            lastUpdated: new Date().toISOString().split('T')[0],
+            searchPerformed: false,
+            error: true,
+            retryAfter: '60 seconds'
+          }
+        } as AgentOutput;
+      }
+      
+      // Handle API key errors specifically
+      if (errorMessage.includes('API key') || errorMessage.includes('authentication') || errorMessage.includes('401') || errorMessage.includes('403')) {
+        return {
+          title: 'API Configuration Error',
+          content: `There's an issue with the Google AI API configuration. Please contact support if this issue persists.`,
+          summary: 'API configuration error',
+          error: 'API configuration error',
+          data: {
+            companyName: (input as any).companyName,
+            lastUpdated: new Date().toISOString().split('T')[0],
+            searchPerformed: false,
+            error: true
+          }
+        } as AgentOutput;
+      }
+      
+      // Return general error response
       return {
         title: 'Research Failed',
-        content: `Failed to research company: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        content: `Failed to research company: ${errorMessage}`,
         summary: 'Company research failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         data: {
           companyName: (input as any).companyName,
           lastUpdated: new Date().toISOString().split('T')[0],
@@ -1161,12 +1197,36 @@ Analyze the search results and provide accurate, factual information only.`;
     } catch (error) {
       console.error(`Google AI generation error for ${agentType}:`, error);
       
-      // Return a fallback response
+      // Check for specific Google API errors
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Handle quota/rate limit errors specifically
+      if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+        return {
+          title: 'API Rate Limit Exceeded',
+          content: `The Google AI service has temporarily reached its usage limit. Please try again in a few minutes. This is a temporary limitation and will reset automatically.`,
+          summary: 'Rate limit exceeded - please try again later',
+          error: 'API rate limit exceeded',
+          retryAfter: '60 seconds' // Suggest retry after 60 seconds
+        } as AgentOutput;
+      }
+      
+      // Handle API key errors specifically
+      if (errorMessage.includes('API key') || errorMessage.includes('authentication') || errorMessage.includes('401') || errorMessage.includes('403')) {
+        return {
+          title: 'API Configuration Error',
+          content: `There's an issue with the Google AI API configuration. Please contact support if this issue persists.`,
+          summary: 'API configuration error',
+          error: 'API configuration error'
+        } as AgentOutput;
+      }
+      
+      // Return a general fallback response
       return {
         title: 'Error Processing Request',
-        content: `We encountered an error while processing your ${agentType} request. Please try again later.`,
+        content: `We encountered an error while processing your ${agentType} request. Please try again later. Error: ${errorMessage}`,
         summary: 'Request failed',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage
       } as AgentOutput;
     }
   }
