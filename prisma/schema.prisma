@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  knowledgeDocuments KnowledgeDocument[]
+  knowledgeUsage     KnowledgeUsage[]
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Knowledge Base Models
+model KnowledgeDocument {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  sourceUrl   String?
+  fileType    String
+  fileSize    Int?
+  tags        String?  // JSON string of array
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  creator     User       @relation(fields: [createdBy], references: [id])
+  chunks      KnowledgeChunk[]
+  processingQueue DocumentProcessingQueue?
+
+  @@map("knowledge_documents")
+}
+
+model KnowledgeChunk {
+  id          String   @id @default(cuid())
+  documentId  String
+  chunkIndex  Int
+  chunkText   String
+  embedding   String   // JSON string of array
+  metadata    String?  // JSON metadata
+  createdAt   DateTime @default(now())
+
+  // Relations
+  document    KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("knowledge_chunks")
+}
+
+model DocumentProcessingQueue {
+  id                    String   @id @default(cuid())
+  documentId            String   @unique
+  status                String   @default("pending") // pending, processing, completed, failed
+  processingStartedAt   DateTime?
+  processingCompletedAt DateTime?
+  errorMessage          String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  document              KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("document_processing_queue")
+}
+
+model CompanyResearchCache {
+  id                    String   @id @default(cuid())
+  companyName           String
+  industry              String?
+  location              String?
+  description           String?
+  website               String?
+  foundedYear           Int?
+  employeeCount         String?
+  revenue               String?
+  keyExecutives         String?  // JSON array
+  competitors           String?  // JSON array
+  recentNews            String?  // JSON array
+  researchData          String?  // JSON object
+  companyEmbedding      String?  // JSON array
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("company_research_cache")
+}
+
+model KnowledgeUsage {
+  id                    String   @id @default(cuid())
+  userId                String
+  query                 String
+  retrievedChunks       String   // JSON array of chunk IDs
+  response              String
+  sources               String?  // JSON array of sources
+  relevanceScore        Float?
+  responseTimeMs        Int
+  createdAt             DateTime @default(now())
+
+  // Relations
+  user                  User       @relation(fields: [userId], references: [id])
+
+  @@map("knowledge_usage")
+}
