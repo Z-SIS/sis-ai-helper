@@ -11,6 +11,7 @@ import { DeploymentPlanForm } from '@/components/dashboard/forms/DeploymentPlanF
 import { UspsBattlecardForm } from '@/components/dashboard/forms/UspsBattlecardForm';
 import { DisbandmentPlanForm } from '@/components/dashboard/forms/DisbandmentPlanForm';
 import { SlideTemplateForm } from '@/components/dashboard/forms/SlideTemplateForm';
+import { SettingsForm } from '@/components/dashboard/forms/SettingsForm';
 import { HistorySidebar } from '@/components/dashboard/history-sidebar';
 import { SupabaseSetupWizard } from '@/components/dashboard/supabase-setup-wizard';
 
@@ -24,6 +25,7 @@ const agentForms = {
   'usps-battlecard': UspsBattlecardForm,
   'disbandment-plan': DisbandmentPlanForm,
   'slide-template': SlideTemplateForm,
+  'settings': SettingsForm,
 };
 
 export default function DashboardPage() {
@@ -96,6 +98,13 @@ export default function DashboardPage() {
                         </div>
                         <h3 className="font-semibold text-foreground mb-2">Feasibility Check</h3>
                         <p className="text-sm text-muted-foreground">Assess market entry viability and opportunity potential.</p>
+                      </div>
+                      <div className="bg-card p-6 rounded-lg border-2 border-gray-500/20 hover:border-gray-500/40 transition-colors">
+                        <div className="w-12 h-12 bg-gray-500/10 rounded-lg flex items-center justify-center mb-4">
+                          <div className="w-6 h-6 bg-gray-500 rounded-full" />
+                        </div>
+                        <h3 className="font-semibold text-foreground mb-2">Settings</h3>
+                        <p className="text-sm text-muted-foreground">Manage your profile and monitor API connection status.</p>
                       </div>
                     </div>
                     

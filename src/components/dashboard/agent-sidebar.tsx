@@ -10,7 +10,8 @@ import {
   Rocket, 
   Target, 
   XCircle, 
-  Presentation 
+  Presentation,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AgentMetadata } from '@/shared/schemas';
@@ -38,34 +39,45 @@ const agents = Object.entries(AgentMetadata).map(([id, metadata]) => ({
   icon: getIconForCategory(metadata.category),
 }));
 
+// Settings option
+const settingsOption = {
+  id: 'settings',
+  name: 'Settings',
+  description: 'Manage profile and API connections',
+  category: 'system',
+  icon: Settings,
+};
+
 interface AgentSidebarProps {
   selectedAgent: string | null;
   onAgentSelect: (agentId: string) => void;
 }
 
 export function AgentSidebar({ selectedAgent, onAgentSelect }: AgentSidebarProps) {
+  const allOptions = [...agents, settingsOption];
+
   return (
     <div className="w-64 bg-card border-r border-border h-full overflow-y-auto">
       <div className="p-4">
         <h2 className="text-lg font-semibold text-foreground mb-4">AI Agents</h2>
         <div className="space-y-2">
-          {agents.map((agent) => {
-            const Icon = agent.icon;
+          {allOptions.map((option) => {
+            const Icon = option.icon;
             return (
               <button
-                key={agent.id}
-                onClick={() => onAgentSelect(agent.id)}
+                key={option.id}
+                onClick={() => onAgentSelect(option.id)}
                 className={cn(
                   'w-full flex items-start space-x-3 p-3 rounded-lg text-left transition-colors',
-                  selectedAgent === agent.id
+                  selectedAgent === option.id
                     ? 'bg-primary/10 text-primary border border-primary/20'
                     : 'hover:bg-accent text-foreground'
                 )}
               >
                 <Icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium">{agent.name}</div>
-                  <div className="text-sm text-muted-foreground mt-1">{agent.description}</div>
+                  <div className="font-medium">{option.name}</div>
+                  <div className="text-sm text-muted-foreground mt-1">{option.description}</div>
                 </div>
               </button>
             );
