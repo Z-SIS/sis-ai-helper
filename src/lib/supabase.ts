@@ -1,22 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client using environment variables
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Get Supabase configuration with proper error handling
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Initialize Supabase client only if environment variables are available
+export const supabase = supabaseUrl && supabaseAnonKey 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 // Admin instance - for server-side operations (bypasses RLS)
-export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
+export const supabaseAdmin = supabaseUrl && supabaseServiceRoleKey
+  ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+  : null;
 
 // Database types
 export interface TaskHistory {
@@ -52,6 +54,11 @@ export interface CompanyResearchCache {
 export const db = {
   // Task History operations
   async getTaskHistory(userId: string, limit = 50) {
+    if (!supabase) {
+      console.warn('Supabase not configured - returning empty task history');
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('task_history')
       .select('*')
@@ -64,6 +71,11 @@ export const db = {
   },
 
   async createTaskHistory(task: Omit<TaskHistory, 'id' | 'created_at' | 'updated_at'>) {
+    if (!supabase) {
+      console.warn('Supabase not configured - skipping task history creation');
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from('task_history')
       .insert(task)
@@ -76,6 +88,11 @@ export const db = {
 
   // Company Research Cache operations
   async getCompanyResearchCache(companyName: string) {
+    if (!supabase) {
+      console.warn('Supabase not configured - no cache available');
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from('company_research_cache')
       .select('*')
@@ -98,6 +115,11 @@ export const db = {
   },
 
   async upsertCompanyResearchCache(cache: Omit<CompanyResearchCache, 'id' | 'created_at' | 'updated_at'>) {
+    if (!supabaseAdmin) {
+      console.warn('Supabase not configured - skipping cache update');
+      return null;
+    }
+    
     const { data, error } = await supabaseAdmin
       .from('company_research_cache')
       .upsert({
