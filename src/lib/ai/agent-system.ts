@@ -27,7 +27,7 @@ import {
   AgentInput,
   AgentOutput
 } from '@/shared/schemas';
-import { db } from '@/lib/supabase';
+// import { db } from '@/lib/supabase'; // Disabled to prevent header errors in production
 
 // Define AgentType locally to avoid circular dependencies
 type AgentType = keyof typeof AgentInputSchemas;
@@ -39,7 +39,7 @@ type AgentType = keyof typeof AgentInputSchemas;
 const TOKEN_CONFIG = {
   // Model configurations for different complexity levels
   models: {
-    fast: 'gemini-1.5-flash', // Google AI model
+    fast: 'gemini-2.0-flash-exp', // Google AI model - updated to latest version
   },
   
   // Token limits based on agent complexity

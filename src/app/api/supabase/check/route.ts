@@ -17,7 +17,7 @@ export async function GET() {
     let tablesExist = false
     let tables = []
 
-    if (config.hasUrl && config.hasAnonKey) {
+    if (config.hasUrl && config.hasAnonKey && supabase) {
       try {
         // Test basic connection
         const { data, error } = await supabase.from('task_history').select('count').limit(1)
@@ -40,7 +40,7 @@ export async function GET() {
     }
 
     // Check table structure if connected
-    if (connectionTest === 'connected') {
+    if (connectionTest === 'connected' && supabaseAdmin) {
       try {
         // Test task_history table
         await supabaseAdmin.from('task_history').select('*').limit(1)

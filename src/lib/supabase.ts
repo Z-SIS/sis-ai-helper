@@ -1,9 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Lazy initialization of Supabase clients
-let supabaseClient: ReturnType<typeof createClient> | null = null;
-let supabaseAdminClient: ReturnType<typeof createClient> | null = null;
-
+// Get Supabase configuration
 function getSupabaseUrl() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!url) {
@@ -32,35 +29,29 @@ function getSupabaseServiceRoleKey() {
 }
 
 // Client instance - for client-side operations
-export const supabase = () => {
-  if (!supabaseClient) {
-    const url = getSupabaseUrl();
-    const key = getSupabaseAnonKey();
-    if (!url || !key) {
-      return null;
-    }
-    supabaseClient = createClient(url, key);
+export const supabase = (() => {
+  const url = getSupabaseUrl();
+  const key = getSupabaseAnonKey();
+  if (!url || !key) {
+    return null;
   }
-  return supabaseClient;
-};
+  return createClient(url, key);
+})();
 
 // Admin instance - for server-side operations (bypasses RLS)
-export const supabaseAdmin = () => {
-  if (!supabaseAdminClient) {
-    const url = getSupabaseUrl();
-    const key = getSupabaseServiceRoleKey();
-    if (!url || !key) {
-      return null;
-    }
-    supabaseAdminClient = createClient(url, key, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
+export const supabaseAdmin = (() => {
+  const url = getSupabaseUrl();
+  const key = getSupabaseServiceRoleKey();
+  if (!url || !key) {
+    return null;
   }
-  return supabaseAdminClient;
-};
+  return createClient(url, key, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+})();
 
 // Database types
 export interface TaskHistory {
@@ -96,7 +87,7 @@ export interface CompanyResearchCache {
 export const db = {
   // Task History operations
   async getTaskHistory(userId: string, limit = 50) {
-    const client = supabase();
+    const client = supabase;
     if (!client) {
       console.warn('Supabase not configured - returning empty task history');
       return [];
@@ -114,7 +105,7 @@ export const db = {
   },
 
   async createTaskHistory(task: Omit<TaskHistory, 'id' | 'created_at' | 'updated_at'>) {
-    const client = supabase();
+    const client = supabase;
     if (!client) {
       console.warn('Supabase not configured - skipping task history creation');
       return null;
@@ -132,7 +123,7 @@ export const db = {
 
   // Company Research Cache operations
   async getCompanyResearchCache(companyName: string) {
-    const client = supabase();
+    const client = supabase;
     if (!client) {
       console.warn('Supabase not configured - no cache available');
       return null;
@@ -160,7 +151,7 @@ export const db = {
   },
 
   async upsertCompanyResearchCache(cache: Omit<CompanyResearchCache, 'id' | 'created_at' | 'updated_at'>) {
-    const client = supabaseAdmin();
+    const client = supabaseAdmin;
     if (!client) {
       console.warn('Supabase not configured - skipping cache update');
       return null;
