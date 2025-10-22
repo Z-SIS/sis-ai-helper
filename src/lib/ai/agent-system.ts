@@ -14,6 +14,14 @@ import {
   DisbandmentPlanSchema,
   SlideTemplateSchema
 } from '@/lib/ai/schema-validation';
+import {
+  getDeterministicConfig,
+  ANTI_HALLUCINATION_SYSTEM_PROMPT,
+  VERIFICATION_PROMPT,
+  EXTRACTION_EXAMPLES,
+  ANALYSIS_EXAMPLES,
+  type DeterministicConfig
+} from '@/lib/ai/deterministic-config';
 
 // Version: 2.1.0 - Google AI Only
 
@@ -72,14 +80,17 @@ const TOKEN_CONFIG = {
 
 const PROMPT_TEMPLATES = {
   'company-research': {
-    system: `You are a business research analyst. Provide accurate, current company information in JSON format.
+    system: `${ANTI_HALLUCINATION_SYSTEM_PROMPT}
 
-CRITICAL RULES:
-- Do not invent facts. If you are not 100% sure about information, state "Information not available" or "Unable to verify".
-- Only include information that can be verified through reliable sources.
-- Provide specific, factual information with confidence levels.
-- Use web search for current data and cite sources when possible.
-- Return valid JSON only - no explanations outside the JSON structure.
+You are a business research analyst. Provide accurate, current company information in JSON format.
+
+ADDITIONAL REQUIREMENTS:
+- Use web search for current data and cite sources when possible
+- Only include information that can be verified through reliable sources
+- Provide specific, factual information with confidence levels
+- Return valid JSON only - no explanations outside the JSON structure
+
+${EXTRACTION_EXAMPLES}
 
 REQUIRED JSON FORMAT:
 {
@@ -91,9 +102,9 @@ REQUIRED JSON FORMAT:
   "foundedYear": number (optional),
   "employeeCount": "string OR object with count field",
   "revenue": "string OR object with amount field",
-  "keyExecutives": [{"name": "string", "title": "string"}] (optional),
+  "keyExecutives": [{"name": "string", "title": "string", "confidence_score": number}] (optional),
   "competitors": ["string"] (optional),
-  "recentNews": [{"title": "string", "summary": "string", "date": "YYYY-MM-DD"}] (optional),
+  "recentNews": [{"title": "string", "summary": "string", "date": "YYYY-MM-DD", "confidence_score": number}] (optional),
   "dataConfidence": number (0-1, optional),
   "unverifiedFields": ["string"] (optional),
   "confidenceScore": number (0-1, optional),
@@ -988,12 +999,18 @@ Analyze the search results and provide accurate, factual information only.`;
         
         // Initialize Google AI
         const genAI = new GoogleGenerativeAI(googleApiKey);
+        
+        // Use deterministic configuration for company research
+        const config = getDeterministicConfig('extraction');
         const model = genAI.getGenerativeModel({ 
           model: TOKEN_CONFIG.models.fast,
           generationConfig: {
-            temperature: 0.0, // Very low temperature for factual accuracy
-            maxOutputTokens: TOKEN_CONFIG.maxTokens.complex,
-            topP: 0.0,
+            temperature: config.temperature,
+            maxOutputTokens: config.maxOutputTokens,
+            topP: config.topP,
+            topK: config.topK,
+            candidateCount: config.candidateCount,
+            responseFormat: { mimeType: "application/json" }
           }
         });
         
@@ -1154,12 +1171,22 @@ Analyze the search results and provide accurate, factual information only.`;
       
       // Initialize Google AI
       const genAI = new GoogleGenerativeAI(googleApiKey);
+      
+      // Determine task type for deterministic configuration
+      const taskType = agentType === 'company-research' ? 'extraction' : 
+                      agentType === 'compose-email' || agentType === 'slide-template' ? 'composition' : 
+                      'analysis';
+      
+      const config = getDeterministicConfig(taskType);
       const model = genAI.getGenerativeModel({ 
         model: TOKEN_CONFIG.models.fast,
         generationConfig: {
-          temperature: promptConfig.temperature,
-          maxOutputTokens: promptConfig.maxTokens,
-          topP: TOKEN_CONFIG.topP.factual,
+          temperature: config.temperature,
+          maxOutputTokens: config.maxOutputTokens,
+          topP: config.topP,
+          topK: config.topK,
+          candidateCount: config.candidateCount,
+          responseFormat: config.responseFormat === 'json_object' ? { mimeType: "application/json" } : undefined
         }
       });
       
