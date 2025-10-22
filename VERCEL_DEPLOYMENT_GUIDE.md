@@ -1,157 +1,212 @@
-# Vercel Deployment Guide
+# Vercel Deployment Guide - SIS AI Helper
+**Complete setup for Vercel + Supabase integration**
 
-## 🚀 Deployment Status: READY
+## 🚀 **Quick Start Deployment**
 
-This application has been successfully configured for Vercel deployment with Google Gemini AI integration.
+### **1. Database Setup (Required First)**
+⚠️ **MUST COMPLETE BEFORE DEPLOYMENT**
 
-## 📋 Configuration Summary
+1. **Execute Database Migration**
+   - 📁 Copy SQL from: `COMPLETE_MIGRATION.sql`
+   - 🔗 Go to: https://mrofgjydvwjqbnhxrits.supabase.co/project/sql
+   - 📋 Paste and execute the complete script
+   - ✅ Verify all tables are created
 
-### ✅ What's Working
-- **Google AI Integration**: Uses Google Gemini API for AI responses
-- **Error Handling**: Graceful fallbacks when API keys are missing
-- **Demo Mode**: Shows demo responses when API keys are not configured
-- **API Routes**: All endpoints properly configured with error handling
-- **Dependencies**: Clean dependencies without ZAI SDK (Vercel incompatible)
+2. **Test Database Connection**
+   ```bash
+   node check-supabase-status.js
+   ```
+   Expected: `8/8 tables exist`
 
-### ⚠️ Current Behavior
-- **Without API Keys**: Shows "results are being updated" messages with demo data
-- **With API Keys**: Real AI responses with web search functionality
+### **2. Vercel Deployment**
 
-## 🔧 Required Environment Variables
+#### **Option A: Connect via Vercel Dashboard**
+1. Go to: https://vercel.com/dashboard
+2. Click "Add New..." → "Project"
+3. Import GitHub repository: `Z-SIS/sis-ai-helper`
+4. Configure environment variables (see below)
+5. Deploy
 
-Set these in your Vercel dashboard under **Settings → Environment Variables**:
-
-```
-GOOGLE_GENERATIVE_AI_API_KEY=your_google_gemini_api_key_here
-TAVILY_API_KEY=your_tavily_api_key_here
-NODE_ENV=production
-```
-
-### How to Get API Keys
-
-1. **Google Gemini API Key**:
-   - Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Create a new API key
-   - Copy and paste to Vercel environment variables
-
-2. **Tavily API Key**:
-   - Go to [Tavily](https://tavily.com/)
-   - Sign up and get API key
-   - Copy and paste to Vercel environment variables
-
-## 🚀 Deployment Steps
-
-### 1. Push to GitHub
+#### **Option B: Vercel CLI**
 ```bash
-git add .
-git commit -m "Configure for Vercel deployment with Google AI"
-git push origin main
+# Install Vercel CLI
+npm i -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy
+vercel --prod
 ```
 
-### 2. Deploy to Vercel
-1. Go to [Vercel](https://vercel.com/)
-2. Click "New Project"
-3. Connect your GitHub repository
-4. Configure environment variables
-5. Click "Deploy"
+## 🔧 **Environment Variables Configuration**
 
-### 3. Post-Deployment Testing
-After deployment, test these endpoints:
+### **Required Environment Variables**
+Add these in Vercel Dashboard → Settings → Environment Variables:
 
-- **Health Check**: `https://your-app.vercel.app/api/agent/health`
-- **Company Research**: `https://your-app.vercel.app/api/agent/company-research`
+| Variable Name | Value | Description |
+|---------------|-------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://mrofgjydvwjqbnhxrits.supabase.co` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yb2ZnanlkdndqcWJuaHhyaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxODk4NjYsImV4cCI6MjA3NTc2NTg2Nn0.XyIsNS_N4TA4ai5R1B0QESuxQaEIXgxCE7NMPGe6hHU` | Public anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yb2ZnanlkdndqcWJuaHhyaXRzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDE4OTg2NiwiZXhwIjoyMDc1NzY1ODY2fQ.rVxUSZIFrUrTOk_A_rR_qTF9Kd4OPl3xU-1zXZJklVo` | Service role key |
 
-## 🧪 Testing API Endpoints
+### **Optional Variables**
+| Variable Name | Value | Description |
+|---------------|-------|-------------|
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Your Google AI key | For AI features |
+| `TAVILY_API_KEY` | Your Tavily key | For web search |
 
-### Health Check
+## 🔍 **Deployment Verification**
+
+### **1. Check Supabase Connection**
+Visit: `https://your-domain.vercel.app/api/supabase/check`
+
+Expected response:
+```json
+{
+  "status": "success",
+  "connection": {
+    "status": "connected",
+    "tablesExist": true
+  }
+}
+```
+
+### **2. Test Application Features**
+- ✅ Dashboard loads: `https://your-domain.vercel.app/dashboard`
+- ✅ Company research works
+- ✅ Document upload functions
+- ✅ Search analytics active
+
+### **3. Monitor Deployment**
+- Vercel Dashboard: Functions tab
+- Supabase Dashboard: Logs and usage
+- Error tracking in browser console
+
+## 🛠️ **Troubleshooting**
+
+### **Common Issues**
+
+#### **Database Connection Errors**
 ```bash
-curl https://your-app.vercel.app/api/agent/health
+# Test locally first
+node check-supabase-status.js
 ```
+**Solutions:**
+- Verify environment variables in Vercel
+- Check Supabase project URL and keys
+- Ensure database migration was executed
 
-### Company Research
+#### **Build Errors**
 ```bash
-curl -X POST https://your-app.vercel.app/api/agent/company-research \
-  -H "Content-Type: application/json" \
-  -d '{
-    "companyName": "G4S",
-    "industry": "security",
-    "location": "India"
-  }'
+# Test build locally
+npm run build
+```
+**Solutions:**
+- Check package.json dependencies
+- Verify Next.js configuration
+- Review build logs in Vercel
+
+#### **Function Timeouts**
+**Solutions:**
+- Increase function timeout in `vercel.json`
+- Optimize database queries
+- Add proper error handling
+
+### **Debug Commands**
+
+#### **Local Testing**
+```bash
+# Start development server
+npm run dev
+
+# Test Supabase connection
+curl http://localhost:3000/api/supabase/check
+
+# Check environment variables
+node -e "console.log(process.env.NEXT_PUBLIC_SUPABASE_URL)"
 ```
 
-## 📊 Expected Behavior
+#### **Production Testing**
+```bash
+# Test deployed API
+curl https://your-domain.vercel.app/api/supabase/check
 
-### With API Keys Configured
-- ✅ Real AI responses
-- ✅ Web search integration
-- ✅ Current company information
-- ✅ Proper confidence scores
-- ✅ Recent news and data
+# Check Vercel logs
+vercel logs
 
-### Without API Keys
-- ⚠️ Demo responses only
-- ⚠️ "Results are being updated" messages
-- ⚠️ Generic company information
-- ⚠️ No real-time data
-- ✅ Application remains functional
+# Test specific functions
+curl https://your-domain.vercel.app/api/agent/health
+```
 
-## 🔍 Monitoring
+## 📊 **Performance Monitoring**
 
-### Check Vercel Function Logs
-1. Go to Vercel dashboard
-2. Select your project
-3. Go to "Functions" tab
-4. Check logs for any errors
+### **Key Metrics to Monitor**
+- API response times
+- Database query performance
+- Error rates
+- User engagement
 
-### Common Issues
-- **API Key Errors**: Check environment variables configuration
-- **Timeout Issues**: Monitor function execution time
-- **Rate Limiting**: Check API usage limits
+### **Monitoring Tools**
+- **Vercel Analytics**: Built-in performance metrics
+- **Supabase Dashboard**: Database usage and logs
+- **Browser DevTools**: Frontend performance
 
-## 🛠️ Troubleshooting
+## 🔄 **CI/CD Pipeline**
 
-### Issue: "Results are being updated"
-**Cause**: API keys not configured
-**Solution**: Add environment variables in Vercel dashboard
+### **Automatic Deployments**
+The repository is configured for:
+- ✅ Automatic deployment on `master` push
+- ✅ Preview deployments for PRs
+- ✅ Environment-specific variables
 
-### Issue: API timeouts
-**Cause**: Slow AI responses
-**Solution**: Check Vercel function logs, consider optimizing prompts
+### **Deployment Workflow**
+1. **Code changes** → Push to GitHub
+2. **Automatic build** → Vercel builds application
+3. **Deployment** → Production or preview
+4. **Health checks** → Verify Supabase connection
 
-### Issue: Build errors
-**Cause**: Dependencies or configuration issues
-**Solution**: Check build logs in Vercel dashboard
+## 🎯 **Success Checklist**
 
-## 📈 Performance Optimization
+### **Pre-Deployment**
+- [ ] Database migration executed
+- [ ] All environment variables set
+- [ ] Local testing completed
+- [ ] Build process verified
 
-### Current Configuration
-- **Model**: `gemini-1.5-flash` (fast, optimized for production)
-- **Temperature**: `0.0` (consistent responses)
-- **Max Tokens**: Configured per agent complexity
-- **Caching**: 30-minute cache for responses
+### **Post-Deployment**
+- [ ] Application loads successfully
+- [ ] Supabase connection working
+- [ ] All API endpoints functional
+- [ ] User authentication working
+- [ ] Analytics tracking active
 
-### Recommendations
-- Monitor API usage and costs
-- Set up rate limiting if needed
-- Consider response caching for frequently requested companies
+## 📞 **Support Resources**
 
-## 🔒 Security Considerations
+### **Documentation**
+- **Supabase Docs**: https://supabase.com/docs
+- **Vercel Docs**: https://vercel.com/docs
+- **Next.js Docs**: https://nextjs.org/docs
 
-- API keys are stored in Vercel environment variables
-- No sensitive data in client-side code
-- Proper error handling prevents information leakage
-- Demo mode ensures functionality without API keys
-
-## 📞 Support
-
-If you encounter issues:
-1. Check Vercel function logs
-2. Verify environment variables
-3. Test API endpoints manually
-4. Monitor Google AI API usage
+### **Helpful Links**
+- **Vercel Dashboard**: https://vercel.com/dashboard
+- **Supabase Dashboard**: https://mrofgjydvwjqbnhxrits.supabase.co
+- **GitHub Repository**: https://github.com/Z-SIS/sis-ai-helper
 
 ---
 
-**Status**: ✅ Ready for Vercel deployment  
-**Last Updated**: 2025-10-16  
-**Version**: 2.1.0 - Google AI Primary
+## 🎉 **You're Ready for Production!**
+
+Once you complete the database migration and deploy to Vercel, the SIS AI Helper will be fully functional with:
+- ✅ Enhanced RAG system
+- ✅ Search analytics
+- ✅ Document management
+- ✅ Company research
+- ✅ Real-time performance monitoring
+
+**🚀 Your AI-powered sales intelligence platform is ready!**
+
+---
+
+*Generated with [Claude Code](https://claude.ai/code)*
+*Last Updated: 2025-10-22*
