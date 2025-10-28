@@ -103,8 +103,7 @@ export default function Home() {
               A Market Leader in Security, Facility Management & Cash Logistics
             </p>
             <p className="text-lg mb-8 max-w-3xl mx-auto opacity-90">
-              Transform your sales process with AI-powered company research, decision maker identification, 
-              and competitive intelligence. Close more deals with data-driven insights.
+              Transforming sales process with AI-powered company research, decision maker identification, and competitive intelligence. Close more deals with data-driven insights.
             </p>
             
             {/* Call to Action */}
@@ -196,7 +195,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                Why Choose SIS Sales Intelligence?
+                Why use SIS Sales Intelligence AI Tool?
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
