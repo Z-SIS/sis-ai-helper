@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import ZAI from 'z-ai-web-dev-sdk';
 
 // ZAI client
@@ -142,45 +142,26 @@ export class VectorSearchRetrieval {
     }
   ): Promise<any[]> {
     try {
-      // Get all chunks for the user with their documents
-      const chunks = await db.knowledgeChunk.findMany({
-        where: {
-          document: {
-            createdBy: options.filter_created_by || null
-          }
-        },
-        include: {
-          document: {
-            select: {
-              title: true,
-              tags: true
-            }
-          }
-        },
-        take: options.match_count * 2 // Get more to filter by similarity
-      });
+      if (!supabase) {
+        throw new Error('Supabase client not configured');
+      }
 
-      // Calculate similarity and filter
-      const results = chunks
-        .map(chunk => {
-          const embedding = JSON.parse(chunk.embedding);
-          const similarity = this.calculateCosineSimilarity(queryEmbedding, embedding);
-          
-          return {
-            id: chunk.id,
-            document_id: chunk.documentId,
-            chunk_text: chunk.chunkText,
-            similarity,
-            metadata: chunk.metadata ? JSON.parse(chunk.metadata) : {},
-            document_title: chunk.document.title,
-            document_tags: chunk.document.tags ? JSON.parse(chunk.document.tags) : []
-          };
-        })
-        .filter(chunk => chunk.similarity >= options.similarity_threshold)
-        .sort((a, b) => b.similarity - a.similarity)
-        .slice(0, options.match_count);
+      // Use the RPC function for efficient vector search
+      const { data, error } = await supabase
+        .rpc('match_knowledge_chunks', {
+          query_embedding: queryEmbedding,
+          match_count: options.match_count,
+          similarity_threshold: options.similarity_threshold,
+          filter_tags: options.filter_tags || null,
+          filter_created_by: options.filter_created_by || null
+        });
 
-      return results;
+      if (error) {
+        console.error('Error searching knowledge chunks:', error);
+        return [];
+      }
+
+      return data || [];
     } catch (error) {
       console.error('Error searching knowledge chunks:', error);
       return [];
@@ -198,34 +179,24 @@ export class VectorSearchRetrieval {
     }
   ): Promise<any[]> {
     try {
-      const companies = await db.companyResearchCache.findMany({
-        take: options.match_count * 2
-      });
+      if (!supabase) {
+        throw new Error('Supabase client not configured');
+      }
 
-      // Calculate similarity and filter
-      const results = companies
-        .map(company => {
-          if (!company.companyEmbedding) return null;
-          
-          const embedding = JSON.parse(company.companyEmbedding);
-          const similarity = this.calculateCosineSimilarity(queryEmbedding, embedding);
-          
-          return {
-            id: company.id,
-            company_name: company.companyName,
-            description: company.description || '',
-            industry: company.industry || '',
-            similarity,
-            research_data: company.researchData ? JSON.parse(company.researchData) : {}
-          };
-        })
-        .filter((company): company is NonNullable<typeof company> => 
-          company !== null && company.similarity >= options.similarity_threshold
-        )
-        .sort((a, b) => b.similarity - a.similarity)
-        .slice(0, options.match_count);
+      // Use the RPC function for efficient vector search
+      const { data, error } = await supabase
+        .rpc('match_company_research', {
+          query_embedding: queryEmbedding,
+          match_count: options.match_count,
+          similarity_threshold: options.similarity_threshold
+        });
 
-      return results;
+      if (error) {
+        console.error('Error searching company research:', error);
+        return [];
+      }
+
+      return data || [];
     } catch (error) {
       console.error('Error searching company research:', error);
       return [];
@@ -425,28 +396,38 @@ Response:`;
     responseTime: number
   ): Promise<string> {
     try {
+      if (!supabase) {
+        console.warn('Supabase client not configured - skipping usage logging');
+        return crypto.randomUUID();
+      }
+
       const usageId = crypto.randomUUID();
 
-      await db.knowledgeUsage.create({
-        data: {
+      const { error } = await supabase
+        .from('knowledge_usage')
+        .insert({
           id: usageId,
-          userId,
+          user_id: userId,
           query,
-          retrievedChunks: JSON.stringify([
+          retrieved_chunks: [
             ...retrievalResult.knowledge_chunks.map(c => c.id),
             ...retrievalResult.company_research.map(c => c.id)
-          ]),
+          ],
           response: answer,
-          sources: JSON.stringify(this.formatSources(retrievalResult)),
-          relevanceScore: this.calculateRelevanceScore(retrievalResult),
-          responseTimeMs: responseTime
-        }
-      });
+          sources: this.formatSources(retrievalResult),
+          relevance_score: this.calculateRelevanceScore(retrievalResult),
+          response_time_ms: responseTime
+        });
+
+      if (error) {
+        console.error('Error logging usage:', error);
+        return crypto.randomUUID();
+      }
 
       return usageId;
     } catch (error) {
       console.error('Error logging usage:', error);
-      return crypto.randomUUID(); // Return fallback ID
+      return crypto.randomUUID();
     }
   }
 
@@ -474,55 +455,51 @@ Response:`;
     limit: number = 5
   ): Promise<any[]> {
     try {
-      // Get the document chunks
-      const chunks = await db.knowledgeChunk.findMany({
-        where: { documentId: documentId },
-        select: { embedding: true, chunkText: true },
-        take: 1
-      });
+      if (!supabase) {
+        throw new Error('Supabase client not configured');
+      }
 
-      if (!chunks || chunks.length === 0) {
+      // Get the document chunks
+      const { data: chunks, error: chunkError } = await supabase
+        .from('knowledge_chunks')
+        .select('embedding')
+        .eq('document_id', documentId)
+        .limit(1);
+
+      if (chunkError || !chunks || chunks.length === 0) {
         return [];
       }
 
       // Use the first chunk's embedding to find similar documents
-      const embedding = JSON.parse(chunks[0].embedding);
+      const embedding = chunks[0].embedding;
 
-      // Find similar chunks
-      const allChunks = await db.knowledgeChunk.findMany({
-        where: {
-          document: {
-            createdBy: userId
-          },
-          documentId: {
-            not: documentId
-          }
-        },
-        include: {
-          document: {
-            select: {
-              title: true,
-              tags: true
-            }
-          }
-        },
-        take: limit * 2
-      });
+      // Find similar chunks using vector search
+      const { data: similarChunks, error: similarError } = await supabase
+        .rpc('match_knowledge_chunks', {
+          query_embedding: embedding,
+          match_count: limit * 2,
+          similarity_threshold: 0.5, // Lower threshold for similar documents
+          filter_created_by: userId
+        });
 
-      // Calculate similarities and group by document
+      if (similarError) {
+        console.error('Error finding similar chunks:', similarError);
+        return [];
+      }
+
+      // Group by document and get the highest similarity per document
       const documentSimilarities = new Map<string, { similarity: number; title: string; tags: string[] }>();
 
-      allChunks.forEach(chunk => {
-        const chunkEmbedding = JSON.parse(chunk.embedding);
-        const similarity = this.calculateCosineSimilarity(embedding, chunkEmbedding);
-        
-        if (!documentSimilarities.has(chunk.documentId) || 
-            documentSimilarities.get(chunk.documentId)!.similarity < similarity) {
-          documentSimilarities.set(chunk.documentId, {
-            similarity,
-            title: chunk.document.title,
-            tags: chunk.document.tags ? JSON.parse(chunk.document.tags) : []
-          });
+      similarChunks?.forEach(chunk => {
+        if (chunk.document_id !== documentId) {
+          if (!documentSimilarities.has(chunk.document_id) || 
+              documentSimilarities.get(chunk.document_id)!.similarity < chunk.similarity) {
+            documentSimilarities.set(chunk.document_id, {
+              similarity: chunk.similarity,
+              title: chunk.document_title,
+              tags: chunk.document_tags || []
+            });
+          }
         }
       });
 
@@ -549,35 +526,37 @@ Response:`;
     } = {}
   ): Promise<any[]> {
     try {
-      const where: any = {
-        createdBy: userId
-      };
+      if (!supabase) {
+        throw new Error('Supabase client not configured');
+      }
+
+      let dbQuery = supabase
+        .from('knowledge_documents')
+        .select('*')
+        .eq('created_by', userId);
 
       // Apply text search
       if (query) {
-        where.OR = [
-          { title: { contains: query } },
-          { content: { contains: query } }
-        ];
+        dbQuery = dbQuery.or(`title.ilike.%${query}%,content.ilike.%${query}%`);
       }
 
       // Apply tag filter
       if (options.tags && options.tags.length > 0) {
-        where.tags = {
-          contains: JSON.stringify(options.tags)
-        };
+        dbQuery = dbQuery.contains('tags', options.tags);
       }
 
-      const documents = await db.knowledgeDocument.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        take: options.limit || 10
-      });
+      dbQuery = dbQuery
+        .order('created_at', { ascending: false })
+        .limit(options.limit || 10);
 
-      return documents.map(doc => ({
-        ...doc,
-        tags: doc.tags ? JSON.parse(doc.tags) : []
-      }));
+      const { data: documents, error } = await dbQuery;
+
+      if (error) {
+        console.error('Error searching documents by text:', error);
+        return [];
+      }
+
+      return documents || [];
     } catch (error) {
       console.error('Error searching documents by text:', error);
       return [];
@@ -595,30 +574,36 @@ Response:`;
     } = {}
   ): Promise<any> {
     try {
+      if (!supabase) {
+        throw new Error('Supabase client not configured');
+      }
+
       const days = options.days || 30;
       const limit = options.limit || 100;
 
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
 
-      const usageData = await db.knowledgeUsage.findMany({
-        where: {
-          userId,
-          createdAt: {
-            gte: cutoffDate
-          }
-        },
-        orderBy: { createdAt: 'desc' },
-        take: limit
-      });
+      const { data: usageData, error } = await supabase
+        .from('knowledge_usage')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('created_at', cutoffDate.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error('Error getting usage analytics:', error);
+        throw error;
+      }
 
       // Calculate analytics
       const analytics = {
-        total_queries: usageData.length,
-        avg_response_time: usageData.reduce((sum, usage) => sum + usage.responseTimeMs, 0) / (usageData.length || 1) || 0,
-        avg_relevance_score: usageData.reduce((sum, usage) => sum + (usage.relevanceScore || 0), 0) / (usageData.length || 1) || 0,
-        recent_queries: usageData.slice(0, 10),
-        daily_usage: this.groupUsageByDay(usageData)
+        total_queries: usageData?.length || 0,
+        avg_response_time: usageData?.reduce((sum, usage) => sum + (usage.response_time_ms || 0), 0) / (usageData?.length || 1) || 0,
+        avg_relevance_score: usageData?.reduce((sum, usage) => sum + (usage.relevance_score || 0), 0) / (usageData?.length || 1) || 0,
+        recent_queries: usageData?.slice(0, 10) || [],
+        daily_usage: this.groupUsageByDay(usageData || [])
       };
 
       return analytics;
