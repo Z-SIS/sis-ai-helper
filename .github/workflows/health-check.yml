@@ -1,0 +1,116 @@
+name: Environment Health Check
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    # Run health check daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Type check
+      run: npx tsc --noEmit
+      
+    - name: Validate environment variables structure
+      run: |
+        echo "🔍 Validating environment variable structure..."
+        
+        # Check if .env.example exists and has required variables
+        if [ ! -f ".env.example" ]; then
+          echo "❌ .env.example file not found"
+          exit 1
+        fi
+        
+        # Check for required Supabase variables
+        REQUIRED_VARS=("NEXT_PUBLIC_SUPABASE_URL" "NEXT_PUBLIC_SUPABASE_ANON_KEY" "SUPABASE_SERVICE_ROLE_KEY" "DATABASE_URL")
+        
+        for var in "${REQUIRED_VARS[@]}"; do
+          if ! grep -q "^${var}=" .env.example; then
+            echo "❌ Required variable ${var} not found in .env.example"
+            exit 1
+          fi
+        done
+        
+        echo "✅ All required environment variables are present in .env.example"
+        
+    - name: Check for hardcoded Supabase URLs
+      run: |
+        echo "🔍 Checking for hardcoded Supabase URLs..."
+        
+        # Look for actual Supabase URLs (not placeholders)
+        if grep -r "https://[a-z0-9]\{20\}\.supabase\.co" src/ --exclude-dir=node_modules; then
+          echo "❌ Found hardcoded Supabase URLs in source code"
+          exit 1
+        fi
+        
+        echo "✅ No hardcoded Supabase URLs found in source code"
+        
+    - name: Validate Supabase client configuration
+      run: |
+        echo "🔍 Validating Supabase client configuration..."
+        
+        # Check if Supabase client uses environment variables
+        if ! grep -q "process.env.NEXT_PUBLIC_SUPABASE_URL" src/lib/supabase.ts; then
+          echo "❌ Supabase client not using environment variables"
+          exit 1
+        fi
+        
+        if ! grep -q "process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY" src/lib/supabase.ts; then
+          echo "❌ Supabase client not using environment variables for anon key"
+          exit 1
+        fi
+        
+        echo "✅ Supabase client properly configured with environment variables"
+        
+    - name: Check CSP configuration
+      run: |
+        echo "🔍 Validating CSP configuration..."
+        
+        # Check if CSP includes Supabase URL dynamically
+        if ! grep -q "\${process.env.NEXT_PUBLIC_SUPABASE_URL}" next.config.ts; then
+          echo "❌ CSP not configured to use dynamic Supabase URL"
+          exit 1
+        fi
+        
+        echo "✅ CSP properly configured with dynamic Supabase URL"
+        
+    - name: Build project
+      run: npm run build
+      env:
+        # Set dummy values for build
+        NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy.anon.key
+        SUPABASE_SERVICE_ROLE_KEY: dummy.service.key
+        DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+        NODE_ENV: production
+        
+    - name: Health check summary
+      run: |
+        echo "🎉 Environment health check completed successfully!"
+        echo "✅ Code quality checks passed"
+        echo "✅ Environment variables structure validated"
+        echo "✅ No hardcoded secrets found"
+        echo "✅ Supabase configuration validated"
+        echo "✅ CSP configuration validated"
+        echo "✅ Build successful"
