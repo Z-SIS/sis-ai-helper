@@ -35,20 +35,16 @@ interface ConnectionStatus {
   environment: {
     supabase: Record<string, boolean>
     supabaseClean: Record<string, boolean>
-    postgres: Record<string, boolean>
-    postgresClean: Record<string, boolean>
     aiServices: Record<string, boolean>
     platform: Record<string, boolean>
   }
   services: {
     supabase: { status: string; details: string | null }
-    prisma: { status: string; details: string | null }
     googleAI: { status: string; details: string | null }
     tavily: { status: string; details: string | null }
   }
   migration: {
     supabase: { current: boolean; target: boolean; ready: boolean }
-    postgres: { current: boolean; target: boolean; ready: boolean }
   }
   recommendations: Array<{
     type: string
@@ -264,32 +260,6 @@ export default function ApiConnectionStatus() {
               </CardContent>
             </Card>
 
-            {/* Prisma/Database */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Database className="h-5 w-5" />
-                  Prisma/Database
-                  {getStatusBadge(status.services.prisma.status)}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(status.services.prisma.status)}
-                    <span className="text-sm font-medium capitalize">
-                      {status.services.prisma.status.replace('_', ' ')}
-                    </span>
-                  </div>
-                  {status.services.prisma.details && (
-                    <p className="text-sm text-muted-foreground">
-                      {status.services.prisma.details}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Google AI */}
             <Card>
               <CardHeader className="pb-3">
@@ -394,59 +364,6 @@ export default function ApiConnectionStatus() {
                         Clean
                       </Badge>
                       {getStatusIcon(status.environment.supabaseClean.jwtSecret ? 'connected' : 'not_configured')}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* PostgreSQL Variables */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
-                  PostgreSQL Environment Variables
-                </CardTitle>
-                <CardDescription>
-                  Database connection environment variables
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-mono">POSTGRES_URL</span>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={status.environment.postgresClean.url ? 'default' : 'secondary'}>
-                        Clean
-                      </Badge>
-                      {getStatusIcon(status.environment.postgresClean.url ? 'connected' : 'not_configured')}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-mono">POSTGRES_PRISMA_URL</span>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={status.environment.postgresClean.prismaUrl ? 'default' : 'secondary'}>
-                        Clean
-                      </Badge>
-                      {getStatusIcon(status.environment.postgresClean.prismaUrl ? 'connected' : 'not_configured')}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-mono">POSTGRES_USER</span>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={status.environment.postgresClean.user ? 'default' : 'secondary'}>
-                        Clean
-                      </Badge>
-                      {getStatusIcon(status.environment.postgresClean.user ? 'connected' : 'not_configured')}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-mono">POSTGRES_DATABASE</span>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={status.environment.postgresClean.database ? 'default' : 'secondary'}>
-                        Clean
-                      </Badge>
-                      {getStatusIcon(status.environment.postgresClean.database ? 'connected' : 'not_configured')}
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { supabase, supabaseAdmin } from '@/lib/supabase'
-import { db } from '@/lib/db'
 
 export async function GET() {
   const timestamp = new Date().toISOString()
@@ -57,7 +56,6 @@ export async function GET() {
   // Service connectivity tests
   const serviceStatus = {
     supabase: { status: 'unknown', details: null },
-    prisma: { status: 'unknown', details: null },
     googleAI: { status: 'unknown', details: null },
     tavily: { status: 'unknown', details: null },
   }
@@ -86,27 +84,6 @@ export async function GET() {
     }
   } catch (error) {
     serviceStatus.supabase = {
-      status: 'error',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }
-  }
-
-  // Test Prisma/DB connection
-  try {
-    if (environmentVars.postgres.url || environmentVars.postgresClean.url) {
-      await db.$queryRaw`SELECT 1`
-      serviceStatus.prisma = {
-        status: 'connected',
-        details: 'Successfully connected to database via Prisma'
-      }
-    } else {
-      serviceStatus.prisma = {
-        status: 'not_configured',
-        details: 'Missing database connection URL'
-      }
-    }
-  } catch (error) {
-    serviceStatus.prisma = {
       status: 'error',
       details: error instanceof Error ? error.message : 'Unknown error'
     }
@@ -201,11 +178,6 @@ export async function GET() {
       current: Object.values(environmentVars.supabase).every(Boolean),
       target: Object.values(environmentVars.supabaseClean).every(Boolean),
       ready: Object.values(environmentVars.supabaseClean).every(Boolean)
-    },
-    postgres: {
-      current: Object.values(environmentVars.postgres).every(Boolean),
-      target: Object.values(environmentVars.postgresClean).every(Boolean),
-      ready: Object.values(environmentVars.postgresClean).every(Boolean)
     }
   }
 
@@ -251,27 +223,6 @@ function generateRecommendations(envVars: any, services: any, migration: any) {
     })
   }
 
-  // PostgreSQL recommendations
-  if (!migration.postgres.ready) {
-    recommendations.push({
-      type: 'warning',
-      category: 'environment',
-      title: 'Complete PostgreSQL Environment Migration',
-      description: 'Set up clean PostgreSQL environment variables',
-      action: 'Run: node vercel-env-setup-local.js'
-    })
-  }
-
-  if (services.prisma.status === 'error') {
-    recommendations.push({
-      type: 'error',
-      category: 'database',
-      title: 'Database Connection Failed',
-      description: services.prisma.details,
-      action: 'Verify database URL and credentials'
-    })
-  }
-
   // AI Services recommendations
   if (services.googleAI.status === 'not_configured') {
     recommendations.push({
@@ -294,13 +245,13 @@ function generateRecommendations(envVars: any, services: any, migration: any) {
   }
 
   // Success recommendations
-  if (migration.supabase.ready && migration.postgres.ready && services.supabase.status === 'connected') {
+  if (migration.supabase.ready && services.supabase.status === 'connected') {
     recommendations.push({
       type: 'success',
       category: 'migration',
       title: 'Environment Migration Complete',
       description: 'All clean environment variables are configured and services are connected',
-      action: 'You can now update code to use clean variable names'
+      action: 'Your Supabase-only architecture is ready!'
     })
   }
 
