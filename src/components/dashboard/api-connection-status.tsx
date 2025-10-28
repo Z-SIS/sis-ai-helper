@@ -45,6 +45,7 @@ interface ConnectionStatus {
   }
   migration: {
     supabase: { current: boolean; target: boolean; ready: boolean }
+    postgres: { current: boolean; target: boolean; ready: boolean }
   }
   recommendations: Array<{
     type: string
@@ -204,19 +205,19 @@ export default function ApiConnectionStatus() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
             <div className="text-center">
-              <div className="text-2xl font-bold">{status.overall.services.total}</div>
+              <div className="text-2xl font-bold">{status.overall?.services?.total || 0}</div>
               <div className="text-sm text-muted-foreground">Total Services</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{status.overall.services.connected}</div>
+              <div className="text-2xl font-bold text-green-600">{status.overall?.services?.connected || 0}</div>
               <div className="text-sm text-muted-foreground">Connected</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{status.overall.services.configured}</div>
+              <div className="text-2xl font-bold text-yellow-600">{status.overall?.services?.configured || 0}</div>
               <div className="text-sm text-muted-foreground">Configured</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{status.overall.services.errors}</div>
+              <div className="text-2xl font-bold text-red-600">{status.overall?.services?.errors || 0}</div>
               <div className="text-sm text-muted-foreground">Errors</div>
             </div>
           </div>
@@ -240,18 +241,18 @@ export default function ApiConnectionStatus() {
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Database className="h-5 w-5" />
                   Supabase
-                  {getStatusBadge(status.services.supabase.status)}
+                  {getStatusBadge(status.services?.supabase?.status || 'unknown')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    {getStatusIcon(status.services.supabase.status)}
+                    {getStatusIcon(status.services?.supabase?.status || 'unknown')}
                     <span className="text-sm font-medium capitalize">
-                      {status.services.supabase.status.replace('_', ' ')}
+                      {(status.services?.supabase?.status || 'unknown').replace('_', ' ')}
                     </span>
                   </div>
-                  {status.services.supabase.details && (
+                  {status.services?.supabase?.details && (
                     <p className="text-sm text-muted-foreground">
                       {status.services.supabase.details}
                     </p>
@@ -266,18 +267,18 @@ export default function ApiConnectionStatus() {
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Brain className="h-5 w-5" />
                   Google AI
-                  {getStatusBadge(status.services.googleAI.status)}
+                  {getStatusBadge(status.services?.googleAI?.status || 'unknown')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    {getStatusIcon(status.services.googleAI.status)}
+                    {getStatusIcon(status.services?.googleAI?.status || 'unknown')}
                     <span className="text-sm font-medium capitalize">
-                      {status.services.googleAI.status.replace('_', ' ')}
+                      {(status.services?.googleAI?.status || 'unknown').replace('_', ' ')}
                     </span>
                   </div>
-                  {status.services.googleAI.details && (
+                  {status.services?.googleAI?.details && (
                     <p className="text-sm text-muted-foreground">
                       {status.services.googleAI.details}
                     </p>
@@ -292,18 +293,18 @@ export default function ApiConnectionStatus() {
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Search className="h-5 w-5" />
                   Tavily Search
-                  {getStatusBadge(status.services.tavily.status)}
+                  {getStatusBadge(status.services?.tavily?.status || 'unknown')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    {getStatusIcon(status.services.tavily.status)}
+                    {getStatusIcon(status.services?.tavily?.status || 'unknown')}
                     <span className="text-sm font-medium capitalize">
-                      {status.services.tavily.status.replace('_', ' ')}
+                      {(status.services?.tavily?.status || 'unknown').replace('_', ' ')}
                     </span>
                   </div>
-                  {status.services.tavily.details && (
+                  {status.services?.tavily?.details && (
                     <p className="text-sm text-muted-foreground">
                       {status.services.tavily.details}
                     </p>
@@ -446,15 +447,15 @@ export default function ApiConnectionStatus() {
                 <div className="grid gap-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Current (Prefixed)</span>
-                    {getStatusIcon(status.migration.supabase.current ? 'connected' : 'not_configured')}
+                    {getStatusIcon(status.migration.supabase?.current ? 'connected' : 'not_configured')}
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Target (Clean)</span>
-                    {getStatusIcon(status.migration.supabase.target ? 'connected' : 'not_configured')}
+                    {getStatusIcon(status.migration.supabase?.target ? 'connected' : 'not_configured')}
                   </div>
                   <div className="flex items-center justify-between font-medium">
                     <span className="text-sm">Ready for Migration</span>
-                    {getStatusIcon(status.migration.supabase.ready ? 'connected' : 'not_configured')}
+                    {getStatusIcon(status.migration.supabase?.ready ? 'connected' : 'not_configured')}
                   </div>
                 </div>
               </CardContent>
@@ -471,22 +472,22 @@ export default function ApiConnectionStatus() {
                 <div className="grid gap-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Current (Prefixed)</span>
-                    {getStatusIcon(status.migration.postgres.current ? 'connected' : 'not_configured')}
+                    {getStatusIcon(status.migration.postgres?.current ? 'connected' : 'not_configured')}
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Target (Clean)</span>
-                    {getStatusIcon(status.migration.postgres.target ? 'connected' : 'not_configured')}
+                    {getStatusIcon(status.migration.postgres?.target ? 'connected' : 'not_configured')}
                   </div>
                   <div className="flex items-center justify-between font-medium">
                     <span className="text-sm">Ready for Migration</span>
-                    {getStatusIcon(status.migration.postgres.ready ? 'connected' : 'not_configured')}
+                    {getStatusIcon(status.migration.postgres?.ready ? 'connected' : 'not_configured')}
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {status.migration.supabase.ready && status.migration.postgres.ready && (
+          {status.migration.supabase?.ready && status.migration.postgres?.ready && (
             <Alert>
               <CheckCircle2 className="h-4 w-4" />
               <AlertDescription>
@@ -499,7 +500,7 @@ export default function ApiConnectionStatus() {
 
         {/* Recommendations */}
         <TabsContent value="recommendations" className="space-y-4">
-          {status.recommendations.length === 0 ? (
+          {(status.recommendations?.length || 0) === 0 ? (
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center text-muted-foreground">
@@ -510,7 +511,7 @@ export default function ApiConnectionStatus() {
             </Card>
           ) : (
             <div className="space-y-3">
-              {status.recommendations.map((rec, index) => (
+              {(status.recommendations || []).map((rec, index) => (
                 <Card key={index}>
                   <CardContent className="pt-4">
                     <div className="flex items-start gap-3">
