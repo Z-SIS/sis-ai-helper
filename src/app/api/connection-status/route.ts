@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase, supabaseAdmin } from '@/lib/supabase'
-import { db } from '@/lib/db'
+import { supabaseBrowser, supabaseAdmin } from '@/lib/supabase'
 
 export async function GET() {
   const timestamp = new Date().toISOString()
@@ -65,7 +64,7 @@ export async function GET() {
   // Test Supabase connection
   try {
     if (environmentVars.supabase.url && environmentVars.supabase.anonKey) {
-      const { data, error } = await supabase.from('task_history').select('count').limit(1)
+      const { data, error } = await supabaseBrowser.from('task_history').select('count').limit(1)
       
       if (error) {
         serviceStatus.supabase = {
@@ -91,18 +90,26 @@ export async function GET() {
     }
   }
 
-  // Test Prisma/DB connection
+  // Test database connection via admin client
   try {
-    if (environmentVars.postgres.url || environmentVars.postgresClean.url) {
-      await db.$queryRaw`SELECT 1`
-      serviceStatus.prisma = {
-        status: 'connected',
-        details: 'Successfully connected to database via Prisma'
+    if (environmentVars.supabase.url && environmentVars.supabase.serviceKey) {
+      const { data, error } = await supabaseAdmin.from('task_history').select('count').limit(1)
+      
+      if (error) {
+        serviceStatus.prisma = {
+          status: 'error',
+          details: error.message
+        }
+      } else {
+        serviceStatus.prisma = {
+          status: 'connected',
+          details: 'Successfully connected to database via Supabase Admin'
+        }
       }
     } else {
       serviceStatus.prisma = {
         status: 'not_configured',
-        details: 'Missing database connection URL'
+        details: 'Missing Supabase Service Role Key'
       }
     }
   } catch (error) {

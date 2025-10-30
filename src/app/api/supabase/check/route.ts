@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase, supabaseAdmin } from '@/lib/supabase'
+import { supabaseBrowser, supabaseAdmin } from '@/lib/supabase'
 
 export async function GET() {
   try {
@@ -17,10 +17,10 @@ export async function GET() {
     let tablesExist = false
     let tables = []
 
-    if (config.hasUrl && config.hasAnonKey && supabase) {
+    if (config.hasUrl && config.hasAnonKey && supabaseBrowser) {
       try {
         // Test basic connection
-        const { data, error } = await supabase.from('task_history').select('count').limit(1)
+        const { data, error } = await supabaseBrowser.from('task_history').select('count').limit(1)
         
         if (error) {
           if (error.code === 'PGRST116') {

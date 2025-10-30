@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
-import { supabase, supabaseConfig } from '@/lib/supabase'
+import { supabaseBrowser, supabaseConfig } from '@/lib/supabase'
 
 export async function GET() {
   try {
     // Test basic configuration
     const configStatus = {
       configured: supabaseConfig.isConfigured,
-      clientAvailable: supabaseConfig.clientAvailable,
-      adminAvailable: supabaseConfig.adminClientAvailable,
+      browserClientAvailable: supabaseConfig.browserClientAvailable,
+      adminClientAvailable: supabaseConfig.adminClientAvailable,
       url: supabaseConfig.url
     }
 
@@ -25,7 +25,7 @@ export async function GET() {
     let error = null
 
     try {
-      const { data, error: queryError } = await supabase
+      const { data, error: queryError } = await supabaseBrowser
         .from('task_history')
         .select('count')
         .limit(1)

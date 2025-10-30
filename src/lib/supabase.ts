@@ -1,85 +1,27 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Validate and clean environment variables
-const getSupabaseConfig = () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+// ✅ Browser client — safe for frontend usage (anon key)
+export const supabaseBrowser = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-  // Validate URL format
-  if (url && !url.startsWith('https://')) {
-    console.error('Invalid Supabase URL format:', url)
-    return null
+// ✅ Server admin client — full rights, bypasses RLS
+// Must be used ONLY in API routes or server components.
+export const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
   }
+)
 
-  // Validate JWT token format (basic check)
-  const isValidJWT = (token: string) => {
-    try {
-      const parts = token.split('.')
-      return parts.length === 3 && parts.every(part => part.length > 0)
-    } catch {
-      return false
-    }
-  }
-
-  if (anonKey && !isValidJWT(anonKey)) {
-    console.error('Invalid Supabase anonymous key format')
-    return null
-  }
-
-  if (serviceRoleKey && !isValidJWT(serviceRoleKey)) {
-    console.error('Invalid Supabase service role key format')
-    return null
-  }
-
-  return { url, anonKey, serviceRoleKey }
-}
-
-const config = getSupabaseConfig()
-
-if (!config) {
-  console.warn('Supabase configuration is invalid. Check your environment variables.')
-}
-
-// Create Supabase client with proper configuration
-export const supabase = config?.url && config?.anonKey 
-  ? createClient(config.url, config.anonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-      global: {
-        headers: {
-          'X-Client-Info': 'sis-helper/1.0.0',
-          'X-Auth-Provider': 'supabase'
-        }
-      },
-      db: {
-        schema: 'public'
-      }
-    })
-  : null;
-
-// Admin instance - for server-side operations (bypasses RLS)
-export const supabaseAdmin = config?.url && config?.serviceRoleKey 
-  ? createClient(config.url, config.serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-        detectSessionInUrl: false
-      },
-      global: {
-        headers: {
-          'X-Client-Info': 'sis-helper-admin/1.0.0',
-          'X-Auth-Provider': 'supabase'
-        }
-      },
-      db: {
-        schema: 'public'
-      }
-    })
-  : null;
+// Legacy exports for backward compatibility (deprecated)
+// Use supabaseBrowser for client code and supabaseAdmin for server code
+export const supabase = supabaseBrowser
 
 // Database types
 export interface TaskHistory {
@@ -113,15 +55,15 @@ export interface CompanyResearchCache {
 
 // Helper functions for database operations
 export const db = {
-  // Task History operations
+  // Task History operations (use admin client for server operations)
   async getTaskHistory(userId: string, limit = 50) {
-    if (!supabase) {
-      console.warn('Supabase not configured - returning empty task history');
+    if (!supabaseAdmin) {
+      console.warn('Supabase admin not configured - returning empty task history');
       return [];
     }
     
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('task_history')
         .select('*')
         .eq('user_id', userId)
@@ -141,13 +83,13 @@ export const db = {
   },
 
   async createTaskHistory(task: Omit<TaskHistory, 'id' | 'created_at' | 'updated_at'>) {
-    if (!supabase) {
-      console.warn('Supabase not configured - skipping task history creation');
+    if (!supabaseAdmin) {
+      console.warn('Supabase admin not configured - skipping task history creation');
       return null;
     }
     
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('task_history')
         .insert(task)
         .select()
@@ -171,15 +113,15 @@ export const db = {
     }
   },
 
-  // Company Research Cache operations
+  // Company Research Cache operations (use admin client for server operations)
   async getCompanyResearchCache(companyName: string) {
-    if (!supabase) {
-      console.warn('Supabase not configured - no cache available');
+    if (!supabaseAdmin) {
+      console.warn('Supabase admin not configured - no cache available');
       return null;
     }
     
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('company_research_cache')
         .select('*')
         .eq('company_name', companyName.toLowerCase())
@@ -239,10 +181,10 @@ export const db = {
 
 // Export configuration status for debugging
 export const supabaseConfig = {
-  isConfigured: !!config,
-  url: config?.url ? config.url.replace(/https:\/\/(.*)\.supabase\.co/, 'https://***.supabase.co') : null,
-  hasAnonKey: !!config?.anonKey,
-  hasServiceRoleKey: !!config?.serviceRoleKey,
-  clientAvailable: !!supabase,
+  isConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL ? process.env.NEXT_PUBLIC_SUPABASE_URL.replace(/https:\/\/(.*)\.supabase\.co/, 'https://***.supabase.co') : null,
+  hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+  browserClientAvailable: !!supabaseBrowser,
   adminClientAvailable: !!supabaseAdmin
 };
