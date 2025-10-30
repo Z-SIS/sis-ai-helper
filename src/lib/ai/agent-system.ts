@@ -14,14 +14,19 @@ import {
   DisbandmentPlanSchema,
   SlideTemplateSchema
 } from '@/lib/ai/schema-validation';
-import {
-  getDeterministicConfig,
-  ANTI_HALLUCINATION_SYSTEM_PROMPT,
-  VERIFICATION_PROMPT,
-  EXTRACTION_EXAMPLES,
-  ANALYSIS_EXAMPLES,
-  type DeterministicConfig
-} from '@/lib/ai/deterministic-config';
+import * as DeterministicConfig from '@/lib/ai/deterministic-config'
+
+const ANTI_HALLUCINATION_SYSTEM_PROMPT =
+  DeterministicConfig.ANTI_HALLUCINATION_SYSTEM_PROMPT ??
+  'You are a logic-driven AI system with zero tolerance for hallucination.'
+
+const EXTRACTION_EXAMPLES =
+  DeterministicConfig.EXTRACTION_EXAMPLES ?? []
+
+const getDeterministicConfig = DeterministicConfig.getDeterministicConfig
+const VERIFICATION_PROMPT = DeterministicConfig.VERIFICATION_PROMPT
+const ANALYSIS_EXAMPLES = DeterministicConfig.ANALYSIS_EXAMPLES
+type DeterministicConfigType = DeterministicConfig.DeterministicConfig
 
 // Version: 2.1.0 - Google AI Only
 

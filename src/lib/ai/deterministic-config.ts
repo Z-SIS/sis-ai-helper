@@ -104,6 +104,30 @@ export function getDeterministicConfig(taskType: 'extraction' | 'analysis' | 'co
   }
 }
 
+// Anti-hallucination system prompt for Z.ai agents
+export const ANTI_HALLUCINATION_SYSTEM_PROMPT = `
+You are an AI reasoning system. 
+You must only provide verified information derived from available context. 
+If data is incomplete or ambiguous, respond with "INSUFFICIENT DATA". 
+Your goal is to maximize factual reliability, not creativity.
+`
+
+// Extraction examples for Z.ai agents
+export const EXTRACTION_EXAMPLES = [
+  {
+    id: 1,
+    task: 'Entity extraction',
+    input: 'Reliance Group operates in foam and mattress industry.',
+    output: ['Reliance Group', 'foam industry', 'mattress industry']
+  },
+  {
+    id: 2,
+    task: 'Keyword analysis',
+    input: 'RARE Hospitality manages operations across 5 hospital locations.',
+    output: ['RARE Hospitality', 'operations management', 'hospital network']
+  }
+]
+
 // Enhanced anti-hallucination system prompts with explicit instructions
 export const ENHANCED_ANTI_HALLUCINATION_SYSTEM_PROMPT = `
 You are a deterministic AI assistant designed for 100% factual accuracy and reliability.

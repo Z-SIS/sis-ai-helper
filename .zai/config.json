@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "rules": {
+    "imports": {
+      "verify_exports": true,
+      "auto_fix_missing_exports": true,
+      "allow_relative_from_root": true
+    },
+    "build": {
+      "fail_on_missing_export": true,
+      "treat_warnings_as_errors": true
+    },
+    "supabase": {
+      "client_policy": {
+        "frontend_client": "supabaseBrowser",
+        "backend_client": "supabaseAdmin"
+      }
+    }
+  },
+  "guidelines": {
+    "ai_prompts": "Always confirm constants exist in '@/lib/ai/deterministic-config' before importing.",
+    "supabase_usage": "Use supabaseBrowser for client operations, supabaseAdmin for server routes only.",
+    "error_handling": "Wrap Supabase writes in try/catch and log error.code when available."
+  }
+}
