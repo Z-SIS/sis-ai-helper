@@ -1,11 +1,43 @@
 import { NextResponse } from 'next/server'
 import { supabaseBrowser, supabaseAdmin } from '@/lib/supabase'
 
+// Type definitions for better type safety
+interface ServiceStatus {
+  status: 'unknown' | 'connected' | 'error' | 'not_configured';
+  details: string | null;
+}
+
+interface EnvironmentVars {
+  supabase: Record<string, boolean>;
+  supabaseClean: Record<string, boolean>;
+  postgres: Record<string, boolean>;
+  postgresClean: Record<string, boolean>;
+  aiServices: Record<string, boolean>;
+  platform: Record<string, boolean>;
+}
+
+interface ServiceStatusMap {
+  supabase: ServiceStatus;
+  prisma: ServiceStatus;
+  googleAI: ServiceStatus;
+  tavily: ServiceStatus;
+}
+
 export async function GET() {
   const timestamp = new Date().toISOString()
   
+  // Ensure Supabase clients are initialized
+  if (!supabaseBrowser) {
+    console.error("Supabase browser client not initialized");
+    return NextResponse.json({ error: "Browser client not ready" }, { status: 500 });
+  }
+  if (!supabaseAdmin) {
+    console.error("Supabase admin client not initialized");
+    return NextResponse.json({ error: "Admin client not ready" }, { status: 500 });
+  }
+  
   // Environment variables to check
-  const environmentVars = {
+  const environmentVars: EnvironmentVars = {
     // Supabase (prefixed - current)
     supabase: {
       url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -54,7 +86,7 @@ export async function GET() {
   }
 
   // Service connectivity tests
-  const serviceStatus = {
+  const serviceStatus: ServiceStatusMap = {
     supabase: { status: 'unknown', details: null },
     prisma: { status: 'unknown', details: null },
     googleAI: { status: 'unknown', details: null },
@@ -68,24 +100,24 @@ export async function GET() {
       
       if (error) {
         serviceStatus.supabase = {
-          status: 'error',
+          status: 'error' as const,
           details: error.message
         }
       } else {
         serviceStatus.supabase = {
-          status: 'connected',
+          status: 'connected' as const,
           details: 'Successfully connected to Supabase'
         }
       }
     } else {
       serviceStatus.supabase = {
-        status: 'not_configured',
+        status: 'not_configured' as const,
         details: 'Missing Supabase URL or Anonymous Key'
       }
     }
   } catch (error) {
     serviceStatus.supabase = {
-      status: 'error',
+      status: 'error' as const,
       details: error instanceof Error ? error.message : 'Unknown error'
     }
   }
@@ -97,24 +129,24 @@ export async function GET() {
       
       if (error) {
         serviceStatus.prisma = {
-          status: 'error',
+          status: 'error' as const,
           details: error.message
         }
       } else {
         serviceStatus.prisma = {
-          status: 'connected',
+          status: 'connected' as const,
           details: 'Successfully connected to database via Supabase Admin'
         }
       }
     } else {
       serviceStatus.prisma = {
-        status: 'not_configured',
+        status: 'not_configured' as const,
         details: 'Missing Supabase Service Role Key'
       }
     }
   } catch (error) {
     serviceStatus.prisma = {
-      status: 'error',
+      status: 'error' as const,
       details: error instanceof Error ? error.message : 'Unknown error'
     }
   }
@@ -126,24 +158,24 @@ export async function GET() {
       
       if (response.ok) {
         serviceStatus.googleAI = {
-          status: 'connected',
+          status: 'connected' as const,
           details: 'Google AI API is accessible'
         }
       } else {
         serviceStatus.googleAI = {
-          status: 'error',
+          status: 'error' as const,
           details: `HTTP ${response.status}: ${response.statusText}`
         }
       }
     } else {
       serviceStatus.googleAI = {
-        status: 'not_configured',
+        status: 'not_configured' as const,
         details: 'Missing Google AI API Key'
       }
     }
   } catch (error) {
     serviceStatus.googleAI = {
-      status: 'error',
+      status: 'error' as const,
       details: error instanceof Error ? error.message : 'Network error'
     }
   }
@@ -165,24 +197,24 @@ export async function GET() {
       
       if (response.ok) {
         serviceStatus.tavily = {
-          status: 'connected',
+          status: 'connected' as const,
           details: 'Tavily API is accessible'
         }
       } else {
         serviceStatus.tavily = {
-          status: 'error',
+          status: 'error' as const,
           details: `HTTP ${response.status}: ${response.statusText}`
         }
       }
     } else {
       serviceStatus.tavily = {
-        status: 'not_configured',
+        status: 'not_configured' as const,
         details: 'Missing Tavily API Key'
       }
     }
   } catch (error) {
     serviceStatus.tavily = {
-      status: 'error',
+      status: 'error' as const,
       details: error instanceof Error ? error.message : 'Network error'
     }
   }
@@ -234,8 +266,8 @@ export async function GET() {
   })
 }
 
-function generateRecommendations(envVars: any, services: any, migration: any) {
-  const recommendations = []
+function generateRecommendations(envVars: EnvironmentVars, services: ServiceStatusMap, migration: any) {
+  const recommendations: any[] = []
 
   // Supabase recommendations
   if (!migration.supabase.ready) {

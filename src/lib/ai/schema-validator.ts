@@ -155,7 +155,7 @@ export class DeterministicValidator {
 
   constructor(config: DeterministicConfig) {
     this.config = config;
-    this.schemas = new Map([
+    this.schemas = new Map<string, z.ZodSchema>([
       ['company-research', EnhancedCompanyResearchSchema],
       ['generate-sop', EnhancedSOPSchema],
       ['compose-email', EnhancedEmailSchema],

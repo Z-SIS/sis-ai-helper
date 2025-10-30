@@ -13,6 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AgentInputSchemas, AgentOutputSchemas, AgentInput, AgentOutput } from '@/shared/schemas';
+import type { Resolver } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 
 const formSchema = AgentInputSchemas['company-research'];
 
@@ -20,7 +22,7 @@ export function CompanyResearchForm() {
   const [result, setResult] = useState<AgentOutput | null>(null);
 
   const form = useForm<AgentInput>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as Resolver<AgentInput>,
     defaultValues: {
       companyName: '',
       industry: '',
