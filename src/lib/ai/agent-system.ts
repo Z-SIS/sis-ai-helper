@@ -646,11 +646,61 @@ class GoogleAIAgentSystem {
     const subjectLine = lines.find(line => line.toLowerCase().includes('subject:'));
     const subject = subjectLine?.replace(/subject:\s*/i, '') || 'Professional Email';
     
+    // Extract body content (everything except subject line)
+    const bodyLines = lines.filter(line => !line.toLowerCase().includes('subject:'));
+    const body = bodyLines.join('\n').trim();
+    
+    // Calculate word count
+    const wordCount = body.split(/\s+/).filter(word => word.length > 0).length;
+    
+    // Try to determine tone from the response or use default
+    const tone = this.extractToneFromResponse(response) || 'professional';
+    
+    // Generate suggested improvements based on content
+    const suggestedImprovements = this.generateEmailImprovements(body);
+    
     return {
-      title: subject,
-      content: response,
-      summary: 'Email drafted successfully'
+      subject,
+      body,
+      tone,
+      wordCount,
+      suggestedImprovements
     } as AgentOutput;
+  }
+  
+  private extractToneFromResponse(response: string): string | null {
+    const tones = ['formal', 'casual', 'friendly', 'professional', 'urgent'];
+    const lowerResponse = response.toLowerCase();
+    
+    for (const tone of tones) {
+      if (lowerResponse.includes(tone)) {
+        return tone;
+      }
+    }
+    return null;
+  }
+  
+  private generateEmailImprovements(body: string): string[] {
+    const improvements: string[] = [];
+    const lowerBody = body.toLowerCase();
+    
+    if (body.length < 50) {
+      improvements.push('Consider adding more detail to make the email more comprehensive');
+    }
+    
+    if (!lowerBody.includes('thank')) {
+      improvements.push('Consider adding a thank you or closing remark');
+    }
+    
+    if (!lowerBody.match(/\b(regards|sincerely|best|cheers)\b/)) {
+      improvements.push('Consider adding a professional closing');
+    }
+    
+    if (!lowerBody.includes('please')) {
+      improvements.push('Consider using polite language like "please" for requests');
+    }
+    
+    return improvements;
   }
   
   private parseExcelHelperResponse(response: string): AgentOutput {
@@ -678,11 +728,34 @@ class GoogleAIAgentSystem {
   }
   
   private parseUspsBattlecardResponse(response: string): AgentOutput {
-    return {
-      title: 'Competitive Battlecard',
-      content: response,
-      summary: 'Battlecard generated'
-    } as AgentOutput;
+    try {
+      // Try to parse as JSON first
+      const parsed = JSON.parse(response);
+      return parsed as AgentOutput;
+    } catch (error) {
+      // If JSON parsing fails, create a structured response from the text
+      return {
+        companyName: 'Your Company',
+        competitor: 'Competitor',
+        productCategory: 'General',
+        overview: {
+          ourPositioning: 'Positioning details not available',
+          competitorPositioning: 'Competitor positioning not available'
+        },
+        strengths: {
+          ours: ['Strength information not available'],
+          competitor: ['Competitor strengths not available']
+        },
+        weaknesses: {
+          ours: [],
+          competitor: []
+        },
+        keyDifferentiators: ['Differentiator information not available'],
+        talkingPoints: ['Talking points not available'],
+        competitiveAdvantages: ['Advantages not available'],
+        recommendedActions: ['Actions not available']
+      } as AgentOutput;
+    }
   }
   
   private parseDisbandmentPlanResponse(response: string): AgentOutput {

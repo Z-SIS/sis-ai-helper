@@ -68,40 +68,40 @@ export function UspsBattlecardForm() {
     let markdown = `# Competitive Battlecard: ${result.companyName} vs ${result.competitor}\n\n`;
     markdown += `**Product Category:** ${result.productCategory}\n\n`;
     markdown += `## Overview\n\n`;
-    markdown += `### Our Positioning\n${result.overview.ourPositioning}\n\n`;
-    markdown += `### Competitor Positioning\n${result.overview.competitorPositioning}\n\n`;
+    markdown += `### Our Positioning\n${result.overview?.ourPositioning || 'Not specified'}\n\n`;
+    markdown += `### Competitor Positioning\n${result.overview?.competitorPositioning || 'Not specified'}\n\n`;
     markdown += `## Strengths\n\n`;
     markdown += `### Our Strengths\n`;
-    result.strengths.ours.forEach(strength => {
+    (result.strengths?.ours || []).forEach(strength => {
       markdown += `- ${strength}\n`;
     });
     markdown += `\n### Competitor Strengths\n`;
-    result.strengths.competitor.forEach(strength => {
+    (result.strengths?.competitor || []).forEach(strength => {
       markdown += `- ${strength}\n`;
     });
     markdown += `\n## Weaknesses\n\n`;
     markdown += `### Our Weaknesses\n`;
-    result.weaknesses.ours?.forEach(weakness => {
+    (result.weaknesses?.ours || []).forEach(weakness => {
       markdown += `- ${weakness}\n`;
     });
     markdown += `\n### Competitor Weaknesses\n`;
-    result.weaknesses.competitor?.forEach(weakness => {
+    (result.weaknesses?.competitor || []).forEach(weakness => {
       markdown += `- ${weakness}\n`;
     });
     markdown += `\n## Key Differentiators\n`;
-    result.keyDifferentiators.forEach(diff => {
+    (result.keyDifferentiators || []).forEach(diff => {
       markdown += `- ${diff}\n`;
     });
     markdown += `\n## Talking Points\n`;
-    result.talkingPoints.forEach(point => {
+    (result.talkingPoints || []).forEach(point => {
       markdown += `- ${point}\n`;
     });
     markdown += `\n## Competitive Advantages\n`;
-    result.competitiveAdvantages.forEach(adv => {
+    (result.competitiveAdvantages || []).forEach(adv => {
       markdown += `- ${adv}\n`;
     });
     markdown += `\n## Recommended Actions\n`;
-    result.recommendedActions.forEach(action => {
+    (result.recommendedActions || []).forEach(action => {
       markdown += `- ${action}\n`;
     });
 
@@ -261,7 +261,7 @@ export function UspsBattlecardForm() {
                   <CardTitle className="text-sm">Our Positioning</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600">{result.overview.ourPositioning}</p>
+                  <p className="text-sm text-gray-600">{result.overview?.ourPositioning || 'Not specified'}</p>
                 </CardContent>
               </Card>
 
@@ -270,7 +270,7 @@ export function UspsBattlecardForm() {
                   <CardTitle className="text-sm">Competitor Positioning</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600">{result.overview.competitorPositioning}</p>
+                  <p className="text-sm text-gray-600">{result.overview?.competitorPositioning || 'Not specified'}</p>
                 </CardContent>
               </Card>
             </div>
@@ -282,7 +282,7 @@ export function UspsBattlecardForm() {
                 </CardHeader>
                 <CardContent>
                   <ul className="list-disc list-inside space-y-1">
-                    {result.strengths.ours.map((strength, index) => (
+                    {(result.strengths?.ours || []).map((strength, index) => (
                       <li key={index} className="text-sm text-gray-600">{strength}</li>
                     ))}
                   </ul>
@@ -295,7 +295,7 @@ export function UspsBattlecardForm() {
                 </CardHeader>
                 <CardContent>
                   <ul className="list-disc list-inside space-y-1">
-                    {result.strengths.competitor.map((strength, index) => (
+                    {(result.strengths?.competitor || []).map((strength, index) => (
                       <li key={index} className="text-sm text-gray-600">{strength}</li>
                     ))}
                   </ul>
@@ -310,7 +310,7 @@ export function UspsBattlecardForm() {
                 </CardHeader>
                 <CardContent>
                   <ul className="list-disc list-inside space-y-1">
-                    {result.weaknesses.ours?.map((weakness, index) => (
+                    {(result.weaknesses?.ours || []).map((weakness, index) => (
                       <li key={index} className="text-sm text-gray-600">{weakness}</li>
                     ))}
                   </ul>
@@ -323,7 +323,7 @@ export function UspsBattlecardForm() {
                 </CardHeader>
                 <CardContent>
                   <ul className="list-disc list-inside space-y-1">
-                    {result.weaknesses.competitor?.map((weakness, index) => (
+                    {(result.weaknesses?.competitor || []).map((weakness, index) => (
                       <li key={index} className="text-sm text-gray-600">{weakness}</li>
                     ))}
                   </ul>
@@ -334,7 +334,7 @@ export function UspsBattlecardForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Key Differentiators</h4>
               <div className="flex flex-wrap gap-2">
-                {result.keyDifferentiators.map((diff, index) => (
+                {(result.keyDifferentiators || []).map((diff, index) => (
                   <Badge key={index} variant="secondary">{diff}</Badge>
                 ))}
               </div>
@@ -343,7 +343,7 @@ export function UspsBattlecardForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Talking Points</h4>
               <ul className="list-disc list-inside space-y-1">
-                {result.talkingPoints.map((point, index) => (
+                {(result.talkingPoints || []).map((point, index) => (
                   <li key={index} className="text-sm text-gray-600">{point}</li>
                 ))}
               </ul>
@@ -352,7 +352,7 @@ export function UspsBattlecardForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Competitive Advantages</h4>
               <ul className="list-disc list-inside space-y-1">
-                {result.competitiveAdvantages.map((adv, index) => (
+                {(result.competitiveAdvantages || []).map((adv, index) => (
                   <li key={index} className="text-sm text-gray-600">{adv}</li>
                 ))}
               </ul>
@@ -361,7 +361,7 @@ export function UspsBattlecardForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Recommended Actions</h4>
               <ul className="list-disc list-inside space-y-1">
-                {result.recommendedActions.map((action, index) => (
+                {(result.recommendedActions || []).map((action, index) => (
                   <li key={index} className="text-sm text-gray-600">{action}</li>
                 ))}
               </ul>
