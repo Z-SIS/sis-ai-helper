@@ -17,7 +17,7 @@ export async function GET() {
       performance: {
         tokenUsage,
         cache: {
-          size: tokenUsage.cacheSize,
+          size: tokenUsage.cacheStats?.size ?? 0,
           status: 'active',
         },
       },

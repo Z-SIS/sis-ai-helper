@@ -1,7 +1,13 @@
 // server.ts - Next.js Standalone + Socket.IO
 import { setupSocket } from '@/lib/socket';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+// Added dynamic import with type-safe fallback for ESM
+let Server: any;
+try {
+  ({ Server } = await import('socket.io'));
+} catch (err) {
+  console.error("Socket.IO not found. Please install socket.io and @types/socket.io");
+}
 import next from 'next';
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -32,15 +38,19 @@ async function createCustomServer() {
     });
 
     // Setup Socket.IO
-    const io = new Server(server, {
+    const io = Server ? new Server(server, {
       path: '/api/socketio',
       cors: {
         origin: "*",
         methods: ["GET", "POST"]
       }
-    });
+    }) : null;
 
-    setupSocket(io);
+    if (io) {
+      setupSocket(io);
+    } else {
+      console.warn("Socket.IO not available - running without WebSocket support");
+    }
 
     // Start the server
     server.listen(currentPort, hostname, () => {

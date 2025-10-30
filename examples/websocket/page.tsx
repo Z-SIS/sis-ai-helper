@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+// Added optional import guard for socket.io-client
+let io: any;
+try {
+  ({ io } = await import('socket.io-client'));
+} catch (err) {
+  console.error("Socket.IO Client not found. Please install socket.io-client and @types/socket.io-client");
+}
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +26,11 @@ export default function SocketDemo() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    if (!io) {
+      console.warn("Socket.IO client not available");
+      return;
+    }
+
     const socketInstance = io({
       path: '/api/socketio',
     });
