@@ -128,6 +128,30 @@ export const EXTRACTION_EXAMPLES = [
   }
 ]
 
+// Analysis examples for Z.ai agents
+export const ANALYSIS_EXAMPLES = [
+  {
+    id: 1,
+    task: 'Financial analysis',
+    input: 'Company revenue grew from $1M to $1.5M in one year.',
+    output: {
+      'revenue_growth': '50%',
+      'growth_type': 'positive',
+      'confidence': 'high'
+    }
+  },
+  {
+    id: 2,
+    task: 'Market analysis',
+    input: 'Market share increased by 5% due to new product launch.',
+    output: {
+      'market_share_change': '+5%',
+      'causal_factor': 'product launch',
+      'confidence': 'medium'
+    }
+  }
+]
+
 // Enhanced anti-hallucination system prompts with explicit instructions
 export const ENHANCED_ANTI_HALLUCINATION_SYSTEM_PROMPT = `
 You are a deterministic AI assistant designed for 100% factual accuracy and reliability.

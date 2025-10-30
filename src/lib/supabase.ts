@@ -1,23 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
 
+// Environment variable validation
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
 // ✅ Browser client — safe for frontend usage (anon key)
-export const supabaseBrowser = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+export const supabaseBrowser = supabaseUrl && supabaseAnonKey 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 // ✅ Server admin client — full rights, bypasses RLS
 // Must be used ONLY in API routes or server components.
-export const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
-)
+export const supabaseAdmin = supabaseUrl && supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+  : null;
 
 // Legacy exports for backward compatibility (deprecated)
 // Use supabaseBrowser for client code and supabaseAdmin for server code
@@ -181,10 +183,10 @@ export const db = {
 
 // Export configuration status for debugging
 export const supabaseConfig = {
-  isConfigured: !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-  url: process.env.NEXT_PUBLIC_SUPABASE_URL ? process.env.NEXT_PUBLIC_SUPABASE_URL.replace(/https:\/\/(.*)\.supabase\.co/, 'https://***.supabase.co') : null,
-  hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+  isConfigured: !!(supabaseUrl && supabaseAnonKey),
+  url: supabaseUrl ? supabaseUrl.replace(/https:\/\/(.*)\.supabase\.co/, 'https://***.supabase.co') : null,
+  hasAnonKey: !!supabaseAnonKey,
+  hasServiceRoleKey: !!supabaseServiceKey,
   browserClientAvailable: !!supabaseBrowser,
   adminClientAvailable: !!supabaseAdmin
 };
