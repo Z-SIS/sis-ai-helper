@@ -23,4 +23,12 @@ jobs:
       - name: Apply Supabase Security Fix
         env:
           DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: node scripts/simple-security-fix.js
+        run: |
+          echo "🔍 Checking database connection..."
+          if [ -z "$DATABASE_URL" ]; then
+            echo "❌ DATABASE_URL is not set"
+            echo "Please set SUPABASE_DB_URL secret in GitHub repository settings"
+            exit 1
+          fi
+          echo "✅ DATABASE_URL is configured"
+          node scripts/simple-security-fix.js
