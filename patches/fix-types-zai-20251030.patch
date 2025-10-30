@@ -1,0 +1,86 @@
+diff --git a/examples/websocket/page.tsx b/examples/websocket/page.tsx
+index ab5aa76..d389e5b 100644
+--- a/examples/websocket/page.tsx
++++ b/examples/websocket/page.tsx
+@@ -1,7 +1,13 @@
+ 'use client';
+ 
+ import { useEffect, useState } from 'react';
+-import { io } from 'socket.io-client';
++// Added optional import guard for socket.io-client
++let io: any;
++try {
++  ({ io } = await import('socket.io-client'));
++} catch (err) {
++  console.error("Socket.IO Client not found. Please install socket.io-client and @types/socket.io-client");
++}
+ import { Button } from '@/components/ui/button';
+ import { Input } from '@/components/ui/input';
+ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+@@ -20,6 +26,11 @@ export default function SocketDemo() {
+   const [isConnected, setIsConnected] = useState(false);
+ 
+   useEffect(() => {
++    if (!io) {
++      console.warn("Socket.IO client not available");
++      return;
++    }
++
+     const socketInstance = io({
+       path: '/api/socketio',
+     });
+diff --git a/server.ts b/server.ts
+index 8969f16..deb2aa4 100644
+--- a/server.ts
++++ b/server.ts
+@@ -1,7 +1,13 @@
+ // server.ts - Next.js Standalone + Socket.IO
+ import { setupSocket } from '@/lib/socket';
+ import { createServer } from 'http';
+-import { Server } from 'socket.io';
++// Added dynamic import with type-safe fallback for ESM
++let Server: any;
++try {
++  ({ Server } = await import('socket.io'));
++} catch (err) {
++  console.error("Socket.IO not found. Please install socket.io and @types/socket.io");
++}
+ import next from 'next';
+ 
+ const dev = process.env.NODE_ENV !== 'production';
+@@ -32,15 +38,19 @@ async function createCustomServer() {
+     });
+ 
+     // Setup Socket.IO
+-    const io = new Server(server, {
++    const io = Server ? new Server(server, {
+       path: '/api/socketio',
+       cors: {
+         origin: "*",
+         methods: ["GET", "POST"]
+       }
+-    });
++    }) : null;
+ 
+-    setupSocket(io);
++    if (io) {
++      setupSocket(io);
++    } else {
++      console.warn("Socket.IO not available - running without WebSocket support");
++    }
+ 
+     // Start the server
+     server.listen(currentPort, hostname, () => {
+diff --git a/src/app/api/agent/health/route.ts b/src/app/api/agent/health/route.ts
+index 3d327e1..a99ddf6 100644
+--- a/src/app/api/agent/health/route.ts
++++ b/src/app/api/agent/health/route.ts
+@@ -17,7 +17,7 @@ export async function GET() {
+       performance: {
+         tokenUsage,
+         cache: {
+-          size: tokenUsage.cacheSize,
++          size: tokenUsage.cacheStats?.size ?? 0,
+           status: 'active',
+         },
+       },
