@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { FeasibilityCheckInput, FeasibilityCheckOutput } from '@/shared/schemas';
+import { AgentInput, AgentOutput } from '@/shared/schemas';
 
 const formSchema = z.object({
   projectName: z.string().min(1, 'Project name is required'),
@@ -27,11 +27,11 @@ const formSchema = z.object({
 });
 
 export function FeasibilityCheckForm() {
-  const [result, setResult] = useState<FeasibilityCheckOutput | null>(null);
+  const [result, setResult] = useState<AgentOutput | null>(null);
   const [resourcesInput, setResourcesInput] = useState('');
   const [constraintsInput, setConstraintsInput] = useState('');
 
-  const form = useForm<FeasibilityCheckInput>({
+  const form = useForm<AgentInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectName: '',
@@ -44,7 +44,7 @@ export function FeasibilityCheckForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: FeasibilityCheckInput) => {
+    mutationFn: async (data: AgentInput) => {
       const response = await fetch('/api/agent/feasibility-check', {
         method: 'POST',
         headers: {
@@ -59,14 +59,14 @@ export function FeasibilityCheckForm() {
       }
 
       const result = await response.json();
-      return result.data as FeasibilityCheckOutput;
+      return result.data as AgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: FeasibilityCheckInput) => {
+  const onSubmit = (data: AgentInput) => {
     // Convert text inputs to arrays
     if (resourcesInput.trim()) {
       data.resources = resourcesInput.split('\n').filter(resource => resource.trim());

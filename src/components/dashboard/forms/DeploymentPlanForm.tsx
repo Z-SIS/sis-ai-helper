@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { DeploymentPlanInput, DeploymentPlanOutput } from '@/shared/schemas';
+import { AgentInput, AgentOutput } from '@/shared/schemas';
 
 const formSchema = z.object({
   projectName: z.string().min(1, 'Project name is required'),
@@ -25,9 +25,9 @@ const formSchema = z.object({
 });
 
 export function DeploymentPlanForm() {
-  const [result, setResult] = useState<DeploymentPlanOutput | null>(null);
+  const [result, setResult] = useState<AgentOutput | null>(null);
 
-  const form = useForm<DeploymentPlanInput>({
+  const form = useForm<AgentInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectName: '',
@@ -39,7 +39,7 @@ export function DeploymentPlanForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: DeploymentPlanInput) => {
+    mutationFn: async (data: AgentInput) => {
       const response = await fetch('/api/agent/deployment-plan', {
         method: 'POST',
         headers: {
@@ -60,14 +60,14 @@ export function DeploymentPlanForm() {
         throw new Error(result.error || 'Failed to generate deployment plan');
       }
       
-      return result.data as DeploymentPlanOutput;
+      return result.data as AgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: DeploymentPlanInput) => {
+  const onSubmit = (data: AgentInput) => {
     mutation.mutate(data);
   };
 

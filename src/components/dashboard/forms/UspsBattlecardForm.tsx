@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { UspsBattlecardInput, UspsBattlecardOutput } from '@/shared/schemas';
+import { AgentInput, AgentOutput } from '@/shared/schemas';
 
 const formSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -23,9 +23,9 @@ const formSchema = z.object({
 });
 
 export function UspsBattlecardForm() {
-  const [result, setResult] = useState<UspsBattlecardOutput | null>(null);
+  const [result, setResult] = useState<AgentOutput | null>(null);
 
-  const form = useForm<UspsBattlecardInput>({
+  const form = useForm<AgentInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       companyName: '',
@@ -36,7 +36,7 @@ export function UspsBattlecardForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: UspsBattlecardInput) => {
+    mutationFn: async (data: AgentInput) => {
       const response = await fetch('/api/agent/usps-battlecard', {
         method: 'POST',
         headers: {
@@ -51,14 +51,14 @@ export function UspsBattlecardForm() {
       }
 
       const result = await response.json();
-      return result.data as UspsBattlecardOutput;
+      return result.data as AgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: UspsBattlecardInput) => {
+  const onSubmit = (data: AgentInput) => {
     mutation.mutate(data);
   };
 

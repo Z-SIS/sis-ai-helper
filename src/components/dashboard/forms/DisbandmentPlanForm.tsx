@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { DisbandmentPlanInput, DisbandmentPlanOutput } from '@/shared/schemas';
+import { AgentInput, AgentOutput } from '@/shared/schemas';
 
 const formSchema = z.object({
   projectName: z.string().min(1, 'Project name is required'),
@@ -23,10 +23,10 @@ const formSchema = z.object({
 });
 
 export function DisbandmentPlanForm() {
-  const [result, setResult] = useState<DisbandmentPlanOutput | null>(null);
+  const [result, setResult] = useState<AgentOutput | null>(null);
   const [stakeholdersInput, setStakeholdersInput] = useState('');
 
-  const form = useForm<DisbandmentPlanInput>({
+  const form = useForm<AgentInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectName: '',
@@ -37,7 +37,7 @@ export function DisbandmentPlanForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: DisbandmentPlanInput) => {
+    mutationFn: async (data: AgentInput) => {
       const response = await fetch('/api/agent/disbandment-plan', {
         method: 'POST',
         headers: {
@@ -52,14 +52,14 @@ export function DisbandmentPlanForm() {
       }
 
       const result = await response.json();
-      return result.data as DisbandmentPlanOutput;
+      return result.data as AgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: DisbandmentPlanInput) => {
+  const onSubmit = (data: AgentInput) => {
     // Convert stakeholders input to array if provided
     if (stakeholdersInput.trim()) {
       data.stakeholders = stakeholdersInput.split('\n').filter(stakeholder => stakeholder.trim());

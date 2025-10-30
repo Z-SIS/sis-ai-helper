@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { SopGenerationInput, SopGenerationOutput } from '@/shared/schemas';
+import { AgentInput, AgentOutput } from '@/shared/schemas';
 
 const formSchema = z.object({
   processName: z.string().min(1, 'Process name is required'),
@@ -22,9 +22,9 @@ const formSchema = z.object({
 });
 
 export function SopGenerationForm() {
-  const [result, setResult] = useState<SopGenerationOutput | null>(null);
+  const [result, setResult] = useState<AgentOutput | null>(null);
 
-  const form = useForm<SopGenerationInput>({
+  const form = useForm<AgentInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       processName: '',
@@ -35,7 +35,7 @@ export function SopGenerationForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: SopGenerationInput) => {
+    mutationFn: async (data: AgentInput) => {
       const response = await fetch('/api/agent/generate-sop', {
         method: 'POST',
         headers: {
@@ -50,14 +50,14 @@ export function SopGenerationForm() {
       }
 
       const result = await response.json();
-      return result.data as SopGenerationOutput;
+      return result.data as AgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: SopGenerationInput) => {
+  const onSubmit = (data: AgentInput) => {
     mutation.mutate(data);
   };
 

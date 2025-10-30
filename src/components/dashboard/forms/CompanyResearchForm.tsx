@@ -12,14 +12,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CompanyResearchInput, CompanyResearchOutput, CompanyResearchInputSchema } from '@/shared/schemas';
+import { AgentInputSchemas, AgentOutputSchemas, AgentInput, AgentOutput } from '@/shared/schemas';
 
-const formSchema = CompanyResearchInputSchema;
+const formSchema = AgentInputSchemas['company-research'];
 
 export function CompanyResearchForm() {
-  const [result, setResult] = useState<CompanyResearchOutput | null>(null);
+  const [result, setResult] = useState<AgentOutput | null>(null);
 
-  const form = useForm<CompanyResearchInput>({
+  const form = useForm<AgentInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       companyName: '',
@@ -29,7 +29,7 @@ export function CompanyResearchForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: CompanyResearchInput) => {
+    mutationFn: async (data: AgentInput) => {
       const response = await fetch('/api/agent/company-research', {
         method: 'POST',
         headers: {
@@ -44,14 +44,14 @@ export function CompanyResearchForm() {
       }
 
       const result = await response.json();
-      return result.data.data as CompanyResearchOutput;
+      return result.data.data as AgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: CompanyResearchInput) => {
+  const onSubmit = (data: AgentInput) => {
     mutation.mutate(data);
   };
 

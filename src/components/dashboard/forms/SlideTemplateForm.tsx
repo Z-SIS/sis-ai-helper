@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { SlideTemplateInput, SlideTemplateOutput } from '@/shared/schemas';
+import { AgentInput, AgentOutput } from '@/shared/schemas';
 
 const formSchema = z.object({
   topic: z.string().min(1, 'Topic is required'),
@@ -25,10 +25,10 @@ const formSchema = z.object({
 });
 
 export function SlideTemplateForm() {
-  const [result, setResult] = useState<SlideTemplateOutput | null>(null);
+  const [result, setResult] = useState<AgentOutput | null>(null);
   const [keyPointsInput, setKeyPointsInput] = useState('');
 
-  const form = useForm<SlideTemplateInput>({
+  const form = useForm<AgentInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       topic: '',
@@ -40,7 +40,7 @@ export function SlideTemplateForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: SlideTemplateInput) => {
+    mutationFn: async (data: AgentInput) => {
       const response = await fetch('/api/agent/slide-template', {
         method: 'POST',
         headers: {
@@ -61,14 +61,14 @@ export function SlideTemplateForm() {
         throw new Error(result.error || 'Failed to generate slide template');
       }
       
-      return result.data as SlideTemplateOutput;
+      return result.data as AgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: SlideTemplateInput) => {
+  const onSubmit = (data: AgentInput) => {
     // Convert keyPointsInput to array if provided
     if (keyPointsInput.trim()) {
       data.keyPoints = keyPointsInput.split('\n').filter(point => point.trim());

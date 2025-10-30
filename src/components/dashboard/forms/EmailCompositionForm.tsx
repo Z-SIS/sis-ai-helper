@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { EmailCompositionInput, EmailCompositionOutput } from '@/shared/schemas';
+import { AgentInput, AgentOutput } from '@/shared/schemas';
 
 const formSchema = z.object({
   recipient: z.string().min(1, 'Recipient is required'),
@@ -25,10 +25,10 @@ const formSchema = z.object({
 });
 
 export function EmailCompositionForm() {
-  const [result, setResult] = useState<EmailCompositionOutput | null>(null);
+  const [result, setResult] = useState<AgentOutput | null>(null);
   const [keyPointsInput, setKeyPointsInput] = useState('');
 
-  const form = useForm<EmailCompositionInput>({
+  const form = useForm<AgentInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       recipient: '',
@@ -41,7 +41,7 @@ export function EmailCompositionForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: EmailCompositionInput) => {
+    mutationFn: async (data: AgentInput) => {
       const response = await fetch('/api/agent/compose-email', {
         method: 'POST',
         headers: {
@@ -56,14 +56,14 @@ export function EmailCompositionForm() {
       }
 
       const result = await response.json();
-      return result.data as EmailCompositionOutput;
+      return result.data as AgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: EmailCompositionInput) => {
+  const onSubmit = (data: AgentInput) => {
     // Convert keyPointsInput to array if provided
     if (keyPointsInput.trim()) {
       data.keyPoints = keyPointsInput.split('\n').filter(point => point.trim());
