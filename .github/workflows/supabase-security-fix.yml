@@ -1,0 +1,26 @@
+name: Supabase Security Auto-Fix
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'supabase/migrations/**'
+
+jobs:
+  apply-security-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply Supabase Security Fix
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/simple-security-fix.js
