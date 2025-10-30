@@ -14,6 +14,7 @@ import { SlideTemplateForm } from '@/components/dashboard/forms/SlideTemplateFor
 import { SettingsForm } from '@/components/dashboard/forms/SettingsForm';
 import { HistorySidebar } from '@/components/dashboard/history-sidebar';
 import { SupabaseSetupWizard } from '@/components/dashboard/supabase-setup-wizard';
+import { SupabaseStatusAlert } from '@/components/dashboard/supabase-status-alert';
 
 const agentForms = {
   'company-research': CompanyResearchForm,
@@ -44,6 +45,11 @@ export default function DashboardPage() {
         <main className="flex-1 flex">
           <div className="flex-1 overflow-y-auto">
             <div className="p-6">
+              {/* Supabase Status Alert */}
+              <div className="mb-6">
+                <SupabaseStatusAlert />
+              </div>
+              
               {SelectedForm ? (
                 <SelectedForm />
               ) : (
