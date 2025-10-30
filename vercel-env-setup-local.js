@@ -78,25 +78,24 @@ console.log('============================================\n');
 // Check prerequisites
 function checkPrerequisites() {
   try {
-    execSync('vercel --version', { stdio: 'pipe' });
+    execSync('npx vercel --version', { stdio: 'pipe' });
     console.log('✅ Vercel CLI found');
   } catch (error) {
     console.log('❌ Vercel CLI not found. Please install it first:');
-    console.log('   npm install -g vercel');
-    console.log('   Then run: vercel login');
+    console.log('   npm install vercel');
+    console.log('   Then run this script again');
     return false;
   }
 
   try {
-    execSync('vercel whoami', { stdio: 'pipe' });
+    execSync('npx vercel whoami', { stdio: 'pipe' });
     console.log('✅ Logged in to Vercel\n');
+    return true;
   } catch (error) {
-    console.log('❌ Not logged in to Vercel. Please run:');
-    console.log('   vercel login\n');
+    console.log('⚠️  Not logged in to Vercel, but continuing with setup generation...');
+    console.log('   You can log in later with: npx vercel login\n');
     return false;
   }
-
-  return true;
 }
 
 // Generate commands for manual execution
@@ -105,7 +104,7 @@ function generateCommands() {
   
   environmentVariables.forEach((envVar, index) => {
     console.log(`${index + 1}. ${envVar.clean}`);
-    console.log(`   vercel env add ${envVar.clean} production`);
+    console.log(`   npx vercel env add ${envVar.clean} production`);
     console.log(`   When prompted, paste the value of: ${envVar.source}`);
     console.log(`   Description: ${envVar.description}\n`);
   });
@@ -116,7 +115,7 @@ function checkExistingVariables() {
   console.log('🔍 Checking existing environment variables...\n');
   
   try {
-    const result = execSync('vercel env ls', { encoding: 'utf8' });
+    const result = execSync('npx vercel env ls', { encoding: 'utf8' });
     const existingVars = result.split('\n')
       .filter(line => line.trim())
       .filter(line => !line.includes('No environment variables found'));
@@ -136,7 +135,7 @@ function checkExistingVariables() {
 
 // Generate a setup script
 function generateSetupScript() {
-  const scriptContent = `#!/bin/bash
+  let scriptContent = `#!/bin/bash
 # Auto-generated Vercel environment variable setup script
 # Generated on: ${new Date().toISOString()}
 
@@ -152,11 +151,11 @@ echo "   Description: ${envVar.description}"
 
 # Try to get value from environment
 if [ -n "${'$'}{${envVar.source}}" ]; then
-    echo "${'$'}{${envVar.source}}" | vercel env add ${envVar.clean} production
+    echo "${'$'}{${envVar.source}}" | npx vercel env add ${envVar.clean} production
     echo "   ✅ Added ${envVar.clean}"
 else
     echo "   ⚠️  Environment variable ${envVar.source} not found locally"
-    echo "   📋 Please run manually: vercel env add ${envVar.clean} production"
+    echo "   📋 Please run manually: npx vercel env add ${envVar.clean} production"
     echo "   💡 Get the value from Vercel dashboard → Settings → Environment Variables"
 fi
 echo ""
@@ -189,11 +188,14 @@ echo "🌐 Check your deployed application to ensure everything works!"
 
 // Main execution
 function main() {
-  if (!checkPrerequisites()) {
-    process.exit(1);
+  const isLoggedIn = checkPrerequisites();
+
+  if (isLoggedIn) {
+    checkExistingVariables();
+  } else {
+    console.log('🔍 Skipping environment variable check (not logged in)\n');
   }
 
-  checkExistingVariables();
   generateCommands();
   generateSetupScript();
 
@@ -212,9 +214,16 @@ function main() {
   console.log('  - Go to your Vercel project → Settings → Environment Variables');
   console.log('  - Add each variable manually using the clean names');
   console.log('');
+  
+  if (!isLoggedIn) {
+    console.log('🔑 First, login to Vercel:');
+    console.log('  npx vercel login');
+    console.log('');
+  }
+  
   console.log('🔍 After Setup:');
-  console.log('  1. Verify: vercel env ls');
-  console.log('  2. Redeploy: vercel --prod');
+  console.log('  1. Verify: npx vercel env ls');
+  console.log('  2. Redeploy: npx vercel --prod');
   console.log('  3. Test your application');
   console.log('');
   console.log('✨ Good luck with your environment variable setup!');

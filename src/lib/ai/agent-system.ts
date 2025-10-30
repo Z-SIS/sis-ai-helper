@@ -23,11 +23,6 @@ const ANTI_HALLUCINATION_SYSTEM_PROMPT =
 const EXTRACTION_EXAMPLES =
   DeterministicConfig.EXTRACTION_EXAMPLES ?? []
 
-const getDeterministicConfig = DeterministicConfig.getDeterministicConfig
-const VERIFICATION_PROMPT = DeterministicConfig.VERIFICATION_PROMPT
-const ANALYSIS_EXAMPLES = DeterministicConfig.ANALYSIS_EXAMPLES
-type DeterministicConfigType = DeterministicConfig.DeterministicConfig
-
 // Version: 2.1.0 - Google AI Only
 
 // Google AI is the primary AI service
