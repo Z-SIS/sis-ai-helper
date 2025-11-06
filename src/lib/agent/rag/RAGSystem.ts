@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import ZAI from 'z-ai-web-dev-sdk';
+import { getZAI, getZAISync } from '@/lib/ai/zai-compat';
 
 // Research Cache Schema
 export const ResearchCacheSchema = z.object({
@@ -50,11 +50,11 @@ export type RAGResult = z.infer<typeof RAGResultSchema>;
 
 export class RAGSystem {
   private cache: Map<string, ResearchCache> = new Map();
-  private zai: ZAI;
+  private zai: any;
   private cacheExpiryDays = 30;
 
   constructor() {
-    this.zai = new ZAI();
+    this.zai = getZAISync();
     this.loadCacheFromStorage();
   }
 

@@ -1,6 +1,16 @@
 import { db } from '@/lib/db';
 import { getZAI, getZAISync } from '@/lib/ai/zai-compat';
 
+// Initialize ZAI client (will be created on first use)
+let zai = getZAISync();
+
+async function ensureZAI() {
+  if (!zai) {
+    zai = await getZAI();
+  }
+  return zai;
+}
+
 // Chunking configuration
 const CHUNK_SIZE = 500; // tokens per chunk
 const CHUNK_OVERLAP = 50; // tokens overlap between chunks
@@ -27,10 +37,11 @@ export interface ProcessedDocument {
 }
 
 export class KnowledgeBaseIngestion {
-  private zai: ZAI;
+  private zai: any;
 
   constructor() {
-    this.zai = new ZAI();
+    // Initialize ZAI using the compatibility layer
+    this.zai = getZAISync();
   }
 
   /**
@@ -175,8 +186,9 @@ export class KnowledgeBaseIngestion {
         
         for (const text of batch) {
           try {
-            const zai = await ZAI.create();
-            const response = await zai.embeddings.create({
+            const zai = await getZAI();
+            const client = await ensureZAI();
+            const response = await client.embeddings.create({
               model: 'text-embedding-ada-002',
               input: text
             });
@@ -217,8 +229,9 @@ export class KnowledgeBaseIngestion {
     try {
       // Generate embedding for company search
       const searchText = `${companyData.company_name} ${companyData.description || ''} ${companyData.industry || ''}`;
-      const zai = await ZAI.create();
-      const embeddingResponse = await zai.embeddings.create({
+      const zai = await getZAI();
+      const client = await ensureZAI();
+      const embeddingResponse = await client.embeddings.create({
         model: 'text-embedding-ada-002',
         input: searchText
       });

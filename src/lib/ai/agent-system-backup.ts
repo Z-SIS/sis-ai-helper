@@ -17,21 +17,8 @@ import {
 
 // Version: 2.1.0 - ZAI SDK Integration
 
-// Dynamic import for ZAI SDK to handle ES module compatibility
-let ZAI: any = null;
-const loadZAI = async () => {
-  if (!ZAI) {
-    try {
-      const ZAIModule = await import('z-ai-web-dev-sdk');
-      ZAI = ZAIModule.default;
-    } catch (error) {
-      console.error('Failed to load ZAI SDK:', error);
-      // Don't throw error, let the calling function handle the fallback
-      return null;
-    }
-  }
-  return ZAI;
-};
+// Use ZAI compatibility layer instead of direct imports
+import { getZAI } from '@/lib/ai/zai-compat';
 import { 
   AgentInputSchemas, 
   AgentOutputSchemas,
@@ -1179,55 +1166,17 @@ Best regards,
     if (process.env.ZAI_API_KEY) {
       console.log('ZAI SDK available, using ZAI for AI generation');
       
-      // Load ZAI SDK dynamically
-      const ZAI = await loadZAI();
-      
-      if (!ZAI) {
-        console.log('ZAI SDK not available, using mock response for:', agentType);
-        const mockResponse = this.createMockResponse(agentType, input);
-        return mockResponse;
-      }
-      
-      console.log('ZAI SDK loaded, initializing client...');
-      
-      // Try to create ZAI instance with environment variable
+      // Use compatibility layer to get ZAI instance
       let zai;
       try {
-        // Use environment variable for API key if available
-        const apiKey = process.env.ZAI_API_KEY || 'z-ai-default-key';
-        
-        // Try to create ZAI instance with explicit configuration
-        zai = await ZAI.create({ 
-          apiKey: apiKey,
-          model: 'gemini-1.5-flash',
-          maxTokens: 2000,
-          temperature: 0.3
-        });
-        
-        console.log('ZAI client created with explicit config');
-      } catch (configError) {
-        console.warn('ZAI explicit config failed, trying with API key only:', configError);
-        
-        try {
-          // Fallback: try with just API key
-          const apiKey = process.env.ZAI_API_KEY || 'z-ai-default-key';
-          zai = await ZAI.create({ apiKey });
-          console.log('ZAI client created with API key only');
-        } catch (apiKeyError) {
-          console.warn('ZAI API key config failed, trying default creation:', apiKeyError);
-          
-          // Last resort: try default creation
-          try {
-            zai = await ZAI.create();
-            console.log('ZAI client created with default config');
-          } catch (defaultError) {
-            console.error('All ZAI initialization methods failed:', defaultError);
-            // Fall back to mock response instead of throwing error
-            console.log('ZAI initialization failed, using mock response for:', agentType);
-            const mockResponse = this.createMockResponse(agentType, input);
-            return mockResponse;
-          }
-        }
+        zai = await getZAI();
+        console.log('ZAI client created via compatibility layer');
+      } catch (error) {
+        console.error('ZAI initialization failed:', error);
+        // Fall back to mock response instead of throwing error
+        console.log('ZAI initialization failed, using mock response for:', agentType);
+        const mockResponse = this.createMockResponse(agentType, input);
+        return mockResponse;
       }
       
       console.log('ZAI client created successfully');

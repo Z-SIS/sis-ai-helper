@@ -1,7 +1,7 @@
 import { AIAgent, AgentTool, AgentCapability } from '../core/AIAgent';
 import { RAGSystem, RAGQuery, RAGResult } from '../rag/RAGSystem';
 import { TaskHistoryManager, TaskHistory } from '../storage/TaskHistory';
-import ZAI from 'z-ai-web-dev-sdk';
+import { getZAI, getZAISync } from '@/lib/ai/zai-compat';
 
 // Orchestration Configuration
 export interface AgentConfig {
@@ -64,14 +64,14 @@ export class AgentOrchestrator {
   private agents: Map<string, AIAgent> = new Map();
   private ragSystem: RAGSystem;
   private taskHistory: TaskHistoryManager;
-  private zai: ZAI;
+  private zai: any;
   private taskQueue: TaskRequest[] = [];
   private processingTasks: Map<string, Promise<TaskResponse>> = new Map();
 
   constructor() {
     this.ragSystem = new RAGSystem();
     this.taskHistory = new TaskHistoryManager();
-    this.zai = new ZAI();
+    this.zai = getZAISync();
   }
 
   // Agent Lifecycle Management

@@ -1,0 +1,78 @@
+diff --git a/src/types/agent.ts b/src/types/agent.ts
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/src/types/agent.ts
+@@ -0,0 +1,31 @@
++export interface AgentInput {
++  projectName?: string;
++  description?: string;
++  budget?: string;
++  timeline?: string;
++  resources?: string[];
++  constraints?: string[];
++  topic?: string;
++  purpose?: string;
++  keyPoints?: string[];
++  audience?: string;
++  slideCount?: string;
++}
++
++export interface AgentOutput {
++  title: string;
++  content: string;
++  summary?: string;
++  timestamp?: string;
++  confidence?: number;
++  success?: boolean;
++  needsReview?: boolean;
++  topic?: string;
++  warnings?: string[];
++  sources?: string[];
++  data?: Record<string, any>;
++  [k: string]: any;
++}
+diff --git a/src/lib/ai/zai-compat.ts b/src/lib/ai/zai-compat.ts
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/src/lib/ai/zai-compat.ts
+@@ -0,0 +1,27 @@
++import ZAIDefault from 'z-ai-web-dev-sdk';
++
++let _zaiInstance: any | null = null;
++
++async function createZAIInstance() {
++  if (typeof (ZAIDefault as any).create === 'function') {
++    return await (ZAIDefault as any).create();
++  }
++  return new (ZAIDefault as any)();
++}
++
++export async function getZAI() {
++  if (_zaiInstance) return _zaiInstance;
++  _zaiInstance = await createZAIInstance();
++  return _zaiInstance;
++}
++
++export function getZAISync() {
++  if (_zaiInstance) return _zaiInstance;
++  try {
++    _zaiInstance = new (ZAIDefault as any)();
++    return _zaiInstance;
++  } catch (_) {
++    return null;
++  }
++}
++
++export default { getZAI, getZAISync };
+diff --git a/src/lib/rag/ingestion.ts b/src/lib/rag/ingestion.ts
+--- a/src/lib/rag/ingestion.ts
++++ b/src/lib/rag/ingestion.ts
+@@ -1,5 +1,2 @@
+ import { db } from '@/lib/db';
+-import ZAI from 'z-ai-web-dev-sdk';
+-
+-// ZAI client
+-const zai = new ZAI();
++import { getZAI, getZAISync } from '@/lib/ai/zai-compat';

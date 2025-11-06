@@ -1,8 +1,15 @@
 import { db } from '@/lib/db';
-import ZAI from 'z-ai-web-dev-sdk';
+import { getZAI, getZAISync } from '@/lib/ai/zai-compat';
 
-// ZAI client
-const zai = new ZAI();
+// Initialize ZAI client (will be created on first use)
+let zai = getZAISync();
+
+async function ensureZAI() {
+  if (!zai) {
+    zai = await getZAI();
+  }
+  return zai;
+}
 
 export interface RetrievalOptions {
   match_count?: number;
@@ -53,10 +60,10 @@ export interface RAGResponse {
 }
 
 export class VectorSearchRetrieval {
-  private zai: ZAI;
+  private zai: any;
 
   constructor() {
-    this.zai = new ZAI();
+    this.zai = getZAISync();
   }
 
   /**
@@ -64,8 +71,9 @@ export class VectorSearchRetrieval {
    */
   async generateQueryEmbedding(query: string): Promise<number[]> {
     try {
-      const zai = await ZAI.create();
-      const response = await zai.embeddings.create({
+      const zai = await getZAI();
+      const client = await ensureZAI();
+      const response = await client.embeddings.create({
         model: 'text-embedding-ada-002',
         input: query
       });
@@ -146,7 +154,7 @@ export class VectorSearchRetrieval {
       const chunks = await db.knowledgeChunk.findMany({
         where: {
           document: {
-            createdBy: options.filter_created_by || null
+            createdBy: options.filter_created_by || undefined
           }
         },
         include: {
@@ -326,7 +334,7 @@ export class VectorSearchRetrieval {
    */
   private async generateResponse(query: string, context: string): Promise<string> {
     try {
-      const zai = await ZAI.create();
+      const zai = await getZAI();
       const prompt = `
 You are an AI assistant with access to a knowledge base. Please answer the user's question based on the provided context.
 
@@ -344,7 +352,8 @@ Instructions:
 
 Response:`;
 
-      const response = await zai.chat.completions.create({
+      const client = await ensureZAI();
+      const response = await client.chat.completions.create({
         messages: [
           {
             role: 'system',

@@ -1,0 +1,115 @@
+diff --git a/src/types/agent.ts b/src/types/agent.ts
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/src/types/agent.ts
+@@
++export interface AgentInput {
++  projectName?: string;
++  description?: string;
++  budget?: string;
++  timeline?: string;
++  resources?: string[];
++  constraints?: string[];
++  topic?: string;
++  purpose?: string;
++  keyPoints?: string[];
++  audience?: string;
++  slideCount?: string;
++}
++
++export interface AgentOutput {
++  title: string;
++  content: string;
++  summary?: string;
++  timestamp?: string;
++  confidence?: number;
++  success?: boolean;
++  needsReview?: boolean;
++  topic?: string;
++  warnings?: string[];
++  sources?: string[];
++  data?: Record<string, any>;
++  [k: string]: any;
++}
+diff --git a/src/lib/ai/zai-compat.ts b/src/lib/ai/zai-compat.ts
+new file mode 100644
+index 0000000..e69de29
+--- /dev/null
++++ b/src/lib/ai/zai-compat.ts
+@@
++import ZAIDefault from 'z-ai-web-dev-sdk';
++
++let _zaiInstance: any | null = null;
++
++async function createZAIInstance() {
++  if (typeof (ZAIDefault as any).create === 'function') {
++    return await (ZAIDefault as any).create();
++  }
++  return new (ZAIDefault as any)();
++}
++
++export async function getZAI() {
++  if (_zaiInstance) return _zaiInstance;
++  _zaiInstance = await createZAIInstance();
++  return _zaiInstance;
++}
++
++export function getZAISync() {
++  if (_zaiInstance) return _zaiInstance;
++  try {
++    _zaiInstance = new (ZAIDefault as any)();
++    return _zaiInstance;
++  } catch (_) {
++    return null;
++  }
++}
++
++export default { getZAI, getZAISync };
+diff --git a/src/lib/rag/ingestion.ts b/src/lib/rag/ingestion.ts
+--- a/src/lib/rag/ingestion.ts
++++ b/src/lib/rag/ingestion.ts
+@@
+-import { db } from '@/lib/db';
+-import ZAI from 'z-ai-web-dev-sdk';
+-
+-// ZAI client
+-const zai = new ZAI();
++import { db } from '@/lib/db';
++import { getZAI, getZAISync } from '@/lib/ai/zai-compat';
+@@
+-        for (const text of batch) {
+-          try {
+-            const zai = await ZAI.create();
+-            const response = await zai.embeddings.create({
+-              model: 'text-embedding-ada-002',
+-              input: text
+-            });
+-
+-            embeddings.push(response.data[0].embedding);
+-          } catch (error) {
+-            console.error('Error generating embedding for chunk:', error);
+-            // Use zero vector as fallback
+-            embeddings.push(new Array(1536).fill(0));
+-          }
+-        }
+-      }
++        const zaiClient = (await getZAI()) as any;
++        for (const text of batch) {
++          try {
++            const response = await zaiClient.embeddings.create({
++              model: 'text-embedding-ada-002',
++              input: text
++            });
++            embeddings.push(response.data?.[0]?.embedding ?? new Array(1536).fill(0));
++          } catch (error) {
++            console.error('Error generating embedding for chunk:', error);
++            embeddings.push(new Array(1536).fill(0));
++          }
++        }
++      }
+@@
+-      const zai = await ZAI.create();
+-      const embeddingResponse = await zai.embeddings.create({
++      const zai = await getZAI();
++      const embeddingResponse = await (zai as any).embeddings.create({

@@ -2,7 +2,10 @@
 const nextConfig = {
   experimental: {
     optimizeCss: false,
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ['*'],
+      bodySizeLimit: '2mb'
+    },
   },
   typescript: {
     ignoreBuildErrors: true,

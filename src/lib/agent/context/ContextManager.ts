@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { AIAgent, AgentMessage } from '../core/AIAgent';
 import { RAGSystem, RAGQuery, RAGResult } from '../rag/RAGSystem';
+import { getZAISync } from '@/lib/ai/zai-compat';
 
 // Context Schema
 export const ContextSchema = z.object({
@@ -68,8 +69,7 @@ export class ContextManager {
 
   private async initializeZAI(): Promise<void> {
     try {
-      const ZAI = (await import('z-ai-web-dev-sdk')).default;
-      this.zai = new ZAI();
+      this.zai = getZAISync();
     } catch (error) {
       console.error('Failed to initialize ZAI:', error);
     }
