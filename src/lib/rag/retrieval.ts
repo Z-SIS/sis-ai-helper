@@ -96,6 +96,9 @@ export class VectorSearchRetrieval {
     const startTime = Date.now();
 
     try {
+      // Ensure ZAI is initialized
+      await ensureZAI();
+
       // 1. Generate query embedding
       const queryEmbedding = await this.generateQueryEmbedding(query);
 

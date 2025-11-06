@@ -38,11 +38,18 @@ export interface ProcessedDocument {
 
 export class KnowledgeBaseIngestion {
   private zai: any;
-
+  
   constructor() {
     // Initialize ZAI using the compatibility layer
     this.zai = getZAISync();
+    // Start async initialization
+    this.initialize().catch(console.error);
   }
+
+  async initialize() {
+    this.zai = await ensureZAI();
+  }
+
 
   /**
    * Process and ingest a document into the knowledge base
