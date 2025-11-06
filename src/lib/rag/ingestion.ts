@@ -1,8 +1,5 @@
 import { db } from '@/lib/db';
-import ZAI from 'z-ai-web-dev-sdk';
-
-// ZAI client
-const zai = new ZAI();
+import { getZAI, getZAISync } from '@/lib/ai/zai-compat';
 
 // Chunking configuration
 const CHUNK_SIZE = 500; // tokens per chunk
