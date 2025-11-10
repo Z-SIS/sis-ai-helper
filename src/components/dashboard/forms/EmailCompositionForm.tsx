@@ -13,7 +13,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AgentInput, AgentOutput } from '@/shared/schemas';
+import { AgentOutput } from '@/shared/schemas';
+
+interface EmailCompositionInput {
+  recipient: string;
+  subject: string;
+  tone: 'formal' | 'casual' | 'friendly' | 'professional' | 'urgent';
+  purpose: string;
+  keyPoints?: string[];
+  callToAction?: string;
+}
+
+interface EmailCompositionOutput extends AgentOutput {
+  subject: string;
+  body: string;
+  suggestedImprovements?: string[];
+  tone?: string;
+}
 
 const formSchema = z.object({
   recipient: z.string().min(1, 'Recipient is required'),
@@ -25,10 +41,10 @@ const formSchema = z.object({
 });
 
 export function EmailCompositionForm() {
-  const [result, setResult] = useState<AgentOutput | null>(null);
+  const [result, setResult] = useState<EmailCompositionOutput | null>(null);
   const [keyPointsInput, setKeyPointsInput] = useState('');
 
-  const form = useForm<AgentInput>({
+    const form = useForm<EmailCompositionInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       recipient: '',
@@ -41,7 +57,7 @@ export function EmailCompositionForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: AgentInput) => {
+    mutationFn: async (data: EmailCompositionInput) => {
       const response = await fetch('/api/agent/compose-email', {
         method: 'POST',
         headers: {
@@ -56,14 +72,22 @@ export function EmailCompositionForm() {
       }
 
       const result = await response.json();
-      return result.data as AgentOutput;
+      // Build a typed EmailCompositionOutput from the API result and form data
+      const output: EmailCompositionOutput = {
+        // base AgentOutput fields if present in result.data
+        ...(result.data || {}),
+        subject: data.subject,
+        body: result.data?.content || result.data?.body || '',
+        tone: data.tone,
+      };
+      return output;
     },
-    onSuccess: (data) => {
-      setResult(data);
+    onSuccess: (output: EmailCompositionOutput) => {
+      setResult(output);
     },
   });
 
-  const onSubmit = (data: AgentInput) => {
+  const onSubmit = (data: EmailCompositionInput) => {
     // Convert keyPointsInput to array if provided
     if (keyPointsInput.trim()) {
       data.keyPoints = keyPointsInput.split('\n').filter(point => point.trim());
@@ -251,7 +275,7 @@ export function EmailCompositionForm() {
               <div>
                 <CardTitle>Generated Email</CardTitle>
                 <CardDescription>
-                  {result.tone} tone • {result.wordCount} words
+                  {result.tone || 'Generated'} email
                 </CardDescription>
               </div>
               <Button onClick={copyToClipboard} variant="outline" size="sm">

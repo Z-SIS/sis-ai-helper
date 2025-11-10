@@ -1,7 +1,7 @@
 import { AgentType, AgentInput, AgentOutput } from '@/shared/schemas';
 import { createAgentOutput } from '@/lib/ai/helpers/agent-output';
-import { optimizedAgentSystem } from './optimized/agent-system';
-import { AgentMetadata } from '@/shared/schemas';
+import { optimizedAgentSystem } from '@/lib/ai/optimized-agent-system';
+import { AgentMetadata } from '@/lib/ai/metadata/agent-metadata';
 
 interface CircuitBreakerState {
   isOpen: boolean;
@@ -10,35 +10,7 @@ interface CircuitBreakerState {
   nextAttemptTime: Date;
 }
 
-interface RobustnessConfig {
-  maxRetries: number;
-  timeoutMs: number;
-  fallbackEnabled: boolean;
-  circuitBreakerThreshold: number;
-  healthCheckInterval: number;
-}
 
-interface AgentHealthStatus {
-  agentType: AgentType;
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  lastCheck: Date;
-  successRate: number;
-  averageResponseTime: number;
-  errorCount: number;
-  recentErrors: string[];
-}
-
-interface AgentMetrics {
-  totalRequests: number;
-  successfulRequests: number;
-  failedRequests: number;
-  averageResponseTime: number;
-  tokenUsage: {
-    total: number;
-    average: number;
-  };
-  lastRequestTime: Date;
-}
 
 export class AgentRobustnessManager {
   private static instance: AgentRobustnessManager;
@@ -58,7 +30,24 @@ export class AgentRobustnessManager {
     };
 
     this.healthStatus = new Map();
+
     this.circuitBreakers = new Map();
+
+  private executeFallback(    this.metrics = new Map();
+
+    agentType: AgentType,    
+
+    input: AgentInput    this.initializeHealthStatus();
+
+  ): AgentOutput {    this.startHealthChecks();
+
+    if (agentType === 'company-research') {  }
+
+      return createAgentOutput({
+
+        title: 'Company Research',  public static getInstance(): AgentRobustnessManager {
+
+        content: 'Unable to fetch company information at this time.',    this.circuitBreakers = new Map();
     this.metrics = new Map();
 
     this.initializeHealthStatus();
@@ -70,83 +59,182 @@ export class AgentRobustnessManager {
       AgentRobustnessManager.instance = new AgentRobustnessManager();
     }
     return AgentRobustnessManager.instance;
-  }
 
-  public async executeAgent<T extends AgentOutput>(
-    agentType: AgentType,
-    input: AgentInput
-  ): Promise<T> {
-    const startTime = Date.now();
-    
-    try {
-      if (this.isCircuitBreakerOpen(agentType)) {
-        throw new Error(`Circuit breaker is open for agent: ${agentType}`);
-      }
+          companyName: (input as any).companyName || 'Unknown',
 
-      const result = await this.executeWithRetry<T>(agentType, input);
-      
-      this.updateMetrics(agentType, true, Date.now() - startTime);
-      this.updateHealthStatus(agentType, true);
-      
-      return result;
-      
+          industry: 'Information not available',  // Execute agent with robustness features
+
+          location: 'Information not available',  public async executeAgent<T extends AgentOutput>(
+
+          description: 'Unable to fetch company information at this time. Please try again later.',    agentType: AgentType,
+
+          website: '',    input: AgentInput
+
+          lastUpdated: new Date().toISOString()  ): Promise<T> {
+
+        }    const startTime = Date.now();
+
+      });    
+
+    }    try {
+
+      // Check circuit breaker
+
+    if (agentType === 'compose-email') {      if (this.isCircuitBreakerOpen(agentType)) {
+
+      return createAgentOutput({        throw new Error(`Circuit breaker is open for agent: ${agentType}`);
+
+        title: 'Email Composition',      }
+
+        content: 'Unable to generate email content at this time. Please try again later.',
+
+        success: false,      // Execute with retry logic
+
+        confidence: 0.3,      const result = await this.executeWithRetry(agentType, input);
+
+        needsReview: true,      
+
+        data: {      // Update metrics
+
+          subject: (input as any).subject || 'No Subject',      this.updateMetrics(agentType, true, Date.now() - startTime);
+
+          body: 'Unable to generate email content at this time. Please try again later.',      
+
+          tone: (input as any).tone || 'professional',      // Update health status
+
+          wordCount: 0      this.updateHealthStatus(agentType, true);
+
+        }      
+
+      });      return result as T;
+
+    }      
+
     } catch (error) {
-      this.updateMetrics(agentType, false, Date.now() - startTime);
-      this.updateHealthStatus(agentType, false, error);
+
+    return createAgentOutput({      // Update metrics
+
+      title: 'Error Response',      this.updateMetrics(agentType, false, Date.now() - startTime);
+
+      content: 'Service temporarily unavailable. Please try again later.',      
+
+      success: false,      // Update health status
+
+      confidence: 0.3,      this.updateHealthStatus(agentType, false, error);
+
+      needsReview: true,      
+
+      data: { error: 'Fallback response activated due to service issues' }      // Update circuit breaker
+
+    });      this.updateCircuitBreaker(agentType);
+
+  }      
+
+      // Try fallback if enabled
+
+  private isCircuitBreakerOpen(agentType: AgentType): boolean {      if (this.config.fallbackEnabled) {
+
+    const circuitBreaker = this.circuitBreakers.get(agentType);        return await this.executeFallback(agentType, input) as T;
+
+    if (!circuitBreaker) return false;      }
+
       
-      this.updateCircuitBreaker(agentType);
-      
-      if (this.config.fallbackEnabled) {
-        return await this.executeFallback(agentType, input) as T;
-      }
-      
-      throw error;
+
+    if (circuitBreaker.isOpen &&       throw error;
+
+        Date.now() - circuitBreaker.lastFailure.getTime() < 60000) {    }
+
+      return true;  }
+
     }
-  }
 
-  public getHealthStatus(agentType: AgentType): AgentHealthStatus {
-    return this.healthStatus.get(agentType) || {
-      agentType,
-      status: 'unhealthy',
+  // Get agent health status
+
+    if (circuitBreaker.isOpen) {  public getHealthStatus(agentType: AgentType): AgentHealthStatus {
+
+      circuitBreaker.isOpen = false;    return this.healthStatus.get(agentType) || {
+
+      circuitBreaker.failures = 0;      agentType,
+
+    }      status: 'unhealthy',
+
       lastCheck: new Date(),
-      successRate: 0,
-      averageResponseTime: 0,
+
+    return false;      successRate: 0,
+
+  }      averageResponseTime: 0,
+
       errorCount: 0,
-      recentErrors: []
-    };
-  }
 
-  public getAllHealthStatus(): AgentHealthStatus[] {
+  private updateCircuitBreaker(agentType: AgentType): void {      recentErrors: [],
+
+    const circuitBreaker = this.circuitBreakers.get(agentType);    };
+
+    if (!circuitBreaker) return;  }
+
+
+
+    circuitBreaker.failures++;  // Get all agent health statuses
+
+    circuitBreaker.lastFailure = new Date();  public getAllHealthStatus(): AgentHealthStatus[] {
+
     return Array.from(this.healthStatus.values());
-  }
 
-  public getMetrics(agentType: AgentType): AgentMetrics {
+    if (circuitBreaker.failures >= 5) {  }
+
+      circuitBreaker.isOpen = true;
+
+    }  // Get agent metrics
+
+  }  public getMetrics(agentType: AgentType): AgentMetrics {
+
     return this.metrics.get(agentType) || {
-      totalRequests: 0,
-      successfulRequests: 0,
-      failedRequests: 0,
-      averageResponseTime: 0,
-      tokenUsage: {
-        total: 0,
-        average: 0
-      },
-      lastRequestTime: new Date()
-    };
-  }
 
-  public resetCircuitBreaker(agentType: AgentType): void {
-    const circuitBreaker = this.circuitBreakers.get(agentType);
-    if (circuitBreaker) {
-      circuitBreaker.isOpen = false;
-      circuitBreaker.failureCount = 0;
+  initializeCircuitBreaker(agentType: AgentType): void {      totalRequests: 0,
+
+    if (!this.circuitBreakers.has(agentType)) {      successfulRequests: 0,
+
+      this.circuitBreakers.set(agentType, {      failedRequests: 0,
+
+        failures: 0,      averageResponseTime: 0,
+
+        lastFailure: new Date(0),      tokenUsage: {
+
+        isOpen: false        total: 0,
+
+      });        average: 0,
+
+    }      },
+
+  }      lastRequestTime: new Date(),
+
+    };
+
+  resetCircuitBreaker(agentType: AgentType): void {  }
+
+    this.circuitBreakers.set(agentType, {
+
+      failures: 0,  // Reset circuit breaker
+
+      lastFailure: new Date(0),  public resetCircuitBreaker(agentType: AgentType): void {
+
+      isOpen: false    const circuitBreaker = this.circuitBreakers.get(agentType);
+
+    });    if (circuitBreaker) {
+
+  }      circuitBreaker.isOpen = false;
+
+}      circuitBreaker.failureCount = 0;
       console.log(`Circuit breaker reset for agent: ${agentType}`);
     }
   }
 
+  // Update configuration
   public updateConfig(newConfig: Partial<RobustnessConfig>): void {
     this.config = { ...this.config, ...newConfig };
   }
 
+  // Private methods
   private initializeHealthStatus(): void {
     const agentTypes = Object.keys(AgentMetadata) as AgentType[];
     
@@ -158,14 +246,14 @@ export class AgentRobustnessManager {
         successRate: 100,
         averageResponseTime: 0,
         errorCount: 0,
-        recentErrors: []
+        recentErrors: [],
       });
       
       this.circuitBreakers.set(agentType, {
         isOpen: false,
         failureCount: 0,
         lastFailureTime: new Date(),
-        nextAttemptTime: new Date()
+        nextAttemptTime: new Date(),
       });
       
       this.metrics.set(agentType, {
@@ -175,9 +263,9 @@ export class AgentRobustnessManager {
         averageResponseTime: 0,
         tokenUsage: {
           total: 0,
-          average: 0
+          average: 0,
         },
-        lastRequestTime: new Date()
+        lastRequestTime: new Date(),
       });
     }
   }
@@ -204,25 +292,27 @@ export class AgentRobustnessManager {
     const healthStatus = this.healthStatus.get(agentType);
     if (!healthStatus) return;
 
+    // Simple health check - try to validate input schema
     const testInput = this.getTestInput(agentType);
     const startTime = Date.now();
     
     try {
+      // Simulate a quick validation
       JSON.stringify(testInput);
       const responseTime = Date.now() - startTime;
       
+      // Update health status
       healthStatus.status = 'healthy';
       healthStatus.lastCheck = new Date();
       healthStatus.averageResponseTime = responseTime;
       
     } catch (error) {
-      healthStatus.status = 'degraded';
+      healthStatus.status = 'unhealthy';
       healthStatus.lastCheck = new Date();
       healthStatus.errorCount++;
+      healthStatus.recentErrors.unshift(error instanceof Error ? error.message : 'Unknown error');
       
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      healthStatus.recentErrors.unshift(errorMessage);
-      
+      // Keep only last 5 errors
       if (healthStatus.recentErrors.length > 5) {
         healthStatus.recentErrors = healthStatus.recentErrors.slice(0, 5);
       }
@@ -230,6 +320,7 @@ export class AgentRobustnessManager {
   }
 
   private getTestInput(agentType: AgentType): AgentInput {
+    // Return minimal valid input for health check
     switch (agentType) {
       case 'company-research':
         return { companyName: 'Test Company' } as any;
@@ -262,12 +353,15 @@ export class AgentRobustnessManager {
     
     for (let attempt = 1; attempt <= this.config.maxRetries; attempt++) {
       try {
+        // Set timeout
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => reject(new Error('Request timeout')), this.config.timeoutMs);
         });
         
+        // Execute agent
         const agentPromise = optimizedAgentSystem.executeAgentRequest(agentType, input);
         
+        // Race between agent execution and timeout
         const result = await Promise.race([agentPromise, timeoutPromise]);
         
         return result as T;
@@ -276,6 +370,7 @@ export class AgentRobustnessManager {
         lastError = error instanceof Error ? error : new Error('Unknown error');
         
         if (attempt < this.config.maxRetries) {
+          // Exponential backoff
           const delay = Math.pow(2, attempt - 1) * 1000;
           await new Promise(resolve => setTimeout(resolve, delay));
         }
@@ -291,6 +386,7 @@ export class AgentRobustnessManager {
   ): Promise<AgentOutput> {
     console.log(`Executing fallback for agent: ${agentType}`);
     
+    // Return a basic fallback response
     if (agentType === 'company-research') {
       return createAgentOutput({
         title: 'Company Research',
@@ -325,6 +421,21 @@ export class AgentRobustnessManager {
       });
     }
 
+    // Default fallback for any other agent type
+    return createAgentOutput({
+      title: 'Error Response',
+      content: 'Service temporarily unavailable. Please try again later.',
+      success: false,
+      confidence: 0.3,
+      needsReview: true,
+      data: { error: 'Fallback response activated due to service issues' }
+    });
+          lastUpdated: new Date().toISOString()
+        }
+      });
+    }
+
+    // Default fallback for any other agent type
     return createAgentOutput({
       title: 'Error Response',
       content: 'Service temporarily unavailable. Please try again later.',
@@ -340,6 +451,7 @@ export class AgentRobustnessManager {
     if (!circuitBreaker) return false;
     
     if (circuitBreaker.isOpen) {
+      // Check if we can try again
       if (Date.now() >= circuitBreaker.nextAttemptTime.getTime()) {
         circuitBreaker.isOpen = false;
         circuitBreaker.failureCount = 0;
@@ -360,7 +472,9 @@ export class AgentRobustnessManager {
     
     if (circuitBreaker.failureCount >= this.config.circuitBreakerThreshold) {
       circuitBreaker.isOpen = true;
+      // Wait 5 minutes before next attempt
       circuitBreaker.nextAttemptTime = new Date(Date.now() + 5 * 60 * 1000);
+      
       console.log(`Circuit breaker opened for agent: ${agentType}`);
     }
   }
@@ -378,9 +492,11 @@ export class AgentRobustnessManager {
       metrics.failedRequests++;
     }
     
+    // Update average response time
     const totalResponseTime = metrics.averageResponseTime * (metrics.totalRequests - 1) + responseTime;
     metrics.averageResponseTime = totalResponseTime / metrics.totalRequests;
     
+    // Update token usage from agent system
     const tokenUsage = optimizedAgentSystem.getTokenUsage();
     if (tokenUsage.byAgent[agentType]) {
       metrics.tokenUsage.total = tokenUsage.byAgent[agentType];
@@ -405,16 +521,19 @@ export class AgentRobustnessManager {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       healthStatus.recentErrors.unshift(errorMessage);
       
+      // Keep only last 5 errors
       if (healthStatus.recentErrors.length > 5) {
         healthStatus.recentErrors = healthStatus.recentErrors.slice(0, 5);
       }
     }
     
+    // Calculate success rate
     const metrics = this.metrics.get(agentType);
     if (metrics && metrics.totalRequests > 0) {
       healthStatus.successRate = (metrics.successfulRequests / metrics.totalRequests) * 100;
     }
     
+    // Update status based on success rate
     if (healthStatus.successRate < 50) {
       healthStatus.status = 'unhealthy';
     } else if (healthStatus.successRate < 80) {
@@ -424,16 +543,22 @@ export class AgentRobustnessManager {
     }
   }
 
+  // Cleanup
   public destroy(): void {
     if (this.healthCheckInterval) {
-      clearInterval(this.healthCheckInterval as NodeJS.Timeout);
+      clearInterval(this.healthCheckInterval);
       this.healthCheckInterval = null;
     }
   }
 }
 
+// ============================================================================
+// EXPORTS
+// ============================================================================
+
 export const agentRobustnessManager = AgentRobustnessManager.getInstance();
 
+// Convenience function
 export const executeAgentWithRobustness = <T extends AgentOutput>(
   agentType: AgentType,
   input: AgentInput

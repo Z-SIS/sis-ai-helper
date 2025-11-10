@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { AgentInput, AgentOutput } from '@/shared/schemas';
+import { AgentInput, FeasibilityCheckAgentOutput } from '@/shared/schemas';
 
 const formSchema = z.object({
   projectName: z.string().min(1, 'Project name is required'),
@@ -27,11 +27,13 @@ const formSchema = z.object({
 });
 
 export function FeasibilityCheckForm() {
-  const [result, setResult] = useState<AgentOutput | null>(null);
+  const [result, setResult] = useState<FeasibilityCheckAgentOutput | null>(null);
   const [resourcesInput, setResourcesInput] = useState('');
   const [constraintsInput, setConstraintsInput] = useState('');
 
-  const form = useForm<AgentInput>({
+  type FeasibilityCheckInput = z.infer<typeof formSchema>;
+
+const form = useForm<FeasibilityCheckInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectName: '',
@@ -44,7 +46,7 @@ export function FeasibilityCheckForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: AgentInput) => {
+    mutationFn: async (data: FeasibilityCheckInput) => {
       const response = await fetch('/api/agent/feasibility-check', {
         method: 'POST',
         headers: {
@@ -59,40 +61,76 @@ export function FeasibilityCheckForm() {
       }
 
       const result = await response.json();
-      return result.data as AgentOutput;
+      return result.data as FeasibilityCheckAgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: AgentInput) => {
-    // Convert text inputs to arrays
-    if (resourcesInput.trim()) {
-      data.resources = resourcesInput.split('\n').filter(resource => resource.trim());
-    }
-    if (constraintsInput.trim()) {
-      data.constraints = constraintsInput.split('\n').filter(constraint => constraint.trim());
-    }
+  const onSubmit = (formData: FeasibilityCheckInput) => {
+    const data = {
+      projectName: formData.projectName,
+      description: formData.description,
+      budget: formData.budget,
+      timeline: formData.timeline,
+      resources: resourcesInput.trim() ? resourcesInput.split('\n').filter(r => r.trim()) : undefined,
+      constraints: constraintsInput.trim() ? constraintsInput.split('\n').filter(c => c.trim()) : undefined,
+    };
     mutation.mutate(data);
   };
 
-  const getFeasibilityColor = (rating: string) => {
-    switch (rating) {
-      case 'high': return 'text-green-600 bg-green-50';
-      case 'medium': return 'text-yellow-600 bg-yellow-50';
-      case 'low': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
+  const getFeasibilityColor = (score: number) => {
+    if (score >= 75) {
+      return 'text-green-600 bg-green-50';
+    } else if (score >= 50) {
+      return 'text-yellow-600 bg-yellow-50';
+    } else {
+      return 'text-red-600 bg-red-50';
     }
   };
 
-  const getFeasibilityIcon = (rating: string) => {
-    switch (rating) {
-      case 'high': return CheckCircle;
-      case 'medium': return AlertTriangle;
-      case 'low': return TrendingUp;
-      default: return CheckCircle;
+  const getFeasibilityIcon = (score: number) => {
+    if (score >= 75) {
+      return CheckCircle;
+    } else if (score >= 50) {
+      return AlertTriangle;
+    } else {
+      return TrendingUp;
     }
+  };
+
+  const getRiskVariant = (risk: string) => {
+    switch (risk.toLowerCase()) {
+      case 'low':
+        return 'default';
+      case 'medium':
+        return 'secondary';
+      case 'high':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+
+  // Helper: normalize different possible shapes for feasibility fields
+  const ratingToNumber = (field: any): number => {
+    if (!field) return 0;
+    // If the field has a numeric score (0-100)
+    if (typeof field.score === 'number') return field.score;
+    // If the field itself is a number
+    if (typeof field === 'number') return field;
+    // If the field has a 'rating' string, map to approximate numeric
+    if (typeof field.rating === 'string') {
+      const r = field.rating.toLowerCase();
+      if (r === 'high' || r === 'excellent') return 90;
+      if (r === 'medium' || r === 'moderate') return 60;
+      if (r === 'low' || r === 'poor') return 30;
+    }
+    // Fallback: try overall numeric-like values
+    const asNumber = Number(field);
+    if (!isNaN(asNumber)) return asNumber;
+    return 0;
   };
 
   return (
@@ -247,12 +285,12 @@ export function FeasibilityCheckForm() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Feasibility Analysis for {result.projectName}</span>
+              <span>Feasibility Analysis for {result.data?.projectName || 'Project'}</span>
               <div className="flex items-center gap-2">
-                <Badge className={getFeasibilityColor(result.overallFeasibility)}>
-                  {result.overallFeasibility.toUpperCase()} FEASIBILITY
+                <Badge className={getFeasibilityColor(Math.floor((result.data?.overallScore || 0) / 34))}>
+                  {result.data?.overallScore || 0}% FEASIBILITY
                 </Badge>
-                <span className="text-sm font-medium">{result.score}/100</span>
+                <span className="text-sm font-medium">{result.data?.overallScore || 0}/100</span>
               </div>
             </CardTitle>
           </CardHeader>
@@ -271,11 +309,12 @@ export function FeasibilityCheckForm() {
                 <CardContent>
                   <div className="flex items-center gap-2 mb-2">
                     {(() => {
-                      const Icon = getFeasibilityIcon(result.technicalFeasibility.rating);
+                      const scoreNum = ratingToNumber(result.technicalFeasibility);
+                      const Icon = getFeasibilityIcon(scoreNum);
                       return <Icon className="w-4 h-4" />;
                     })()}
-                    <Badge className={getFeasibilityColor(result.technicalFeasibility.rating)}>
-                      {result.technicalFeasibility.rating}
+                    <Badge className={getFeasibilityColor(ratingToNumber(result.technicalFeasibility))}>
+                      {typeof result.technicalFeasibility?.rating === 'string' ? result.technicalFeasibility.rating : `${ratingToNumber(result.technicalFeasibility)}%`}
                     </Badge>
                   </div>
                   <p className="text-xs text-gray-600">{result.technicalFeasibility.details}</p>
@@ -289,11 +328,12 @@ export function FeasibilityCheckForm() {
                 <CardContent>
                   <div className="flex items-center gap-2 mb-2">
                     {(() => {
-                      const Icon = getFeasibilityIcon(result.financialFeasibility.rating);
+                      const scoreNum = ratingToNumber(result.financialFeasibility);
+                      const Icon = getFeasibilityIcon(scoreNum);
                       return <Icon className="w-4 h-4" />;
                     })()}
-                    <Badge className={getFeasibilityColor(result.financialFeasibility.rating)}>
-                      {result.financialFeasibility.rating}
+                    <Badge className={getFeasibilityColor(ratingToNumber(result.financialFeasibility))}>
+                      {typeof result.financialFeasibility?.rating === 'string' ? result.financialFeasibility.rating : `${ratingToNumber(result.financialFeasibility)}%`}
                     </Badge>
                   </div>
                   <p className="text-xs text-gray-600">{result.financialFeasibility.details}</p>
@@ -307,11 +347,12 @@ export function FeasibilityCheckForm() {
                 <CardContent>
                   <div className="flex items-center gap-2 mb-2">
                     {(() => {
-                      const Icon = getFeasibilityIcon(result.resourceFeasibility.rating);
+                      const scoreNum = ratingToNumber(result.resourceFeasibility);
+                      const Icon = getFeasibilityIcon(scoreNum);
                       return <Icon className="w-4 h-4" />;
                     })()}
-                    <Badge className={getFeasibilityColor(result.resourceFeasibility.rating)}>
-                      {result.resourceFeasibility.rating}
+                    <Badge className={getFeasibilityColor(ratingToNumber(result.resourceFeasibility))}>
+                      {typeof result.resourceFeasibility?.rating === 'string' ? result.resourceFeasibility.rating : `${ratingToNumber(result.resourceFeasibility)}%`}
                     </Badge>
                   </div>
                   <p className="text-xs text-gray-600">{result.resourceFeasibility.details}</p>
@@ -323,17 +364,23 @@ export function FeasibilityCheckForm() {
               <div>
                 <h4 className="font-semibold text-sm text-gray-700 mb-3">Risk Assessment</h4>
                 <div className="space-y-3">
-                  {result.risks.map((risk, index) => (
+                  {(result.risks as any[]).map((risk, index) => (
                     <div key={index} className="border-l-2 border-gray-200 pl-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">{risk.risk}</span>
-                        <Badge className={getFeasibilityColor(risk.impact)}>
-                          {risk.impact} impact
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-gray-600">
-                        <strong>Mitigation:</strong> {risk.mitigation}
-                      </p>
+                      {typeof risk === 'string' ? (
+                        <p className="text-sm text-gray-700">{risk}</p>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-sm">{risk.risk}</span>
+                            <Badge className={getFeasibilityColor(typeof risk.impact === 'number' ? risk.impact : ratingToNumber(risk.impact))}>
+                              {risk.impact} impact
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-600">
+                            <strong>Mitigation:</strong> {risk.mitigation}
+                          </p>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>

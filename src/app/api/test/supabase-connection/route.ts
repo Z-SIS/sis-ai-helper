@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server'
 import { supabaseBrowser, supabaseConfig } from '@/lib/supabase'
 
+// Define the interface for a single recommendation result
+interface RecommendationResult {
+  type: 'success' | 'warning' | 'error';
+  title: string;
+  description: string;
+  action: string;
+}
+
 export async function GET() {
   try {
     // Test basic configuration
@@ -22,32 +30,41 @@ export async function GET() {
 
     // Test basic connection with a simple query
     let connectionTest = 'failed'
-    let error = null
+    let error: any = null
 
     try {
-      const { data, error: queryError } = await supabaseBrowser
-        .from('task_history')
-        .select('count')
-        .limit(1)
-
-      if (queryError) {
-        if (queryError.code === 'PGRST116') {
-          connectionTest = 'tables_missing'
-          error = {
-            code: queryError.code,
-            message: 'Tables do not exist',
-            hint: 'Run the SQL schema to create required tables'
-          }
-        } else {
-          connectionTest = 'connection_failed'
-          error = {
-            code: queryError.code,
-            message: queryError.message,
-            hint: queryError.hint
-          }
+      if (!supabaseBrowser) {
+        connectionTest = 'connection_failed'
+        error = {
+          code: 'CLIENT_UNAVAILABLE',
+          message: 'Supabase browser client not available',
+          hint: 'Check your Supabase configuration'
         }
       } else {
-        connectionTest = 'success'
+        const { data, error: queryError } = await supabaseBrowser
+          .from('task_history')
+          .select('count')
+          .limit(1)
+
+        if (queryError) {
+          if (queryError.code === 'PGRST116') {
+            connectionTest = 'tables_missing'
+            error = {
+              code: queryError.code,
+              message: 'Tables do not exist',
+              hint: 'Run the SQL schema to create required tables'
+            }
+          } else {
+            connectionTest = 'connection_failed'
+            error = {
+              code: queryError.code,
+              message: queryError.message,
+              hint: queryError.hint
+            }
+          }
+        } else {
+          connectionTest = 'success'
+        }
       }
     } catch (err) {
       connectionTest = 'connection_failed'
@@ -77,8 +94,8 @@ export async function GET() {
   }
 }
 
-function getRecommendations(connectionStatus: string, error: any) {
-  const recommendations = []
+function getRecommendations(connectionStatus: string, error: any): RecommendationResult[] {
+  const recommendations: RecommendationResult[] = []
 
   if (connectionStatus === 'tables_missing') {
     recommendations.push({

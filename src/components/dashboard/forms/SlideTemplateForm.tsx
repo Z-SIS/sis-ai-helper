@@ -14,7 +14,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { AgentInput, AgentOutput } from '@/shared/schemas';
+import { SlideTemplateAgentOutput } from '@/shared/schemas';
+
+type SlideTemplateFormInput = {
+  topic: string;
+  audience?: string;
+  purpose: 'informative' | 'persuasive' | 'educational' | 'update';
+  slideCount?: number;
+  keyPoints?: string[];
+};
 
 const formSchema = z.object({
   topic: z.string().min(1, 'Topic is required'),
@@ -25,10 +33,10 @@ const formSchema = z.object({
 });
 
 export function SlideTemplateForm() {
-  const [result, setResult] = useState<AgentOutput | null>(null);
+  const [result, setResult] = useState<SlideTemplateAgentOutput | null>(null);
   const [keyPointsInput, setKeyPointsInput] = useState('');
 
-  const form = useForm<AgentInput>({
+  const form = useForm<SlideTemplateFormInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       topic: '',
@@ -40,7 +48,7 @@ export function SlideTemplateForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: AgentInput) => {
+    mutationFn: async (data: SlideTemplateFormInput) => {
       const response = await fetch('/api/agent/slide-template', {
         method: 'POST',
         headers: {
@@ -61,14 +69,14 @@ export function SlideTemplateForm() {
         throw new Error(result.error || 'Failed to generate slide template');
       }
       
-      return result.data as AgentOutput;
+      return result.data as SlideTemplateAgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: AgentInput) => {
+  const onSubmit = (data: SlideTemplateFormInput) => {
     // Convert keyPointsInput to array if provided
     if (keyPointsInput.trim()) {
       data.keyPoints = keyPointsInput.split('\n').filter(point => point.trim());

@@ -1,7 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseBrowser, supabaseAdmin } from '@/lib/supabase'
 
-export async function GET() {
+// Define the interface for a single security check result
+interface SecurityCheckResult {
+  type: 'success' | 'warning' | 'error';
+  title: string;
+  description: string;
+}
+
+// Define the interface for the overall API response
+interface SupabaseCheckResponse {
+  status: 'success' | 'error';
+  config: {
+    hasUrl: boolean;
+    hasAnonKey: boolean;
+    hasServiceKey: boolean;
+    url?: string | null;
+  };
+  connection: {
+    status: string;
+    tablesExist: boolean;
+    tables: string[];
+  };
+  recommendations: SecurityCheckResult[];
+}
+
+export async function GET(): Promise<NextResponse<SupabaseCheckResponse | { status: 'error', message: string, config: { hasUrl: boolean, hasAnonKey: boolean, hasServiceKey: boolean } }>> {
   try {
     // Check environment variables
     const config = {
@@ -15,7 +39,7 @@ export async function GET() {
     // Test basic connection
     let connectionTest = 'not_configured'
     let tablesExist = false
-    let tables = []
+    let tables: string[] = []
 
     if (config.hasUrl && config.hasAnonKey && supabaseBrowser) {
       try {
@@ -78,8 +102,8 @@ export async function GET() {
   }
 }
 
-function getRecommendations(config: any, connectionStatus: string, tablesExist: boolean) {
-  const recommendations = []
+function getRecommendations(config: any, connectionStatus: string, tablesExist: boolean): SecurityCheckResult[] {
+  const recommendations: SecurityCheckResult[] = []
 
   if (!config.hasUrl) {
     recommendations.push({

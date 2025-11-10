@@ -4,11 +4,12 @@ import { vectorSearch } from '@/lib/rag/retrieval';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { documentId: string } }
+  { params }: { params: Promise<{ documentId: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('user_id');
+    const { documentId } = await params;
 
     if (!userId) {
       return NextResponse.json(
@@ -18,7 +19,7 @@ export async function GET(
     }
 
     // Get processing status
-    const status = await knowledgeIngestion.getProcessingStatus(params.documentId);
+    const status = await knowledgeIngestion.getProcessingStatus(documentId);
 
     return NextResponse.json({
       success: true,
@@ -39,11 +40,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { documentId: string } }
+  { params }: { params: Promise<{ documentId: string }> }
 ) {
   try {
     const body = await request.json();
     const { user_id, title, tags } = body;
+    const { documentId } = await params;
 
     if (!user_id) {
       return NextResponse.json(
@@ -54,7 +56,7 @@ export async function PUT(
 
     // Update document
     const success = await knowledgeIngestion.updateDocument(
-      params.documentId,
+      documentId,
       user_id,
       { title, tags }
     );
@@ -85,11 +87,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { documentId: string } }
+  { params }: { params: Promise<{ documentId: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('user_id');
+    const { documentId } = await params;
 
     if (!userId) {
       return NextResponse.json(
@@ -100,7 +103,7 @@ export async function DELETE(
 
     // Delete document
     const success = await knowledgeIngestion.deleteDocument(
-      params.documentId,
+      documentId,
       userId
     );
 

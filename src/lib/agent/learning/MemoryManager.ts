@@ -73,12 +73,13 @@ export class MemoryManager {
   }
 
   // Memory Management
-  async addMemory(memory: Omit<Memory, 'id' | 'createdAt' | 'lastAccessed'>): Promise<string> {
+  async addMemory(memory: Omit<Memory, 'id' | 'createdAt' | 'lastAccessed'> & Partial<Pick<Memory, 'accessCount'>>): Promise<string> {
     const newMemory: Memory = {
       ...memory,
       id: crypto.randomUUID(),
       createdAt: new Date(),
-      lastAccessed: new Date()
+      lastAccessed: new Date(),
+      accessCount: (memory as any).accessCount ?? 0
     };
 
     this.memories.set(newMemory.id, newMemory);
@@ -217,7 +218,7 @@ export class MemoryManager {
     for (const [pattern, frequency] of Object.entries(patterns)) {
       if (frequency >= 3) { // Only consider patterns that appear at least 3 times
         const existingPattern = Array.from(this.patterns.values())
-          .find(p => p.pattern === pattern && p.appliesTo?.includes(agentId));
+          .find((p: any) => p.pattern === pattern && (p.appliesTo || []).includes(agentId));
 
         const successRate = this.calculatePatternSuccessRate(pattern, tasks);
         
@@ -273,6 +274,7 @@ export class MemoryManager {
             createdAt: new Date(),
             source: 'task_analysis'
           }
+        , accessCount: 0
         });
       }
     }
@@ -348,7 +350,8 @@ export class MemoryManager {
         metadata: {
           successRate: procedure.successRate,
           usageCount: procedure.frequency
-        }
+        },
+        accessCount: 0
       });
     }
   }
@@ -361,7 +364,8 @@ export class MemoryManager {
     // Move important short-term memories to long-term
     const shortTermMemories = await this.queryMemories({
       type: 'short_term',
-      importance: 0.7
+      importance: 0.7,
+      includeExpired: false
     });
 
     for (const memory of shortTermMemories) {

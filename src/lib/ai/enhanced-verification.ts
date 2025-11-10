@@ -301,7 +301,8 @@ export class EnhancedVerificationSystem {
     criticalIssues: string[];
     requiredHumanReview: boolean;
   } {
-    const criticalFieldsForAgent = CRITICAL_FIELDS[agentType as keyof typeof CRITICAL_FIELDS] || [];
+  // CRITICAL_FIELDS is a global list of required critical fields across agents
+  const criticalFieldsForAgent = CRITICAL_FIELDS || [];
     const criticalIssues: string[] = [];
     let allCriticalValid = true;
 
@@ -419,7 +420,7 @@ Provide exact evidence quotes and assess confidence levels.
   }
 
   private isCriticalField(fieldName: string): boolean {
-    return Object.values(CRITICAL_FIELDS).flat().includes(fieldName);
+    return (CRITICAL_FIELDS || []).includes(fieldName);
   }
 }
 

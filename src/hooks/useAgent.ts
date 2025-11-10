@@ -155,7 +155,7 @@ export function useAgent(userId?: string): UseAgentReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiCall, refreshAgents]);
+  }, [apiCall]);
 
   // Delete Agent
   const deleteAgent = useCallback(async (agentId: string) => {

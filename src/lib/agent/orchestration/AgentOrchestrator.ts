@@ -312,7 +312,8 @@ export class AgentOrchestrator {
       name: 'companyResearch',
       description: 'Research a company and gather comprehensive information',
       parameters: { companyName: 'string' },
-      execute: async (params: { companyName: string }) => {
+      execute: async (...args: unknown[]) => {
+        const params = (args[0] as any) || {};
         const research = await this.ragSystem.researchCompany(params.companyName);
         return JSON.stringify(research, null, 2);
       }
@@ -323,7 +324,8 @@ export class AgentOrchestrator {
       name: 'getTaskHistory',
       description: 'Retrieve task history for the current user',
       parameters: { limit: 'number' },
-      execute: async (params: { limit?: number }) => {
+      execute: async (...args: unknown[]) => {
+        const params = (args[0] as any) || {};
         const agentState = agent.getState();
         const history = await this.taskHistory.getRecentTasks(agentState.userId, params.limit || 10);
         return JSON.stringify(history, null, 2);
@@ -335,10 +337,11 @@ export class AgentOrchestrator {
       name: 'searchMemory',
       description: 'Search through agent memory for relevant information',
       parameters: { query: 'string' },
-      execute: async (params: { query: string }) => {
+      execute: async (...args: unknown[]) => {
+        const params = (args[0] as any) || {};
         const memories = agent.getMemory('shortTerm');
         const relevantMemories = memories.filter(memory => 
-          JSON.stringify(memory).toLowerCase().includes(params.query.toLowerCase())
+          JSON.stringify(memory).toLowerCase().includes((params.query || '').toLowerCase())
         );
         return JSON.stringify(relevantMemories, null, 2);
       }
@@ -349,8 +352,9 @@ export class AgentOrchestrator {
       name: 'updateContext',
       description: 'Update the current conversation context',
       parameters: { context: 'object' },
-      execute: async (params: { context: Record<string, any> }) => {
-        agent.updateContext(params.context);
+      execute: async (...args: unknown[]) => {
+        const params = (args[0] as any) || {};
+        agent.updateContext(params.context || {});
         return 'Context updated successfully';
       }
     });
@@ -374,7 +378,7 @@ export class AgentOrchestrator {
 
     return {
       agentId,
-      status: state.status,
+      status: (state.status as any),
       currentTask: state.currentTask,
       uptime: Date.now() - (state.metadata.startTime || Date.now()),
       tasksProcessed: agentTasks.length,

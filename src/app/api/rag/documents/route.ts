@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       limit,
       offset,
       tags,
-      search
+      search: search || undefined
     });
 
     return NextResponse.json({

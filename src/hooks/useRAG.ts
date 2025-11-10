@@ -197,7 +197,7 @@ export function useRAG(userId?: string): UseRAGReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiCall, refreshDocuments]);
+  }, [apiCall]);
 
   // Create document from text
   const createDocument = useCallback(async (
@@ -239,7 +239,7 @@ export function useRAG(userId?: string): UseRAGReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiCall, refreshDocuments]);
+  }, [apiCall]);
 
   // Update document
   const updateDocument = useCallback(async (
@@ -276,7 +276,7 @@ export function useRAG(userId?: string): UseRAGReturn {
     } finally {
       setLoading(false);
     }
-  }, [apiCall, refreshDocuments]);
+  }, [apiCall]);
 
   // Delete document
   const deleteDocument = useCallback(async (documentId: string, userId: string) => {

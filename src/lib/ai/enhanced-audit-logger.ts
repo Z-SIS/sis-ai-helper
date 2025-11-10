@@ -546,44 +546,44 @@ export class EnhancedAuditLogger {
         processingTime: params.validationTime
       },
       
-      grounding: {
-        enabled: !!params.groundingResult,
-        sources: params.groundingResult?.sources.map(source => ({
-          id: source.id,
-          title: source.title,
-          content: source.content,
-          url: source.url,
-          relevanceScore: source.relevanceScore,
-          reliability: source.reliability,
-          category: source.category
-        })) || [],
-        sourceCount: params.groundingResult?.sources.length || 0,
-        averageRelevance: params.groundingResult?.totalRelevanceScore || 0,
-        hasHighQualitySources: params.groundingResult?.hasHighQualitySources || false,
-        groundingTime: params.groundingTime || 0
-      },
-      
-      verification: params.verificationResult ? {
-        passed: params.verificationResult.overallAssessment.overallConfidence >= this.config.confidenceThreshold,
-        confidence: params.verificationResult.overallAssessment.overallConfidence,
-        discrepancies: params.verificationResult.overallAssessment.criticalIssues,
-        verificationTime: params.verificationTime || 0,
-        evidenceJustifications: params.verificationResult.evidenceJustifications.map(justification => ({
-          fieldName: justification.fieldName,
-          evidence: {
-            directQuote: justification.evidence.directQuote,
-            sourceId: justification.evidence.sourceId,
-            reliabilityScore: justification.evidence.reliabilityScore
+          grounding: {
+            enabled: !!params.groundingResult,
+            sources: (params.groundingResult?.sources || []).map(source => ({
+              id: source.id,
+              title: source.title,
+              content: source.content,
+              url: source.url,
+              relevanceScore: source.relevanceScore,
+              reliability: source.reliability,
+              category: source.category
+            })),
+            sourceCount: params.groundingResult?.sources?.length || 0,
+            averageRelevance: params.groundingResult?.totalRelevanceScore || 0,
+            hasHighQualitySources: params.groundingResult?.hasHighQualitySources || false,
+            groundingTime: params.groundingTime || 0
           },
-          confidence: justification.confidence,
-          verificationStatus: justification.verificationStatus
-        })),
-        criticalFieldValidation: {
-          criticalFieldsValid: params.verificationResult.overallAssessment.criticalIssues.length === 0,
-          criticalIssues: params.verificationResult.overallAssessment.criticalIssues,
-          requiredHumanReview: params.verificationResult.overallAssessment.requiresHumanReview
-        }
-      } : undefined,
+      
+          verification: params.verificationResult ? {
+      passed: (params.verificationResult.overallAssessment?.overallConfidence || 0) >= (this.config.confidenceThreshold ?? 0),
+      confidence: params.verificationResult.overallAssessment?.overallConfidence || 0,
+            discrepancies: params.verificationResult.overallAssessment?.criticalIssues || [],
+            verificationTime: params.verificationTime || 0,
+            evidenceJustifications: (params.verificationResult.evidenceJustifications || []).map(justification => ({
+              fieldName: justification.fieldName,
+              evidence: {
+                directQuote: justification.evidence?.directQuote || '',
+                sourceId: justification.evidence?.sourceId || '',
+                reliabilityScore: justification.evidence?.reliabilityScore || 0
+              },
+              confidence: justification.confidence || 0,
+              verificationStatus: justification.verificationStatus || ''
+            })),
+            criticalFieldValidation: {
+              criticalFieldsValid: (params.verificationResult.overallAssessment?.criticalIssues || []).length === 0,
+              criticalIssues: params.verificationResult.overallAssessment?.criticalIssues || [],
+              requiredHumanReview: params.verificationResult.overallAssessment?.requiresHumanReview || false
+            }
+          } : undefined,
       
       consensusValidation: params.consensusResult ? {
         enabled: true,
@@ -611,7 +611,7 @@ export class EnhancedAuditLogger {
         passedSafetyChecks: !this.hasFlaggedContent(params.rawOutput),
         flaggedContent: this.detectFlaggedContent(params.rawOutput),
         dataPrivacyCompliant: this.checkDataPrivacy(params.input, params.rawOutput),
-        requiresHumanReview: params.validation.needsReview || (params.validation.confidence < this.config.confidenceThreshold),
+  requiresHumanReview: (params.validation as any).needsReview || (params.validation.confidence < (this.config.confidenceThreshold ?? 0)),
         criticalFieldsReviewed: !params.verificationResult || params.verificationResult.overallAssessment.criticalIssues.length === 0,
         antiHallucinationCompliant: !this.detectHallucinations(params.rawOutput, params.groundingResult)
       },
@@ -745,5 +745,4 @@ export function createEnhancedAuditLogger(config: DeterministicConfig): Enhanced
   return new EnhancedAuditLogger(storage, config);
 }
 
-// Export for potential database integration
-export { EnhancedInMemoryAuditStorage };
+// Note: EnhancedInMemoryAuditStorage is exported via its declaration above; no extra re-export needed.

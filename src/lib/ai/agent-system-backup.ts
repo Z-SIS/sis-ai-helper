@@ -372,297 +372,6 @@ class OptimizedAgentSystem {
     this.tokenUsage.byAgent[agentType] = (this.tokenUsage.byAgent[agentType] || 0) + tokens;
   }
   
-  private parseAIResponse(aiResponse: string, agentType: AgentType): AgentOutput {
-    try {
-      // For different agent types, parse the response appropriately
-      switch (agentType) {
-        case 'generate-sop':
-          return this.parseSOPResponse(aiResponse);
-        case 'company-research':
-          return this.parseCompanyResearchResponse(aiResponse);
-        case 'compose-email':
-          return this.parseEmailResponse(aiResponse);
-        case 'excel-helper':
-          return this.parseExcelHelperResponse(aiResponse);
-        case 'feasibility-check':
-          return this.parseFeasibilityCheckResponse(aiResponse);
-        case 'deployment-plan':
-          return this.parseDeploymentPlanResponse(aiResponse);
-        case 'usps-battlecard':
-          return this.parseUspsBattlecardResponse(aiResponse);
-        case 'disbandment-plan':
-          return this.parseDisbandmentPlanResponse(aiResponse);
-        case 'slide-template':
-          return this.parseSlideTemplateResponse(aiResponse);
-        default:
-          throw new Error(`Unknown agent type: ${agentType}`);
-      }
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError);
-      // Return a basic response structure
-      return {
-        title: 'Generated Response',
-        content: aiResponse,
-        summary: 'AI response generated successfully'
-      } as AgentOutput;
-    }
-  }
-  
-  private parseSOPResponse(response: string): AgentOutput {
-    // Generate a proper SOP structure from the AI response
-    const lines = response.split('\n').filter(line => line.trim());
-    const currentDate = new Date().toISOString().split('T')[0];
-    
-    return {
-      title: 'Standard Operating Procedure',
-      version: '1.0',
-      date: currentDate,
-      purpose: lines[0] || 'Standard Operating Procedure',
-      scope: lines[1] || 'Applicable to all relevant processes',
-      responsibilities: [
-        'Process Owner: Overall responsibility for SOP implementation',
-        'Quality Team: Ensure compliance and regular updates',
-        'Staff Members: Follow procedures as outlined'
-      ],
-      procedure: [
-        {
-          step: 1,
-          action: 'Preparation',
-          details: lines[2] || 'Prepare necessary resources and documentation',
-          owner: 'Process Owner'
-        },
-        {
-          step: 2,
-          action: 'Execution',
-          details: lines[3] || 'Execute the process according to guidelines',
-          owner: 'Staff Members'
-        },
-        {
-          step: 3,
-          action: 'Review',
-          details: lines[4] || 'Review and document outcomes',
-          owner: 'Quality Team'
-        }
-      ],
-      references: ['Internal guidelines', 'Industry standards']
-    } as AgentOutput;
-  }
-  
-  private parseCompanyResearchResponse(response: string): AgentOutput {
-    // Generate a proper company research structure
-    const lines = response.split('\n').filter(line => line.trim());
-    const currentDate = new Date().toISOString().split('T')[0];
-    
-    return {
-      companyName: 'Company Name',
-      industry: 'Technology',
-      location: 'Global',
-      description: lines[0] || 'Company information based on available data',
-      website: 'https://example.com',
-      foundedYear: 2010,
-      employeeCount: '1000-5000',
-      revenue: '$100M-$500M',
-      keyExecutives: [
-        { name: 'CEO Name', title: 'Chief Executive Officer' },
-        { name: 'CTO Name', title: 'Chief Technology Officer' }
-      ],
-      competitors: ['Competitor A', 'Competitor B'],
-      recentNews: [
-        { title: 'Recent Development', summary: 'Company news summary', date: currentDate }
-      ],
-      lastUpdated: currentDate
-    } as AgentOutput;
-  }
-  
-  private parseEmailResponse(response: string): AgentOutput {
-    const lines = response.split('\n').filter(line => line.trim());
-    
-    return {
-      subject: lines[0] || 'Generated Email Subject',
-      body: response,
-      tone: 'professional',
-      wordCount: response.split(' ').length,
-      suggestedImprovements: ['Consider adding personalization', 'Review for clarity']
-    } as AgentOutput;
-  }
-  
-  private parseExcelHelperResponse(response: string): AgentOutput {
-    const lines = response.split('\n').filter(line => line.trim());
-    
-    return {
-      answer: lines[0] || 'Excel solution provided',
-      formula: lines[1] || '=FORMULA()',
-      steps: ['Step 1: ' + (lines[2] || 'Select the data range'), 'Step 2: ' + (lines[3] || 'Apply the formula')],
-      alternativeSolutions: ['Alternative method: Use built-in functions', 'Manual calculation option'],
-      tips: ['Always backup your data', 'Test formulas on sample data first']
-    } as AgentOutput;
-  }
-  
-  private parseFeasibilityCheckResponse(response: string): AgentOutput {
-    const lines = response.split('\n').filter(line => line.trim());
-    
-    return {
-      projectName: 'Project Feasibility Analysis',
-      overallFeasibility: 'medium',
-      score: 75,
-      technicalFeasibility: {
-        rating: 'high',
-        details: lines[0] || 'Technical requirements are achievable with current resources'
-      },
-      financialFeasibility: {
-        rating: 'medium',
-        details: lines[1] || 'Budget considerations require careful planning'
-      },
-      resourceFeasibility: {
-        rating: 'medium',
-        details: lines[2] || 'Resource allocation needs optimization'
-      },
-      risks: [
-        { risk: 'Timeline delays', impact: 'medium', mitigation: 'Buffer time allocation' },
-        { risk: 'Budget overruns', impact: 'high', mitigation: 'Regular cost reviews' }
-      ],
-      recommendations: [
-        'Proceed with pilot implementation',
-        'Secure additional funding sources',
-        'Develop risk mitigation strategies'
-      ]
-    } as AgentOutput;
-  }
-  
-  private parseDeploymentPlanResponse(response: string): AgentOutput {
-    const lines = response.split('\n').filter(line => line.trim());
-    
-    return {
-      projectName: 'Deployment Plan',
-      deploymentStrategy: lines[0] || 'Phased deployment approach',
-      phases: [
-        {
-          phase: 1,
-          name: 'Preparation',
-          description: lines[1] || 'Environment setup and preparation',
-          duration: '1-2 weeks',
-          tasks: ['Environment configuration', 'Resource allocation', 'Team briefing'],
-          dependencies: [],
-          rollbackPlan: 'Restore previous configuration'
-        },
-        {
-          phase: 2,
-          name: 'Implementation',
-          description: lines[2] || 'Deploy core functionality',
-          duration: '2-3 weeks',
-          tasks: ['Core deployment', 'Testing', 'Documentation'],
-          dependencies: ['Phase 1 completion'],
-          rollbackPlan: 'Revert to stable version'
-        }
-      ],
-      prerequisites: ['Environment ready', 'Team trained', 'Backup completed'],
-      successCriteria: ['All tests pass', 'Performance benchmarks met', 'User acceptance'],
-      monitoring: ['System performance', 'Error rates', 'User feedback'],
-      communicationPlan: 'Regular status updates to stakeholders'
-    } as AgentOutput;
-  }
-  
-  private parseUspsBattlecardResponse(response: string): AgentOutput {
-    const lines = response.split('\n').filter(line => line.trim());
-    
-    return {
-      companyName: 'Our Company',
-      competitor: 'Competitor',
-      productCategory: 'Software Solutions',
-      overview: {
-        ourPositioning: lines[0] || 'Premium quality with excellent support',
-        competitorPositioning: lines[1] || 'Budget-friendly with basic features'
-      },
-      strengths: {
-        ours: ['Superior technology', 'Better customer support', 'Proven track record'],
-        competitor: ['Lower pricing', 'Market presence', 'Brand recognition']
-      },
-      weaknesses: {
-        ours: ['Higher pricing', 'Limited marketing budget'],
-        competitor: ['Limited features', 'Poor customer support']
-      },
-      keyDifferentiators: ['Advanced technology', 'Superior support', 'Customization options'],
-      talkingPoints: ['We offer better ROI', 'Our support team is available 24/7', 'Proven success stories'],
-      competitiveAdvantages: ['Technology leadership', 'Customer satisfaction', 'Innovation'],
-      recommendedActions: ['Highlight technology advantages', 'Emphasize support quality', 'Provide case studies']
-    } as AgentOutput;
-  }
-  
-  private parseDisbandmentPlanResponse(response: string): AgentOutput {
-    const lines = response.split('\n').filter(line => line.trim());
-    const currentDate = new Date().toISOString().split('T')[0];
-    
-    return {
-      projectName: 'Project Disbandment Plan',
-      reason: lines[0] || 'Project completion and resource reallocation',
-      disbandmentDate: currentDate,
-      phases: [
-        {
-          phase: 1,
-          name: 'Notification',
-          description: lines[1] || 'Inform all stakeholders',
-          duration: '1 week',
-          tasks: ['Send notifications', 'Schedule meetings', 'Document decisions'],
-          responsible: 'Project Manager'
-        },
-        {
-          phase: 2,
-          name: 'Knowledge Transfer',
-          description: lines[2] || 'Transfer knowledge and documentation',
-          duration: '2 weeks',
-          tasks: ['Document processes', 'Train recipients', 'Archive materials'],
-          responsible: 'Team Lead'
-        }
-      ],
-      assetDistribution: [
-        { asset: 'Documentation', disposition: 'Archive in company repository', responsible: 'Knowledge Manager' },
-        { asset: 'Equipment', disposition: 'Redistribute to other projects', responsible: 'Operations Manager' }
-      ],
-      knowledgeTransfer: [
-        { knowledgeArea: 'Technical knowledge', recipient: 'Engineering team', method: 'Workshops', deadline: currentDate },
-        { knowledgeArea: 'Process knowledge', recipient: 'Operations team', method: 'Documentation', deadline: currentDate }
-      ],
-      legalConsiderations: ['Contract termination', 'Data retention policies', 'Compliance requirements'],
-      communicationPlan: 'Regular updates to all stakeholders throughout the process',
-      finalChecklist: ['All assets distributed', 'Knowledge transferred', 'Legal requirements met', 'Stakeholders notified']
-    } as AgentOutput;
-  }
-  
-  private parseSlideTemplateResponse(response: string): AgentOutput {
-    const lines = response.split('\n').filter(line => line.trim());
-    
-    return {
-      title: lines[0] || 'Presentation Title',
-      subtitle: lines[1] || 'Professional presentation template',
-      audience: 'Target Audience',
-      purpose: 'informative',
-      slides: [
-        {
-          slideNumber: 1,
-          title: 'Introduction',
-          content: ['Welcome and overview', 'Agenda', 'Objectives'],
-          speakerNotes: 'Set the tone and expectations',
-          visualSuggestions: 'Company logo and clean background'
-        },
-        {
-          slideNumber: 2,
-          title: 'Main Content',
-          content: [lines[2] || 'Key point 1', lines[3] || 'Key point 2', lines[4] || 'Key point 3'],
-          speakerNotes: 'Elaborate on each point with examples',
-          visualSuggestions: 'Charts and diagrams to illustrate concepts'
-        },
-        {
-          slideNumber: 3,
-          title: 'Conclusion',
-          content: ['Summary', 'Next steps', 'Q&A'],
-          speakerNotes: 'Recap key messages and call to action',
-          visualSuggestions: 'Contact information and thank you slide'
-        }
-      ],
-      presentationTips: ['Practice timing', 'Engage with audience', 'Use visual aids effectively', 'Be prepared for questions'],
-      estimatedDuration: '15-20 minutes'
-    } as AgentOutput;
-  }
   
   private getSchemaForAgent(agentType: AgentType) {
     const schemas = {
@@ -699,7 +408,7 @@ class OptimizedAgentSystem {
           dataConfidence: 0.3,
           unverifiedFields: ['all'],
           ...baseResponse,
-        } as AgentOutput;
+  } as any as AgentOutput;
         
       case 'generate-sop':
         return {
@@ -711,7 +420,7 @@ class OptimizedAgentSystem {
           procedures: [],
           implementationConfidence: 0.3,
           ...baseResponse,
-        } as AgentOutput;
+  } as any as AgentOutput;
         
       default:
         return {
@@ -719,7 +428,7 @@ class OptimizedAgentSystem {
           content: rawResponse.slice(0, 1000),
           summary: 'Response generated with validation issues',
           ...baseResponse,
-        } as AgentOutput;
+  } as any as AgentOutput;
     }
   }
   
@@ -760,7 +469,7 @@ class OptimizedAgentSystem {
           ],
           lastUpdated: new Date().toISOString().split('T')[0],
           ...baseResponse,
-        } as AgentOutput;
+    } as any as AgentOutput;
         
       case 'generate-sop':
         const sopInput = input as any;
@@ -814,7 +523,7 @@ class OptimizedAgentSystem {
           complianceNotes: ['Ensure all regulatory requirements are met', 'Document any deviations'],
           implementationConfidence: 0.8,
           ...baseResponse,
-        } as AgentOutput;
+    } as any as AgentOutput;
         
       case 'compose-email':
         const emailInput = input as any;
@@ -836,7 +545,7 @@ Best regards,
           expectedResponse: '2-3 business days',
           professionalismScore: 0.9,
           ...baseResponse,
-        } as AgentOutput;
+    } as any as AgentOutput;
         
       case 'excel-helper':
         const excelInput = input as any;
@@ -855,7 +564,7 @@ Best regards,
           excelVersion: excelInput.excelVersion || 'Excel 365',
           technicalAccuracy: 0.9,
           ...baseResponse,
-        } as AgentOutput;
+    } as any as AgentOutput;
         
       case 'feasibility-check':
         const feasibilityInput = input as any;
@@ -887,7 +596,7 @@ Best regards,
             'Create contingency plans'
           ],
           ...baseResponse,
-        } as AgentOutput;
+    } as any as AgentOutput;
         
       case 'deployment-plan':
         const deploymentInput = input as any;
@@ -928,7 +637,7 @@ Best regards,
           monitoring: ['System performance metrics', 'Error rates', 'User feedback', 'Security monitoring'],
           communicationPlan: 'Regular status updates to stakeholders through deployment lifecycle',
           ...baseResponse,
-        } as AgentOutput;
+    } as any as AgentOutput;
         
       case 'usps-battlecard':
         const battlecardInput = input as any;
@@ -953,7 +662,7 @@ Best regards,
           competitiveAdvantages: ['Technology leadership', 'Customer satisfaction rate of 95%', 'Faster implementation', 'Better long-term value'],
           recommendedActions: ['Highlight technology advantages in sales calls', 'Emphasize support quality and response times', 'Provide case studies and testimonials', 'Offer competitive proof-of-concept'],
           ...baseResponse,
-        } as AgentOutput;
+    } as any as AgentOutput;
         
       case 'disbandment-plan':
         const disbandmentInput = input as any;
@@ -1002,7 +711,7 @@ Best regards,
           communicationPlan: 'Regular updates to all stakeholders throughout the disbandment process',
           finalChecklist: ['All assets distributed', 'Knowledge transferred', 'Legal requirements met', 'Stakeholders notified', 'Documentation archived'],
           ...baseResponse,
-        } as AgentOutput;
+    } as any as AgentOutput;
         
       case 'slide-template':
         const slideInput = input as any;
@@ -1077,7 +786,7 @@ Best regards,
           ],
           estimatedDuration: slideInput.slideCount ? `${slideInput.slideCount * 2}-${slideInput.slideCount * 3} minutes` : '15-20 minutes',
           ...baseResponse,
-        } as AgentOutput;
+    } as any as AgentOutput;
         
       default:
         return {
@@ -1085,220 +794,145 @@ Best regards,
           content: 'This is a demonstration response while AI services are initializing. The full AI functionality will be available shortly.',
           summary: 'Demo response - AI services starting up',
           ...baseResponse,
-        } as AgentOutput;
+        } as any as AgentOutput;
     }
   }
   
-  private async executeAgent<T extends AgentOutput>(
+  private parseAIResponse(text: string, agentType: AgentType): any {
+    try {
+      // Try to parse as JSON first
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      
+      // If no JSON found, try to extract structured data based on agent type
+      switch (agentType) {
+        case 'company-research':
+          // Extract company information from text
+          return {
+            companyName: 'Extracted from response',
+            description: text.slice(0, 500),
+            industry: 'Unknown',
+            location: 'Unknown',
+            dataConfidence: 0.5,
+            unverifiedFields: ['all'],
+            lastUpdated: new Date().toISOString().split('T')[0],
+          };
+          
+        case 'generate-sop':
+          return {
+            title: 'Generated SOP',
+            version: '1.0',
+            purpose: 'Standard Operating Procedure',
+            scope: 'General',
+            responsibilities: [],
+            procedures: [],
+            implementationConfidence: 0.5,
+          };
+          
+        default:
+          return {
+            title: 'Generated Response',
+            content: text.slice(0, 1000),
+            summary: 'Response generated from AI output',
+          };
+      }
+    } catch (error) {
+      console.error('Error parsing AI response:', error);
+      // Return a basic fallback structure
+      return {
+        title: 'Parsed Response',
+        content: text.slice(0, 1000),
+        summary: 'Response parsed with fallback method',
+        success: false,
+        confidence: 0.3,
+        needsReview: true,
+      };
+    }
+  }
+  
+  private async executeAgent(
     agentType: AgentType,
     input: AgentInput,
     useCache: boolean = true
-  ): Promise<T> {
+  ): Promise<AgentOutput> {
     console.log(`Executing agent: ${agentType}`, { input, useCache });
-    
-    // Check if we have Google AI API key available (priority)
+
+    // Build config and prompt
+    const config = (PROMPT_TEMPLATES as any)[agentType] || { maxTokens: TOKEN_CONFIG.maxTokens.simple, temperature: TOKEN_CONFIG.temperature.balanced, system: '', template: () => '' };
+    const promptTemplate = (config.template as Function) || (() => '');
+    const fullPrompt = `${config.system || ''}\n\n${promptTemplate(input)}`;
+    const cacheKey = this.generateCacheKey(agentType as string, input);
+
+    // Try cache
+    if (useCache) {
+      const cached = agentCache.get(cacheKey);
+      if (cached) {
+        console.log(`Cache hit for ${agentType}`);
+        return cached as AgentOutput;
+      }
+    }
+
+    // Helper to validate, cache and return
+    const finalize = (data: unknown) => {
+      const schema = this.getSchemaForAgent(agentType);
+      const validated = validateAgentResponse(schema as any, data);
+  agentCache.set(cacheKey, validated as any as AgentOutput);
+  return validated as any as AgentOutput;
+    };
+
+    // Try Google Generative AI
     const googleApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (googleApiKey) {
-      console.log('Using Google AI for AI generation');
-      
       try {
-        // Import Google AI SDK
         const { GoogleGenerativeAI } = await import('@google/generative-ai');
-        
-        // Initialize Google AI
         const genAI = new GoogleGenerativeAI(googleApiKey);
-        const model = genAI.getGenerativeModel({ 
+        const model = genAI.getGenerativeModel({
           model: 'gemini-1.5-flash',
           generationConfig: {
             maxOutputTokens: config.maxTokens,
             temperature: config.temperature,
           }
         });
-        
-        console.log('Google AI client created successfully');
-        console.log('Sending request to Google AI...', { 
-          agentType, 
-          promptLength: fullPrompt.length, 
-          maxTokens: config.maxTokens 
-        });
-        
-        // Generate content with Google AI
+
         const result = await model.generateContent(fullPrompt);
         const response = result.response;
         const text = response.text();
-        
-        console.log('Google AI response received successfully');
-        
-        if (!text) {
-          throw new Error('No response received from Google AI');
-        }
-        
-        console.log('Raw AI response received, parsing JSON...');
-        console.log('Raw AI response:', text);
-        
-        // Parse the response
-        const parsedResponse = this.parseAIResponse(text);
-        console.log('Response parsed successfully');
-        
-        // Validate the response
-        const validatedResponse = this.validateAgentResponse(agentType, parsedResponse);
-        console.log('Response validated successfully:', {
-          agentType,
-          confidence: validatedResponse.confidence,
-          needsReview: validatedResponse.needsReview
-        });
-        
-        // Cache the result
-        agentCache.set(cacheKey, validatedResponse);
-        
-        return validatedResponse;
-        
-      } catch (googleError) {
-        console.error('Google AI generation error:', googleError);
-        // For any Google AI error, fall back to mock response to ensure functionality
-        console.log('Google AI error detected, returning mock response for:', agentType);
-        const mockResponse = this.createMockResponse(agentType, input);
-        return mockResponse;
+        if (!text) throw new Error('No response received from Google AI');
+
+        const parsed = this.parseAIResponse(text, agentType);
+        return finalize(parsed);
+      } catch (err) {
+        console.error('Google AI generation error:', err);
+        return this.createMockResponse(agentType, input);
       }
     }
-    
-    // Check if ZAI SDK is available as fallback
+
+    // Try ZAI
     if (process.env.ZAI_API_KEY) {
-      console.log('ZAI SDK available, using ZAI for AI generation');
-      
-      // Use compatibility layer to get ZAI instance
-      let zai;
       try {
-        zai = await getZAI();
-        console.log('ZAI client created via compatibility layer');
-      } catch (error) {
-        console.error('ZAI initialization failed:', error);
-        // Fall back to mock response instead of throwing error
-        console.log('ZAI initialization failed, using mock response for:', agentType);
-        const mockResponse = this.createMockResponse(agentType, input);
-        return mockResponse;
+        const zai = await getZAI();
+        const completion = await zai.chat.completions.create({
+          messages: [{ role: 'user', content: fullPrompt }],
+          max_tokens: config.maxTokens,
+          temperature: config.temperature,
+        });
+        const text = completion.choices?.[0]?.message?.content;
+        if (!text) throw new Error('No response received from ZAI');
+        const parsed = this.parseAIResponse(text, agentType);
+        return finalize(parsed);
+      } catch (err) {
+        console.error('ZAI generation error:', err);
+        return this.createMockResponse(agentType, input);
       }
-      
-      console.log('ZAI client created successfully');
-      
-      console.log('Sending request to ZAI...', { 
-        agentType, 
-        promptLength: fullPrompt.length, 
-        maxTokens: config.maxTokens 
-      });
-      
-      // Generate completion with ZAI
-      const completion = await zai.chat.completions.create({
-        messages: [
-          {
-            role: 'user',
-            content: fullPrompt
-          }
-        ],
-        max_tokens: config.maxTokens,
-        temperature: config.temperature,
-      });
-      
-      console.log('ZAI response received successfully');
-      
-      // Extract the content from ZAI response
-      const text = completion.choices[0]?.message?.content;
-      if (!text) {
-        throw new Error('No response received from ZAI');
-      }
-      
-      console.log('Raw AI response received, parsing JSON...');
-      console.log('Raw AI response:', text);
-      
-      // Parse the response
-      const parsedResponse = this.parseAIResponse(text);
-      console.log('Response parsed successfully');
-      
-      // Validate the response
-      const validatedResponse = this.validateAgentResponse(agentType, parsedResponse);
-      console.log('Response validated successfully:', {
-        agentType,
-        confidence: validatedResponse.confidence,
-        needsReview: validatedResponse.needsReview
-      });
-      
-      // Cache the result
-      agentCache.set(cacheKey, validatedResponse);
-      
-      return validatedResponse;
     }
-    
-    // No AI service available, use mock response
+
+    // Fallback to mock
     console.log('No AI service configured, using mock response for:', agentType);
-    const mockResponse = this.createMockResponse(agentType, input);
-    return mockResponse;
+    return this.createMockResponse(agentType, input);
   }
 
-  // Special handler for company research with database caching
-  private async handleCompanyResearch(input: AgentInput): Promise<AgentOutput> {
-    const { companyName, industry, location } = input as any;
-    
-    // Try to use the database cache first
-    try {
-      const isStale = await db.isCompanyResearchCacheStale(companyName);
-      if (!isStale) {
-        const cachedData = await db.getCompanyResearchCache(companyName);
-        if (cachedData) {
-          console.log(`Database cache hit for company: ${companyName}`);
-          return cachedData.research_data;
-        }
-      }
-    } catch (error) {
-      console.warn('Database cache check failed, proceeding with mock response:', error);
-    }
-    
-    // Try to execute with optimized prompt, but fall back to mock response
-    try {
-      const result = await this.executeAgent('company-research', input);
-      
-      // Validate against schema
-      let validatedResponse;
-      try {
-        const schema = this.getSchemaForAgent(agentType);
-        validatedResponse = validateAgentResponse(schema, parsedResponse);
-      } catch (validationError) {
-        console.error('Schema validation failed:', validationError);
-        // Return a safe fallback response
-        validatedResponse = this.createFallbackResponse(agentType, aiResponse, validationError instanceof Error ? validationError.message : 'Unknown error');
-      }
-      
-      console.log('Response validated successfully:', { 
-        agentType, 
-        confidence: validatedResponse.confidence,
-        needsReview: validatedResponse.needsReview 
-      });
-      
-      result = {
-        object: validatedResponse
-      };
-      
-    } catch (zaiError) {
-      console.error('ZAI generation error:', zaiError);
-      
-      // For any ZAI error, fall back to mock response to ensure functionality
-      console.log('ZAI error detected, returning mock response for:', agentType);
-      const mockResponse = this.createMockResponse(agentType, input);
-      return mockResponse;
-    }
-    
-    const output = result.object as T;
-    
-    // Track output tokens
-    const outputTokens = Math.ceil(JSON.stringify(output).length / 4);
-    this.trackTokenUsage(agentType, outputTokens);
-    
-    // Cache the result
-    if (useCache) {
-      agentCache.set(cacheKey, output, 30); // 30 minutes cache
-    }
-    
-    return output;
-  }
   
   // Special handler for company research with database caching
   private async handleCompanyResearch(input: AgentInput): Promise<AgentOutput> {

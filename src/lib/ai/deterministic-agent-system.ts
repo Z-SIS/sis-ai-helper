@@ -14,6 +14,7 @@ import {
   DEFAULT_DETERMINISTIC_CONFIG,
   type DeterministicConfig 
 } from './deterministic-config';
+import { type AuditLogEntry } from './types/audit-types';
 import { 
   createDeterministicValidator, 
   createOutputVerifier,
@@ -26,7 +27,7 @@ import {
 } from './grounding-system';
 import { 
   createAuditLogger,
-  type AuditLogger 
+  AuditLogger as AuditLoggerImpl,
 } from './audit-logger';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -66,7 +67,7 @@ export class DeterministicAgentSystem {
   private verifier: any;
   private groundingSystem: any;
   private promptBuilder: any;
-  private auditLogger: AuditLogger;
+  private auditLogger: AuditLoggerImpl;
   private genAI: any;
 
   constructor(config: Partial<DeterministicConfig> = {}) {
@@ -120,12 +121,12 @@ export class DeterministicAgentSystem {
       const model = this.genAI.getGenerativeModel({
         model: 'gemini-2.0-flash-exp',
         generationConfig: {
-          temperature: effectiveConfig.temperature,
-          maxOutputTokens: effectiveConfig.maxOutputTokens,
-          topP: effectiveConfig.topP,
-          topK: effectiveConfig.topK,
-          candidateCount: effectiveConfig.candidateCount,
-          responseFormat: effectiveConfig.responseFormat === 'json_object' ? 
+          temperature: (effectiveConfig as any).temperature,
+          maxOutputTokens: (effectiveConfig as any).maxOutputTokens,
+          topP: (effectiveConfig as any).topP,
+          topK: (effectiveConfig as any).topK,
+          candidateCount: (effectiveConfig as any).candidateCount,
+          responseFormat: (effectiveConfig as any).responseFormat === 'json_object' ? 
             { mimeType: "application/json" } : undefined
         }
       });
@@ -147,7 +148,7 @@ export class DeterministicAgentSystem {
       const validationResult = await this.validator.validateWithRetry(
         request.agentType,
         rawOutput,
-        effectiveConfig.maxRetries
+        (effectiveConfig as any).maxRetries
       );
       validationTime = Date.now() - validationStart;
       retryCount = validationResult.retryCount;
@@ -176,12 +177,14 @@ export class DeterministicAgentSystem {
         groundingResult?.totalRelevanceScore
       );
 
-      const needsReview = finalConfidence < effectiveConfig.confidenceThreshold ||
+      // Resolve threshold safely (effectiveConfig may be a partial)
+      const threshold = (effectiveConfig as any)?.confidenceThreshold ?? DEFAULT_DETERMINISTIC_CONFIG.confidenceThreshold;
+      const needsReview = finalConfidence < threshold ||
                          validationResult.needsReview ||
                          (verificationResult && !verificationResult.verified);
 
-      // Step 6: Log the interaction
-      await this.auditLogger.logInteraction({
+      // Step 6: Save audit log entry
+  await this.auditLogger.log({
         taskType,
         agentType: request.agentType,
         input: request.input,
@@ -202,7 +205,7 @@ export class DeterministicAgentSystem {
         sessionId: request.sessionId,
         userId: request.userId,
         requestId: request.requestId
-      });
+  } as any);
 
       return {
         success: true,
@@ -223,8 +226,8 @@ export class DeterministicAgentSystem {
       };
 
     } catch (error) {
-      // Log failed interaction
-      await this.auditLogger.logInteraction({
+  // Log failed interaction
+  await this.auditLogger.log({
         taskType: request.taskType || 'unknown',
         agentType: request.agentType,
         input: request.input,
@@ -248,7 +251,7 @@ export class DeterministicAgentSystem {
         sessionId: request.sessionId,
         userId: request.userId,
         requestId: request.requestId
-      });
+  } as any);
 
       return {
         success: false,
@@ -359,11 +362,22 @@ export class DeterministicAgentSystem {
   }
 
   async getAuditStats(timeRange: { start: string; end: string }) {
-    return await this.auditLogger.getStats(timeRange);
+    const entries = await this.auditLogger.getAuditLog({
+      startDate: timeRange.start,
+      endDate: timeRange.end
+    });
+    const entriesAny = entries as any[];
+    const total = entriesAny.length || 1;
+    return {
+      totalCalls: entriesAny.length,
+      successRate: entriesAny.filter((e: any) => e.success).length / total,
+      averageConfidence: entriesAny.reduce((acc: number, e: any) => acc + (e.confidence || 0), 0) / total,
+      reviewRate: entriesAny.filter((e: any) => e.needsReview).length / total
+    };
   }
 
   async queryAuditLogs(filters: any) {
-    return await this.auditLogger.queryLogs(filters);
+    return await this.auditLogger.getAuditLog(filters);
   }
 }
 

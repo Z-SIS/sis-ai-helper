@@ -136,6 +136,7 @@ export const CompanyResearchFunction: FunctionDefinition = {
         items: {
           name: 'executive',
           type: 'object',
+          description: 'Executive information',
           properties: {
             name: {
               name: 'name',
@@ -168,7 +169,8 @@ export const CompanyResearchFunction: FunctionDefinition = {
         required: false,
         items: {
           name: 'source',
-          type: 'string'
+          type: 'string',
+          description: 'Source reference'
         }
       },
       unverifiedFields: {
@@ -178,7 +180,8 @@ export const CompanyResearchFunction: FunctionDefinition = {
         required: false,
         items: {
           name: 'field',
-          type: 'string'
+          type: 'string',
+          description: 'Field name that could not be verified'
         }
       }
     },
@@ -225,7 +228,8 @@ export const EmailCompositionFunction: FunctionDefinition = {
         required: false,
         items: {
           name: 'point',
-          type: 'string'
+          type: 'string',
+          description: 'Key point to be covered in the email'
         }
       },
       callToAction: {
@@ -284,6 +288,7 @@ export const SOPGenerationFunction: FunctionDefinition = {
         items: {
           name: 'responsibility',
           type: 'object',
+          description: 'Responsibility object with role and tasks',
           properties: {
             role: {
               name: 'role',
@@ -293,10 +298,11 @@ export const SOPGenerationFunction: FunctionDefinition = {
             responsibilities: {
               name: 'responsibilities',
               type: 'array',
-              description: 'List of responsibilities for this role',
+              description: 'List of responsibilities',
               items: {
                 name: 'responsibility',
-                type: 'string'
+                type: 'string',
+                description: 'Specific responsibility for this role'
               }
             }
           }
@@ -310,6 +316,7 @@ export const SOPGenerationFunction: FunctionDefinition = {
         items: {
           name: 'procedure',
           type: 'object',
+          description: 'Step-by-step procedure',
           properties: {
             step: {
               name: 'step',
@@ -370,9 +377,7 @@ export class FunctionCallingSystem {
       generationConfig: {
         temperature: config.temperature,
         topP: config.topP,
-        topK: config.topK,
-        candidateCount: config.candidateCount,
-        maxOutputTokens: config.maxOutputTokens
+        maxOutputTokens: config.maxTokens
       },
       tools: [
         {

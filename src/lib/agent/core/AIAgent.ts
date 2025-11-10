@@ -55,7 +55,7 @@ export class AIAgent {
   private tools: Map<string, AgentTool> = new Map();
   private capabilities: Map<string, AgentCapability> = new Map();
   private messageHistory: AgentMessage[] = [];
-  private onStateChange?: (state: AgentState) => void;
+  private _onStateChange?: (state: AgentState) => void;
 
   constructor(config: {
     id: string;
@@ -91,11 +91,11 @@ export class AIAgent {
 
   private updateState(updates: Partial<AgentState>): void {
     this.state = { ...this.state, ...updates };
-    this.onStateChange?.(this.state);
+    this._onStateChange?.(this.state);
   }
 
   onStateChange(callback: (state: AgentState) => void): void {
-    this.onStateChange = callback;
+    this._onStateChange = callback;
   }
 
   // Tool Management
@@ -286,7 +286,7 @@ export class AIAgent {
       if (tool) {
         try {
           const result = await tool.execute(analysis.entities);
-          results.push(result);
+          results.push(typeof result === 'string' ? result : String(result));
         } catch (error) {
           console.error(`Tool ${toolName} failed:`, error);
           results.push(`Error executing ${toolName}: ${error instanceof Error ? error.message : 'Unknown error'}`);

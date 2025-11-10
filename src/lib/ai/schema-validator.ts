@@ -7,15 +7,7 @@
 
 import { z } from 'zod';
 import { DeterministicConfig, AuditLogEntry } from './deterministic-config';
-
-// Base schemas with confidence scoring
-export const BaseResponseSchema = z.object({
-  confidence_score: z.number().min(0).max(1),
-  needs_review: z.boolean().optional(),
-  unverified_fields: z.array(z.string()).optional(),
-  sources: z.array(z.string()).optional(),
-  timestamp: z.string().datetime().optional(),
-});
+import { BaseAgentSchema, BaseResponseSchema } from '@/shared/schemas';
 
 // Enhanced Company Research Schema with validation
 export const EnhancedCompanyResearchSchema = z.object({
@@ -154,7 +146,12 @@ export class DeterministicValidator {
   private config: DeterministicConfig;
 
   constructor(config: DeterministicConfig) {
-    this.config = config;
+    // Ensure config has required properties with defaults
+    this.config = {
+      confidenceThreshold: 0.7,
+      enableVerification: true,
+      ...config
+    };
     this.schemas = new Map<string, z.ZodSchema>([
       ['company-research', EnhancedCompanyResearchSchema],
       ['generate-sop', EnhancedSOPSchema],
@@ -176,7 +173,7 @@ export class DeterministicValidator {
       try {
         const result = await this.validateSingle(agentType, rawOutput);
         
-        if (result.success || result.confidence >= this.config.confidenceThreshold) {
+        if (result.success || result.confidence >= this.config.confidenceThreshold!) {
           return {
             ...result,
             retryCount
@@ -241,7 +238,7 @@ export class DeterministicValidator {
       const confidence = this.calculateConfidence(validatedData);
       
       // Check if review is needed
-      const needsReview = confidence < this.config.confidenceThreshold || 
+      const needsReview = confidence < this.config.confidenceThreshold! ||
                          validatedData.needs_review === true ||
                          (validatedData.unverified_fields?.length || 0) > 0;
 
@@ -378,13 +375,17 @@ export class OutputVerifier {
   }
 
   private createVerificationPrompt(output: any, groundingData?: string[]): string {
-    return `${VERIFICATION_PROMPT}
+    return `Verify the following information for accuracy and completeness:
+1. Check for factual consistency
+2. Identify any missing critical information
+3. Flag any potentially incorrect or unverifiable claims
+4. Provide a confidence score (0-1) for each piece of information
 
 Output to verify:
 ${JSON.stringify(output, null, 2)}
 
-${groundingData && groundingData.length > 0 ? 
-  `Grounding data:\n${groundingData.join('\n\n')}` : 
+${groundingData && groundingData.length > 0 ?
+  `Grounding data:\n${groundingData.join('\n\n')}` :
   'No grounding data available.'
 }
 
@@ -416,7 +417,7 @@ Please verify this output for accuracy and completeness.`;
       confidence -= 0.2;
     }
 
-    const verified = confidence >= this.config.confidenceThreshold;
+    const verified = confidence >= this.config.confidenceThreshold!;
 
     return {
       verified,

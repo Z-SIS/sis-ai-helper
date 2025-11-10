@@ -8,7 +8,7 @@ import {
 import { 
   googleAIAgentSystem,
   handleAgentRequest
-} from '@/lib/ai/agent-system';
+} from '@/lib/ai/agent-system-fixed';
 import { db } from '@/lib/supabase';
 
 // Define AgentType locally to avoid circular dependencies
@@ -20,10 +20,10 @@ type AgentType = keyof typeof AgentInputSchemas;
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    console.log('Agent API called:', { params });
+    console.log('Agent API called');
     
     // Open platform - no authentication required
     const userId = 'open-user';
@@ -57,9 +57,14 @@ export async function POST(
     
     console.log('Agent execution completed:', { agentType, hasResult: !!result });
     
-    // Validate the result before proceeding
+    // Validate the result is a valid AgentOutput
     if (!result || typeof result !== 'object') {
       throw new Error(`Invalid result from agent ${agentType}: result must be an object`);
+    }
+
+    // Ensure the result conforms to the BaseAgentSchema
+    if (!result.title || !result.content) {
+      throw new Error(`Invalid result from agent ${agentType}: missing required fields`);
     }
     
     // Save to task history (optional for open platform)

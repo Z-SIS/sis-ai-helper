@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { googleAIAgentSystem } from '@/lib/ai/agent-system';
+import { googleAIAgentSystem } from '@/lib/ai/agent-system-fixed';
 
 export async function GET() {
   try {

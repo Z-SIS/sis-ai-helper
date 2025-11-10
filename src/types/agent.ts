@@ -17,12 +17,26 @@ export interface AgentOutput {
   content: string;
   summary?: string;
   timestamp?: string;
-  confidence?: number;
-  success?: boolean;
-  needsReview?: boolean;
+  confidence: number;
+  confidence_score: number;
+  success: boolean;
+  needsReview: boolean;
   topic?: string;
   warnings?: string[];
   sources?: string[];
+  unverified_fields?: string[];
   data?: Record<string, any>;
-  [k: string]: any;
+  // Form-specific fields
+  purpose?: string;
+  scope?: string;
+  responsibilities?: string[];
+  procedure?: string[];
+  references?: string[];
+  companyName?: string;
+  industry?: string;
+  location?: string;
+  description?: string;
+  contentAccuracy?: number;
+  estimatedDuration?: string;
+  tips?: string[];
 }

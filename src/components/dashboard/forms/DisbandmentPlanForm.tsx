@@ -13,7 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { AgentInput, AgentOutput } from '@/shared/schemas';
+import { DisbandmentPlanAgentOutput, DisbandmentPlanPhase, DisbandmentPlanAsset, DisbandmentPlanKnowledgeTransfer } from '@/shared/schemas';
+import { getAnyField, getStringField, getArrayField } from '@/shared/form-types';
 
 const formSchema = z.object({
   projectName: z.string().min(1, 'Project name is required'),
@@ -22,11 +23,13 @@ const formSchema = z.object({
   stakeholders: z.array(z.string()).optional(),
 });
 
+type DisbandmentPlanInput = z.infer<typeof formSchema>;
+
 export function DisbandmentPlanForm() {
-  const [result, setResult] = useState<AgentOutput | null>(null);
+  const [result, setResult] = useState<DisbandmentPlanAgentOutput | null>(null);
   const [stakeholdersInput, setStakeholdersInput] = useState('');
 
-  const form = useForm<AgentInput>({
+  const form = useForm<DisbandmentPlanInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       projectName: '',
@@ -35,9 +38,8 @@ export function DisbandmentPlanForm() {
       stakeholders: [],
     },
   });
-
   const mutation = useMutation({
-    mutationFn: async (data: AgentInput) => {
+    mutationFn: async (data: DisbandmentPlanInput) => {
       const response = await fetch('/api/agent/disbandment-plan', {
         method: 'POST',
         headers: {
@@ -47,19 +49,19 @@ export function DisbandmentPlanForm() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ message: 'Unknown error' }));
         throw new Error(error.message || 'Failed to generate disbandment plan');
       }
 
-      const result = await response.json();
-      return result.data as AgentOutput;
+      const payload = await response.json();
+      return payload.data as DisbandmentPlanAgentOutput;
     },
     onSuccess: (data) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: AgentInput) => {
+  const onSubmit = (data: DisbandmentPlanInput) => {
     // Convert stakeholders input to array if provided
     if (stakeholdersInput.trim()) {
       data.stakeholders = stakeholdersInput.split('\n').filter(stakeholder => stakeholder.trim());
@@ -246,9 +248,9 @@ export function DisbandmentPlanForm() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>{result.projectName} Disbandment Plan</CardTitle>
+                <CardTitle>{getStringField(result, 'projectName' as any)} Disbandment Plan</CardTitle>
                 <CardDescription>
-                  Reason: {result.reason} • Target: {result.disbandmentDate}
+                  Reason: {getStringField(result, 'reason' as any)} • Target: {getStringField(result, 'disbandmentDate' as any)}
                 </CardDescription>
               </div>
               <Button onClick={downloadAsMarkdown} variant="outline" size="sm">
@@ -261,7 +263,7 @@ export function DisbandmentPlanForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3">Disbandment Phases</h4>
               <div className="space-y-4">
-                {result.phases.map((phase) => (
+                  {getAnyField<DisbandmentPlanPhase[]>(result, 'phases' as any, []).map((phase) => (
                   <Card key={phase.phase} className="border-l-4 border-l-red-500">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
@@ -296,7 +298,7 @@ export function DisbandmentPlanForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3">Asset Distribution</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {result.assetDistribution.map((asset, index) => (
+                {getAnyField<DisbandmentPlanAsset[]>(result, 'assetDistribution' as any, []).map((asset, index) => (
                   <Card key={index}>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm">{asset.asset}</CardTitle>
@@ -319,7 +321,7 @@ export function DisbandmentPlanForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3">Knowledge Transfer</h4>
               <div className="space-y-3">
-                {result.knowledgeTransfer.map((transfer, index) => (
+                {getAnyField<DisbandmentPlanKnowledgeTransfer[]>(result, 'knowledgeTransfer' as any, []).map((transfer, index) => (
                   <Card key={index}>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm">{transfer.knowledgeArea}</CardTitle>
@@ -348,7 +350,7 @@ export function DisbandmentPlanForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Legal Considerations</h4>
               <ul className="list-disc list-inside space-y-1">
-                {result.legalConsiderations.map((consideration, index) => (
+                {getArrayField(result, 'legalConsiderations' as any).map((consideration, index) => (
                   <li key={index} className="text-sm text-gray-600">{consideration}</li>
                 ))}
               </ul>
@@ -356,13 +358,13 @@ export function DisbandmentPlanForm() {
 
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Communication Plan</h4>
-              <p className="text-sm text-gray-600">{result.communicationPlan}</p>
+              <p className="text-sm text-gray-600">{getStringField(result, 'communicationPlan' as any)}</p>
             </div>
 
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-2">Final Checklist</h4>
               <ul className="space-y-1">
-                {result.finalChecklist.map((item, index) => (
+                {getArrayField(result, 'finalChecklist' as any).map((item, index) => (
                   <li key={index} className="text-sm text-gray-600">
                     <input type="checkbox" className="mr-2" readOnly />
                     {item}

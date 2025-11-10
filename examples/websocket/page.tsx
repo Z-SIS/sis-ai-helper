@@ -1,13 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-// Added optional import guard for socket.io-client
-let io: any;
-try {
-  ({ io } = await import('socket.io-client'));
-} catch (err) {
-  console.error("Socket.IO Client not found. Please install socket.io-client and @types/socket.io-client");
-}
+import dynamic from 'next/dynamic';
+
+// Dynamically import socket.io-client to avoid SSR issues
+const importSocketIO = async () => {
+  try {
+    const socketIO = await import('socket.io-client');
+    return socketIO.default || socketIO;
+  } catch (err) {
+    console.error("Socket.IO Client not found. Please install socket.io-client and @types/socket.io-client");
+    return null;
+  }
+};
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,14 +31,16 @@ export default function SocketDemo() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (!io) {
-      console.warn("Socket.IO client not available");
-      return;
-    }
+    const initSocket = async () => {
+      const io = await importSocketIO();
+      if (!io) {
+        console.warn("Socket.IO client not available");
+        return;
+      }
 
-    const socketInstance = io({
-      path: '/api/socketio',
-    });
+      const socketInstance = io({
+        path: '/api/socketio',
+      });
 
     setSocket(socketInstance);
 
@@ -49,9 +56,26 @@ export default function SocketDemo() {
       setMessages(prev => [...prev, msg]);
     });
 
-    return () => {
-      socketInstance.disconnect();
+      setSocket(socketInstance);
+
+      socketInstance.on('connect', () => {
+        setIsConnected(true);
+      });
+
+      socketInstance.on('disconnect', () => {
+        setIsConnected(false);
+      });
+
+      socketInstance.on('message', (msg: Message) => {
+        setMessages(prev => [...prev, msg]);
+      });
+
+      return () => {
+        socketInstance.disconnect();
+      };
     };
+
+    initSocket();
   }, []);
 
   const sendMessage = () => {

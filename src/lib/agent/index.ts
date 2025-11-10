@@ -2,6 +2,14 @@
 export { AIAgent, AgentStateSchema, AgentMessageSchema, AgentToolSchema, AgentCapabilitySchema } from './core/AIAgent';
 export type { AgentState, AgentMessage, AgentTool, AgentCapability } from './core/AIAgent';
 
+// Local imports for assembling the agentSystem default export
+import { AIAgent as _AIAgent } from './core/AIAgent';
+import { AgentOrchestrator as _AgentOrchestrator } from './orchestration/AgentOrchestrator';
+import { RAGSystem as _RAGSystem } from './rag/RAGSystem';
+import { TaskHistoryManager as _TaskHistoryManager } from './storage/TaskHistory';
+import { ContextManager as _ContextManager } from './context/ContextManager';
+import { MemoryManager as _MemoryManager } from './learning/MemoryManager';
+
 // RAG System
 export { RAGSystem, ResearchCacheSchema, RAGQuerySchema, RAGResultSchema } from './rag/RAGSystem';
 export type { ResearchCache, RAGQuery, RAGResult } from './rag/RAGSystem';
@@ -209,12 +217,12 @@ export class AgentSystemMonitor {
 // Default Exports
 const agentSystem = {
   // Core Classes
-  AIAgent,
-  AgentOrchestrator,
-  RAGSystem,
-  TaskHistoryManager,
-  ContextManager,
-  MemoryManager,
+  AIAgent: _AIAgent,
+  AgentOrchestrator: _AgentOrchestrator,
+  RAGSystem: _RAGSystem,
+  TaskHistoryManager: _TaskHistoryManager,
+  ContextManager: _ContextManager,
+  MemoryManager: _MemoryManager,
   
   // Utilities
   AgentFactory,

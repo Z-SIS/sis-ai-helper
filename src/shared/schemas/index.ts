@@ -132,13 +132,8 @@ export const ExcelHelperInputSchema = z.object({
   excelVersion: commonValidations.optionalString(),
 });
 
-export const ExcelHelperOutputSchema = z.object({
-  answer: z.string(),
-  formula: commonValidations.optionalString(),
-  steps: commonValidations.optionalArray(z.string()),
-  alternativeSolutions: commonValidations.optionalArray(z.string()),
-  tips: commonValidations.optionalArray(z.string()),
-});
+export * from './excel';
+import { ExcelHelperOutputSchema } from './excel';
 
 // Feasibility Check Agent
 export const FeasibilityCheckInputSchema = z.object({

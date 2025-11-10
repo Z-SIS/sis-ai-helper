@@ -938,3 +938,15 @@ export function createEnhancedGroundingSystem(config?: Partial<EnhancedRAGConfig
 export function createEnhancedGroundedPromptBuilder(groundingSystem: EnhancedGroundingSystem): EnhancedGroundedPromptBuilder {
   return new EnhancedGroundedPromptBuilder(groundingSystem);
 }
+
+// Legacy exports for backward compatibility
+export function createGroundingSystem(config?: Partial<EnhancedRAGConfig>): EnhancedGroundingSystem {
+  return createEnhancedGroundingSystem(config);
+}
+
+export function createGroundedPromptBuilder(groundingSystem: EnhancedGroundingSystem): EnhancedGroundedPromptBuilder {
+  return createEnhancedGroundedPromptBuilder(groundingSystem);
+}
+
+// Type alias for backward compatibility
+export type GroundingResult = EnhancedGroundingResult;

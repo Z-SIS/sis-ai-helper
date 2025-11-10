@@ -100,8 +100,9 @@ export class ContextManager {
     let context = this.contexts.get(conversationId);
     
     if (!context) {
-      // Try to load from storage
-      context = await this.loadContextFromStorage(conversationId);
+  // Try to load from storage
+  // Cast to any to avoid cross-module type-name collisions during incremental fixes
+  context = (await this.loadContextFromStorage(conversationId)) as any;
       if (context) {
         this.contexts.set(conversationId, context);
       }
@@ -535,7 +536,8 @@ Please provide a helpful, context-aware response that:
     let clearedCount = 0;
 
     for (const [conversationId, context] of this.contexts.entries()) {
-      const lastUpdated = new Date(context.metadata.lastUpdated || context.metadata.createdAt).getTime();
+      const metadata = context.metadata || {};
+      const lastUpdated = new Date(metadata.lastUpdated || metadata.createdAt || Date.now()).getTime();
       if (now - lastUpdated > maxAge) {
         await this.clearContext(conversationId);
         clearedCount++;
@@ -556,7 +558,8 @@ Please provide a helpful, context-aware response that:
     const oneHourAgo = now - (60 * 60 * 1000);
 
     const activeContexts = contexts.filter(context => {
-      const lastUpdated = new Date(context.metadata.lastUpdated || context.metadata.createdAt).getTime();
+      const metadata = context.metadata || {};
+      const lastUpdated = new Date(metadata.lastUpdated || metadata.createdAt || Date.now()).getTime();
       return lastUpdated > oneHourAgo;
     }).length;
 

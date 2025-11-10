@@ -1,4 +1,4 @@
-﻿import { AgentOutput } from '@/shared/schemas';
+import { AgentOutput } from '@/shared/schemas';
 import { createAgentOutput } from './helpers/agent-output';
 
 interface AgentSystemOptions {
@@ -12,12 +12,10 @@ export class AgentSystem {
     this.options = options;
   }
 
-  // Execute an agent request. If a custom executor is provided, delegate to it.
   public async executeAgentRequest(agentType: string, input: any): Promise<AgentOutput> {
     if (this.options.executeAgentRequest) {
       return this.options.executeAgentRequest(agentType, input);
     }
-
     return createAgentOutput({
       title: 'Response',
       content: 'Executed agent request',
@@ -30,12 +28,10 @@ export class AgentSystem {
     });
   }
 
-  // Small helper parser for disbandment plan style responses
   public parseDisbandmentPlanResponse(response: string): AgentOutput {
     const lines = response.split('\n').map((l) => l.trim()).filter(Boolean);
-    const projectName = lines.find((l) => /project(?: name)?:/i.test(l))?.replace(/^(project(?: name)?:\\s*)/i, '') || 'Project Disbandment';
-    const reason = lines.find((l) => /reason:|purpose:/i.test(l))?.replace(/^(reason:|purpose:)\\s*/i, '') || 'Project completion';
-    const timeline = lines.find((l) => /timeline:|duration:/i.test(l))?.replace(/^(timeline:|duration:)\\s*/i, '') || '4-6 weeks';
+    const projectName = lines.find((l) => /project(?: name)?:/i.test(l))?.replace(/^(project(?: name)?:\s*)/i, '') || 'Project Disbandment';
+    const timeline = lines.find((l) => /timeline:|duration:/i.test(l))?.replace(/^(timeline:|duration:)\s*/i, '') || '4-6 weeks';
 
     const phases = [
       { phase: 1, name: 'Planning', duration: '1 week', tasks: [{ task: 'Create disbandment plan', owner: 'Project Manager' }] },
@@ -51,11 +47,10 @@ export class AgentSystem {
       success: true,
       needsReview: false,
       timestamp: new Date().toISOString(),
-      data: { projectName, reason, timeline, phases },
+      data: { projectName, timeline, phases },
     });
   }
 
-  // Minimal token usage report used by health routes
   public getTokenUsage() {
     return {
       byAgent: {} as Record<string, number>,

@@ -13,7 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AgentInput, AgentOutput } from '@/shared/schemas';
+import { AgentInput } from '@/shared/schemas';
+import { ExcelHelperOutput, ExcelHelperOutputSchema } from '@/shared/schemas/excel';
 
 const formSchema = z.object({
   question: z.string().min(1, 'Question is required'),
@@ -22,10 +23,10 @@ const formSchema = z.object({
 });
 
 export function ExcelHelperForm() {
-  const [result, setResult] = useState<AgentOutput | null>(null);
+  const [result, setResult] = useState<ExcelHelperOutput | null>(null);
 
   const form = useForm<AgentInput>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       question: '',
       context: '',
@@ -34,13 +35,13 @@ export function ExcelHelperForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: AgentInput) => {
+    mutationFn: async (formData: AgentInput) => {
       const response = await fetch('/api/agent/excel-helper', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -49,14 +50,35 @@ export function ExcelHelperForm() {
       }
 
       const result = await response.json();
-      return result.data as AgentOutput;
+      const responseData = result.data || {};
+      
+      // Parse and validate the response
+      const output = ExcelHelperOutputSchema.parse({
+        title: responseData.title || 'Excel Solution',
+        content: responseData.content || '',
+        confidence_score: responseData.confidence_score ?? 0.85,
+        confidence: responseData.confidence ?? 0.85,
+        success: responseData.success ?? true,
+        needsReview: responseData.needsReview ?? false,
+        timestamp: responseData.timestamp || new Date().toISOString(),
+        answer: responseData.answer || responseData.content || '',
+        formula: responseData.formula,
+        steps: Array.isArray(responseData.steps) ? responseData.steps : 
+               responseData.steps ? [responseData.steps] : undefined,
+        alternativeSolutions: Array.isArray(responseData.alternativeSolutions) ? responseData.alternativeSolutions : 
+                            Array.isArray(responseData.alternatives) ? responseData.alternatives : undefined,
+        tips: Array.isArray(responseData.tips) ? responseData.tips :
+              Array.isArray(responseData.hints) ? responseData.hints : undefined,
+        data: responseData.data
+      });
+      return output;
     },
-    onSuccess: (data) => {
+    onSuccess: (data: ExcelHelperOutput) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: AgentInput) => {
+  const onSubmit = (data: any) => {
     mutation.mutate(data);
   };
 
@@ -81,7 +103,7 @@ export function ExcelHelperForm() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="question"
                 render={({ field }) => (
                   <FormItem>
@@ -99,7 +121,7 @@ export function ExcelHelperForm() {
               />
 
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="context"
                 render={({ field }) => (
                   <FormItem>
@@ -117,7 +139,7 @@ export function ExcelHelperForm() {
               />
 
               <FormField
-                control={form.control}
+                control={form.control as any}
                 name="excelVersion"
                 render={({ field }) => (
                   <FormItem>
@@ -205,7 +227,7 @@ export function ExcelHelperForm() {
               <p className="text-sm text-gray-600">{result.answer}</p>
             </div>
 
-            {result.formula && (
+            {result?.formula && (
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-sm text-gray-700">Formula</h4>

@@ -12,7 +12,29 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AgentInput, AgentOutput } from '@/shared/schemas';
+import { AgentOutput } from '@/shared/schemas';
+
+interface SopGenerationOutput extends AgentOutput {
+  version: string;
+  date: string;
+  purpose: string;
+  scope: string;
+  responsibilities: string[];
+  procedure: Array<{
+    step: number;
+    action: string;
+    details: string;
+    owner: string;
+  }>;
+  references?: string[];
+}
+
+export interface SopFormInput {
+  processName: string;
+  department?: string;
+  purpose?: string;
+  scope?: string;
+}
 
 const formSchema = z.object({
   processName: z.string().min(1, 'Process name is required'),
@@ -22,9 +44,9 @@ const formSchema = z.object({
 });
 
 export function SopGenerationForm() {
-  const [result, setResult] = useState<AgentOutput | null>(null);
+  const [result, setResult] = useState<SopGenerationOutput | null>(null);
 
-  const form = useForm<AgentInput>({
+  const form = useForm<SopFormInput>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       processName: '',
@@ -35,7 +57,7 @@ export function SopGenerationForm() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: AgentInput) => {
+    mutationFn: async (data: SopFormInput) => {
       const response = await fetch('/api/agent/generate-sop', {
         method: 'POST',
         headers: {
@@ -50,14 +72,35 @@ export function SopGenerationForm() {
       }
 
       const result = await response.json();
-      return result.data as AgentOutput;
+      const d: any = result.data || {};
+
+      const procedure = Array.isArray(d.procedure)
+        ? d.procedure.map((p: any, idx: number) => ({
+            step: typeof p.step === 'number' ? p.step : idx + 1,
+            action: p.action || p.title || `Step ${idx + 1}`,
+            details: p.details || p.description || '',
+            owner: p.owner || '',
+          }))
+        : [];
+
+      const output: SopGenerationOutput = {
+        ...(d as AgentOutput),
+        version: d.version || '1.0',
+        date: d.date || d.timestamp || new Date().toISOString(),
+        purpose: d.purpose || d.content || '',
+        scope: d.scope || '',
+        responsibilities: Array.isArray(d.responsibilities) ? d.responsibilities : (d.responsibilities ? [d.responsibilities] : []),
+        procedure,
+        references: Array.isArray(d.references) ? d.references : (d.references ? [d.references] : []),
+      };
+      return output;
     },
-    onSuccess: (data) => {
+    onSuccess: (data: SopGenerationOutput) => {
       setResult(data);
     },
   });
 
-  const onSubmit = (data: AgentInput) => {
+  const onSubmit = (data: SopFormInput) => {
     mutation.mutate(data);
   };
 
@@ -65,8 +108,9 @@ export function SopGenerationForm() {
     if (!result) return;
     
     let markdown = `# ${result.title}\n\n`;
-    markdown += `**Version:** ${result.version}\n`;
-    markdown += `**Date:** ${result.date}\n\n`;
+    const createdDate = new Date(result.timestamp || Date.now()).toLocaleDateString();
+    markdown += `**Created:** ${createdDate}\n\n`;
+
     markdown += `## Purpose\n${result.purpose}\n\n`;
     markdown += `## Scope\n${result.scope}\n\n`;
     markdown += `## Responsibilities\n`;
@@ -74,11 +118,14 @@ export function SopGenerationForm() {
       markdown += `- ${resp}\n`;
     });
     markdown += `\n## Procedure\n`;
-    (result.procedure || []).forEach(step => {
-      markdown += `### Step ${step.step}: ${step.action}\n`;
-      markdown += `${step.details}\n`;
-      markdown += `**Owner:** ${step.owner}\n\n`;
-    });
+    if (result.procedure && result.procedure.length > 0) {
+      markdown += `## Procedure\n\n`;
+      result.procedure.forEach(step => {
+        markdown += `### Step ${step.step}: ${step.action}\n`;
+        markdown += `${step.details}\n`;
+        markdown += `**Owner:** ${step.owner}\n\n`;
+      });
+    }
     
     if (result.references && result.references.length > 0) {
       markdown += `## References\n`;
@@ -235,7 +282,7 @@ export function SopGenerationForm() {
               <div>
                 <CardTitle>{result.title}</CardTitle>
                 <CardDescription>
-                  Version {result.version} • {result.date}
+                  Created {new Date(result.timestamp || Date.now()).toLocaleDateString()}
                 </CardDescription>
               </div>
               <Button onClick={downloadAsMarkdown} variant="outline" size="sm">
@@ -267,7 +314,7 @@ export function SopGenerationForm() {
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3">Procedure</h4>
               <div className="space-y-4">
-                {(result.procedure || []).map((step) => (
+                {result.procedure.map((step) => (
                   <div key={step.step} className="border-l-2 border-blue-200 pl-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">

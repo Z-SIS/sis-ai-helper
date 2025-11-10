@@ -1,13 +1,15 @@
 import { z } from 'zod';
-import { 
-  AgentInputSchemas, 
+import {
+  AgentInputSchemas,
   AgentOutputSchemas,
   AgentType,
   AgentInput,
   AgentOutput,
+  validateAgentInput as baseValidateAgentInput,
+  validateAgentOutput as baseValidateAgentOutput,
   safeValidateAgentInput,
   safeValidateAgentOutput
-} from '@/shared/schemas';
+} from '../../shared/schemas';
 
 // ============================================================================
 // VALIDATION RESULT TYPES
@@ -86,7 +88,7 @@ export class AgentValidator {
       const validationResult = safeValidateAgentInput(agentType, data);
       
       if (!validationResult.success) {
-        const errors = validationResult.error.errors.map(err => ({
+        const errors = (validationResult as any).error.errors.map(err => ({
           field: err.path.join('.'),
           message: err.message,
           code: 'VALIDATION_ERROR',
@@ -102,14 +104,14 @@ export class AgentValidator {
       }
       
       // Additional business logic validation
-      const businessWarnings = this.validateBusinessRules(agentType, validationResult.data);
+      const businessWarnings = this.validateBusinessRules(agentType, validationResult.data as AgentInput);
       
       return {
         success: true,
         data: validationResult.data as T,
         warnings: businessWarnings,
         agentType,
-        metadata: this.getMetadata(validationResult.data),
+        metadata: this.getMetadata(validationResult.data as AgentInput),
       };
       
     } catch (error) {
@@ -142,7 +144,7 @@ export class AgentValidator {
       const validationResult = safeValidateAgentOutput(agentType, data);
       
       if (!validationResult.success) {
-        const errors = validationResult.error.errors.map(err => ({
+        const errors = (validationResult as any).error.errors.map(err => ({
           field: err.path.join('.'),
           message: err.message,
           code: 'OUTPUT_VALIDATION_ERROR',
@@ -156,7 +158,7 @@ export class AgentValidator {
       }
       
       // Additional output validation
-      const warnings = this.validateOutputRules(agentType, validationResult.data);
+      const warnings = this.validateOutputRules(agentType, validationResult.data as AgentOutput);
       
       return {
         success: true,

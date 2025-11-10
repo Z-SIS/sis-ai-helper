@@ -12,14 +12,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AgentInputSchemas, AgentOutputSchemas, AgentInput, AgentOutput } from '@/shared/schemas';
-import type { Resolver } from 'react-hook-form';
+import { AgentInputSchemas, AgentOutputSchemas, AgentInput, AgentOutput, CompanyResearchOutput } from '@/shared/schemas/index';
 import type { Resolver } from 'react-hook-form';
 
 const formSchema = AgentInputSchemas['company-research'];
 
 export function CompanyResearchForm() {
-  const [result, setResult] = useState<AgentOutput | null>(null);
+  const [result, setResult] = useState<CompanyResearchOutput | null>(null);
 
   const form = useForm<AgentInput>({
     resolver: zodResolver(formSchema) as Resolver<AgentInput>,
@@ -46,7 +45,7 @@ export function CompanyResearchForm() {
       }
 
       const result = await response.json();
-      return result.data.data as AgentOutput;
+      return result.data.data as CompanyResearchOutput;
     },
     onSuccess: (data) => {
       setResult(data);
@@ -194,9 +193,9 @@ export function CompanyResearchForm() {
               </div>
               <div>
                 <h4 className="font-semibold text-sm text-foreground">Website</h4>
-                <a 
-                  href={result.website} 
-                  target="_blank" 
+                <a
+                  href={result.website}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-primary hover:underline"
                 >
@@ -212,7 +211,7 @@ export function CompanyResearchForm() {
               {result.employeeCount && (
                 <div>
                   <h4 className="font-semibold text-sm text-foreground">Employees</h4>
-                  <p className="text-sm">{result.employeeCount}</p>
+                  <p className="text-sm">{typeof result.employeeCount === 'string' ? result.employeeCount : result.employeeCount.count}</p>
                 </div>
               )}
             </div>
@@ -228,7 +227,7 @@ export function CompanyResearchForm() {
               <div>
                 <h4 className="font-semibold text-sm text-foreground mb-2">Key Executives</h4>
                 <div className="space-y-1">
-                  {result.keyExecutives.map((executive, index) => (
+                  {result.keyExecutives?.map((executive, index) => (
                     <div key={index} className="text-sm">
                       <span className="font-medium">{executive.name}</span> - {executive.title}
                     </div>
@@ -241,12 +240,12 @@ export function CompanyResearchForm() {
               <div>
                 <h4 className="font-semibold text-sm text-foreground mb-2">Competitors</h4>
                 <div className="flex flex-wrap gap-2">
-                  {result.competitors.map((competitor, index) => (
-                    <span 
+                  {result.competitors?.map((competitor, index) => (
+                    <span
                       key={index}
                       className="px-2 py-1 bg-secondary text-sm rounded-md"
                     >
-                      {competitor}
+                      {typeof competitor === 'string' ? competitor : competitor.name}
                     </span>
                   ))}
                 </div>
@@ -257,7 +256,7 @@ export function CompanyResearchForm() {
               <div>
                 <h4 className="font-semibold text-sm text-foreground mb-2">Recent News</h4>
                 <div className="space-y-3">
-                  {result.recentNews.map((news, index) => (
+                  {result.recentNews?.map((news, index) => (
                     <div key={index} className="border-l-2 border-border pl-3">
                       <h5 className="font-medium text-sm">{news.title}</h5>
                       <p className="text-xs text-muted-foreground mt-1">{news.summary}</p>

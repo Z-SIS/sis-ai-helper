@@ -81,8 +81,10 @@ class RAGCache {
     // Evict oldest entries if cache is full
     if (this.queryCache.size >= CACHE_CONFIG.QUERY_CACHE_SIZE) {
       const oldestKey = this.queryCache.keys().next().value;
-      this.queryCache.delete(oldestKey);
-      this.cacheStats.evictions++;
+      if (oldestKey) {
+        this.queryCache.delete(oldestKey);
+        this.cacheStats.evictions++;
+      }
     }
 
     this.queryCache.set(key, {
@@ -316,7 +318,7 @@ class RAGCache {
     return Date.now() - entry.timestamp > entry.ttl;
   }
 
-  private cleanup(): void {
+  public cleanup(): void {
     // Clean up expired query cache entries
     for (const [key, entry] of this.queryCache.entries()) {
       if (this.isExpired(entry)) {
@@ -367,6 +369,7 @@ export class CacheOptimizer {
     // If localStorage is getting full, clean up old entries
     if (stats.localStorage.usagePercentage > 80) {
       console.log('High localStorage usage, cleaning up old entries');
+      // Make cleanup method public
       ragCache.cleanup();
     }
   }
