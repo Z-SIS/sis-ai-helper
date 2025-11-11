@@ -1,4 +1,4 @@
-name: Deploy SIS AI Helper
+name: Build (Vercel handles deploys via Git Integration)
 
 on:
   push:
@@ -7,14 +7,14 @@ on:
     branches: [ master ]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    # Note: Deployment is handled directly by Vercel's Git integration (connect your GitHub repo
+    # to Vercel in the Vercel dashboard). This keeps tokens and secrets in Vercel only and
+    # avoids duplicating VERCEL_* secrets in GitHub. If you need to run vercel CLI from Actions,
+    # add the required secrets to GitHub and re-enable the deploy step.
 
     steps:
       - name: Checkout repository
@@ -39,12 +39,3 @@ jobs:
 
       - name: Health check
         run: echo "✅ Build completed successfully."
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
-          working-directory: ./
-          vercel-args: '--prod --force'
